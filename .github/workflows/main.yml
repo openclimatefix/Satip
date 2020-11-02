@@ -4,6 +4,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - uses: conda-incubator/setup-miniconda@v1
+      with:
+        auto-update-conda: true
+        python-version: '3.6'
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
@@ -41,3 +45,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
         nbdev_test_nbs
+        
+    - name: Conda list
+      shell: pwsh
+      run: conda list
