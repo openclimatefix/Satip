@@ -1,0 +1,46 @@
+name: satip_dev
+
+channels:
+  - conda-forge
+  - pytorch
+  - pvlib
+  - coecms
+  
+dependencies:
+  - python>=3.7
+  - pytest
+  - pytables
+  - pandas
+  - matplotlib
+  - jupyterlab
+  - ipympl
+  - nodejs
+  - satpy
+  - netCDF4
+  - xarray
+  - cartopy
+  - pyproj
+  - pyinterp
+  - geopandas
+  - rasterio
+  - pillow  # for image loading and processing
+  - gdal
+  - pytorch
+  - pvlib
+  - tabulate
+  - python-dotenv
+  - xmltodict
+  - dataset
+  - seaborn
+  - mkdocs-material
+  - twine
+  - pip
+  
+  - pip:
+      - -e .
+      - apache-airflow
+      - ipypb
+      - feautils
+      - slack-logger
+      - mkdocs-material-extensions
+      - mkdocstrings
