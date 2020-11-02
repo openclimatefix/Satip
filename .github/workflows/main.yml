@@ -10,13 +10,6 @@ jobs:
         python-version: '3.6'
         architecture: 'x64'
         
-    - name: Add environment variables
-      env: 
-        USER_KEY: ${{ secrets.USER_KEY }}
-        USER_SECRET: ${{ secrets.USER_SECRET }}
-        SLACK_ID: ${{ secrets.SLACK_ID }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        
     - name: Install the library
       run: |
         pip install nbdev jupyter
@@ -41,5 +34,10 @@ jobs:
         if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
         
     - name: Run tests
+      env: 
+        USER_KEY: ${{ secrets.USER_KEY }}
+        USER_SECRET: ${{ secrets.USER_SECRET }}
+        SLACK_ID: ${{ secrets.SLACK_ID }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
         nbdev_test_nbs
