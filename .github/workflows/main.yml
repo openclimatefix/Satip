@@ -14,10 +14,12 @@ jobs:
         python-version: '3.6'
         architecture: 'x64'
         
-    - name: Conda list
-      shell: pwsh
-      run: conda list
+    - name: Create environment
+      run: conda env create -f environment.yml
         
+    - name: Activate environment
+      run: conda activate satip
+      
     - name: Install the library
       run: |
         pip install nbdev jupyter
