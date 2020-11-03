@@ -1,53 +1,62 @@
 name: CI
 on: [push, pull_request]
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            os: ["ubuntu-latest", "windows-latest"]
+            
     steps:
-    - uses: conda-incubator/setup-miniconda@v1
-      with:
-        auto-update-conda: true
-        python-version: '3.6'
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.6'
-        architecture: 'x64'
-        
-    - name: Create environment
-      run: $CONDA/bin/conda env update --file environment.yml --name base
-      
-    - name: Install the library
-      run: |
-        pip install nbdev jupyter
-        pip install -e .
-        
-    - name: Check conda install was successful
-      run: conda list
-        
-    - name: Read all notebooks
-      run: |
-        $CONDA/bin/nbdev_read_nbs
-        
-    - name: Check if all notebooks are cleaned
-      run: |
-        echo "Check we are starting with clean git checkout"
-        if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
-        echo "Trying to strip out notebooks"
-        $CONDA/bin/nbdev_clean_nbs
-        echo "Check that strip out was unnecessary"
-        git status -s # display the status to see which nbs need cleaning up
-        if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_git_hooks"; false; fi
-        
-    - name: Check if there is no diff library/notebooks
-      run: |
-        if [ -n "$($CONDA/bin/nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
-        
-    - name: Run tests
-      env: 
-        USER_KEY: ${{ secrets.USER_KEY }}
-        USER_SECRET: ${{ secrets.USER_SECRET }}
-        SLACK_ID: ${{ secrets.SLACK_ID }}
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      run: |
-        $CONDA/bin/nbdev_test_nbs
+      - uses: actions/checkout@v2
+      - uses: goanpeca/setup-miniconda@v1
+        with:
+          activate-environment: test
+          environment-file: environment.yml
+          python-version: 3.8
+          auto-activate-base: false
+
+      - name: Install the library
+      - shell: bash -l {0}
+        run: |
+          pip install nbdev jupyter
+          pip install -e .
+          
+      - name: Checking conda installs
+      - shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+
+      - name: Read all notebooks
+      - shell: bash -l {0}
+        run: |
+          nbdev_read_nbs
+
+      - name: Check if all notebooks are cleaned
+      - shell: bash -l {0}
+        run: |
+          echo "Check we are starting with clean git checkout"
+          if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
+          echo "Trying to strip out notebooks"
+          nbdev_clean_nbs
+          echo "Check that strip out was unnecessary"
+          git status -s # display the status to see which nbs need cleaning up
+          if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_git_hooks"; false; fi
+
+      - name: Check if there is no diff library/notebooks
+      - shell: bash -l {0}
+        run: |
+          if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
+
+      - name: Run tests
+      - shell: bash -l {0}
+        env: 
+          USER_KEY: ${{ secrets.USER_KEY }}
+          USER_SECRET: ${{ secrets.USER_SECRET }}
+          SLACK_ID: ${{ secrets.SLACK_ID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          nbdev_test_nbs
