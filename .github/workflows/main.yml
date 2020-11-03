@@ -16,32 +16,32 @@ jobs:
         
     - name: Create environment
       run: $CONDA/bin/conda env update --file environment.yml --name base
-        
-    - name: Check conda install was successful
-      run: conda list
       
     - name: Install the library
       run: |
         pip install nbdev jupyter
         pip install -e .
         
+    - name: Check conda install was successful
+      run: conda list
+        
     - name: Read all notebooks
       run: |
-        nbdev_read_nbs
+        $CONDA/bin/nbdev_read_nbs
         
     - name: Check if all notebooks are cleaned
       run: |
         echo "Check we are starting with clean git checkout"
         if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
         echo "Trying to strip out notebooks"
-        nbdev_clean_nbs
+        $CONDA/bin/nbdev_clean_nbs
         echo "Check that strip out was unnecessary"
         git status -s # display the status to see which nbs need cleaning up
         if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_git_hooks"; false; fi
         
     - name: Check if there is no diff library/notebooks
       run: |
-        if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
+        if [ -n "$($CONDA/bin/nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
         
     - name: Run tests
       env: 
@@ -50,4 +50,4 @@ jobs:
         SLACK_ID: ${{ secrets.SLACK_ID }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       run: |
-        nbdev_test_nbs
+        $CONDA/bin/nbdev_test_nbs
