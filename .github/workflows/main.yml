@@ -16,15 +16,11 @@ jobs:
         
     - name: Create environment
       shell: pwsh
-      run: conda env create -f environment.yml
+      run: $CONDA/bin/conda env update --file environment.yml --name base
         
-    - name: Activate environment
+    - name: Check conda install was successful
       shell: pwsh
-      run: conda init powershell
-        
-    - name: Activate environment
-      shell: pwsh
-      run: conda activate satip
+      run: conda list
       
     - name: Install the library
       shell: pwsh
