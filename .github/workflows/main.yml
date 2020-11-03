@@ -23,18 +23,18 @@ jobs:
           pip install -e .
           
       - name: Checking conda installs
-      - shell: bash -l {0}
+        shell: bash -l {0}
         run: |
           conda info
           conda list
 
       - name: Read all notebooks
-      - shell: bash -l {0}
+        shell: bash -l {0}
         run: |
           nbdev_read_nbs
 
       - name: Check if all notebooks are cleaned
-      - shell: bash -l {0}
+        shell: bash -l {0}
         run: |
           echo "Check we are starting with clean git checkout"
           if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
@@ -45,12 +45,12 @@ jobs:
           if [ -n "$(git status -uno -s)" ]; then echo -e "!!! Detected unstripped out notebooks\n!!!Remember to run nbdev_install_git_hooks"; false; fi
 
       - name: Check if there is no diff library/notebooks
-      - shell: bash -l {0}
+        shell: bash -l {0}
         run: |
           if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
 
       - name: Run tests
-      - shell: bash -l {0}
+        shell: bash -l {0}
         env: 
           USER_KEY: ${{ secrets.USER_KEY }}
           USER_SECRET: ${{ secrets.USER_SECRET }}
