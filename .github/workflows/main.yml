@@ -19,6 +19,7 @@ jobs:
           auto-activate-base: true
       - shell: bash -l {0}
         run: |
+          conda info --envs
           conda activate satip
           pip install nbdev jupyter
           pip install -e .
