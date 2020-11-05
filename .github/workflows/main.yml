@@ -19,28 +19,27 @@ jobs:
           auto-activate-base: true
       - shell: bash -l {0}
         run: |
-          conda info --envs
-          conda activate satip
+          conda activate satip_dev
           pip install nbdev jupyter
           pip install -e .
           
       - name: Checking conda installs
         shell: bash -l {0}
         run: |
-          conda activate satip
+          conda activate satip_dev
           conda info
           conda list
 
       - name: Read all notebooks
         shell: bash -l {0}
         run: |
-          conda activate satip
+          conda activate satip_dev
           nbdev_read_nbs
 
       - name: Check if all notebooks are cleaned
         shell: bash -l {0}
         run: |
-          conda activate satip
+          conda activate satip_dev
           echo "Check we are starting with clean git checkout"
           if [ -n "$(git status -uno -s)" ]; then echo "git status is not clean"; false; fi
           echo "Trying to strip out notebooks"
@@ -52,7 +51,7 @@ jobs:
       - name: Check if there is no diff library/notebooks
         shell: bash -l {0}
         run: |
-          conda activate satip
+          conda activate satip_dev
           if [ -n "$(nbdev_diff_nbs)" ]; then echo -e "!!! Detected difference between the notebooks and the library"; false; fi
 
       - name: Run tests
@@ -63,5 +62,5 @@ jobs:
           SLACK_ID: ${{ secrets.SLACK_ID }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          conda activate satip
+          conda activate satip_dev
           nbdev_test_nbs
