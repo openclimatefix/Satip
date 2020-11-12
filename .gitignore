@@ -10,6 +10,9 @@ _tmp*
 tmp*
 tags
 
+data/raw/*
+data/intermediate/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
