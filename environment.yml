@@ -34,11 +34,13 @@ dependencies:
   - seaborn
   - mkdocs-material
   - twine
+  - nbdev
+  - gcsfs
+  - zarr
   - pip
   
   - pip:
       - -e .
-      - apache-airflow
       - ipypb
       - feautils
       - slack-logger
