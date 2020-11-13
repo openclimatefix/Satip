@@ -26,6 +26,7 @@ from nbdev.showdoc import *
 from fastcore.test import test
 
 from satip import utils
+from .gcp_helpers import get_eumetsat_filenames
 
 from ipypb import track
 from IPython.display import JSON
@@ -270,7 +271,8 @@ class DownloadManager:
     def __init__(self, user_key: str, user_secret: str,
                  data_dir: str, metadata_db_fp: str, log_fp: str,
                  main_logging_level: str='DEBUG', slack_logging_level: str='CRITICAL',
-                 slack_webhook_url: str=None, slack_id: str=None):
+                 slack_webhook_url: str=None, slack_id: str=None,
+                 bucket_name=None, bucket_prefix=None):
         """
         Initialises the download manager by:
         * Setting up the logger
@@ -289,6 +291,8 @@ class DownloadManager:
             slack_logging_level: Logging level for Slack
             slack_webhook_url: Webhook for the log Slack channel
             slack_id: Option user-id to mention in Slack
+            bucket_name: (Optional) Google Cloud Storage bucket name to check for existing files
+            bucket_prefix: (Optional) Prefix for cloud bucket files
 
         Returns:
             download_manager: Instance of the DownloadManager class
@@ -321,6 +325,15 @@ class DownloadManager:
         # Adding satip helper functions
         self.identify_available_datasets = identify_available_datasets
         self.query_data_products = query_data_products
+
+        # Google Cloud integration
+        self.bucket_name = bucket_name
+        self.bucket_prefix = bucket_prefix
+        self.bucket_filenames = None
+
+        if bucket_name:
+            print(f'Checking files in GCP bucket {bucket_name}, this will take a few seconds)')
+            self.bucket_filenames = get_eumetsat_filenames(bucket_name, prefix=bucket_prefix)
 
         return
 
@@ -371,6 +384,35 @@ class DownloadManager:
 
         return
 
+
+    def check_if_downloaded(self, filenames: List[str]):
+        """Checks which files should be downloaded based on
+        local file contents and a cloud storage bucket, if specified.
+
+        Parameters:
+            filenames: List of filename strings
+
+        Returns:
+            List of filenames to download
+        """
+        in_bucket = []
+        local = []
+        for filename in filenames:
+            if self.bucket_name:
+                if filename in self.bucket_filenames:
+                    in_bucket.append(filename)
+            if filename in os.listdir(self.data_dir):
+                local.append(filename)
+
+        # Download files if they are not locally downloaded or in the bucket
+        to_download = set(filenames).difference(set(local).union(set(in_bucket)))
+
+        self.logger.info(f'{len(filenames)} queried, {len(in_bucket)} files in bucket,
+            {len(local)} files locally, {len(to_download)} to download.')
+
+        return to_download
+
+
     def download_datasets(self, start_date:str, end_date:str, product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
         """
         Downloads a set of dataset from the EUMETSAT API
@@ -387,30 +429,32 @@ class DownloadManager:
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
         dataset_ids = sorted([dataset['id'] for dataset in datasets])
 
+        # Check which datasets to download
+        dataset_ids = check_if_downloaded(dataset_ids)
+
         # Downloading specified datasets
         for dataset_id in track(dataset_ids):
             dataset_link = dataset_id_to_link(dataset_id)
 
-            if f'{dataset_id}.nat' not in os.listdir(self.data_dir):
-                # Download the raw data
-                try:
-                    self.download_single_dataset(dataset_link)
-                except:
-                    self.logger.info('The EUMETSAT access token has been refreshed')
-                    self.request_access_token()
-                    self.download_single_dataset(dataset_link)
+            # Download the raw data
+            try:
+                self.download_single_dataset(dataset_link)
+            except:
+                self.logger.info('The EUMETSAT access token has been refreshed')
+                self.request_access_token()
+                self.download_single_dataset(dataset_link)
 
-                # Extract and save metadata
-                dataset_metadata = extract_metadata(self.data_dir, product_id=product_id)
-                dataset_metadata.update({'downloaded': pd.Timestamp.now()})
-                self.metadata_table.insert(dataset_metadata)
+            # Extract and save metadata
+            dataset_metadata = extract_metadata(self.data_dir, product_id=product_id)
+            dataset_metadata.update({'downloaded': pd.Timestamp.now()})
+            self.metadata_table.insert(dataset_metadata)
 
-                # Delete old metadata files
-                for xml_file in ['EOPMetadata.xml', 'manifest.xml']:
-                    xml_filepath = f'{self.data_dir}/{xml_file}'
+            # Delete old metadata files
+            for xml_file in ['EOPMetadata.xml', 'manifest.xml']:
+                xml_filepath = f'{self.data_dir}/{xml_file}'
 
-                    if os.path.isfile(xml_filepath):
-                        os.remove(xml_filepath)
+                if os.path.isfile(xml_filepath):
+                    os.remove(xml_filepath)
 
         return
 
