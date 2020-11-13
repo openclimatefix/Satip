@@ -17,7 +17,9 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "get_dir_size": "01_eumetsat.ipynb",
          "get_seviri_hrv_area_def": "02_reproj.ipynb",
          "load_HRV_scene": "02_reproj.ipynb",
-         "construct_area_def": "02_reproj.ipynb"}
+         "construct_area_def": "02_reproj.ipynb",
+         "reproj_with_manual_grid": "02_reproj.ipynb",
+         "reproj_to_xarray": "02_reproj.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
