@@ -4,3 +4,4 @@
 2020-11-06 10:51:00,699 - INFO - ********** Download Manager Initialised **************
 2020-11-06 10:51:00,699 - INFO - ********** Download Manager Initialised **************
 2020-11-06 11:47:37,385 - INFO - ********** Download Manager Initialised **************
+2020-11-12 15:09:47,582 - INFO - ********** Download Manager Initialised **************
