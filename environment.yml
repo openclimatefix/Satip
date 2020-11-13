@@ -34,15 +34,16 @@ dependencies:
   - seaborn
   - mkdocs-material
   - twine
-  - nbdev
   - gcsfs
   - zarr
   - pip
   
   - pip:
       - -e .
+      - nbdev
       - ipypb
       - feautils
       - slack-logger
       - mkdocs-material-extensions
       - mkdocstrings
+      - google-cloud-storage
