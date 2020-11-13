@@ -458,7 +458,11 @@ class DownloadManager:
 
         return
 
-    get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
+    def get_df_metadata(self):
+        try:
+            df_metadata = pd.DataFrame(self.metadata_table.all()).set_index('id')
+        except:
+            raise ValueError()
 
 # Cell
 def get_dir_size(directory='.'):
