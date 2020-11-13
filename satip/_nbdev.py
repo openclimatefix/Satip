@@ -14,11 +14,15 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "metadata_maps": "01_eumetsat.ipynb",
          "check_valid_request": "01_eumetsat.ipynb",
          "DownloadManager": "01_eumetsat.ipynb",
-         "get_dir_size": "01_eumetsat.ipynb"}
+         "get_dir_size": "01_eumetsat.ipynb",
+         "list_blobs_with_prefix": "04_gcp.ipynb",
+         "blob_metadata": "04_gcp.ipynb",
+         "get_eumetsat_filenames": "04_gcp.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
-           "reproj.py"]
+           "reproj.py",
+           "gcp_helpers.py"]
 
 doc_url = "https://AyrtonB.github.io/satip/"
 
