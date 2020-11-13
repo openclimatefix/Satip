@@ -12,6 +12,7 @@ tags
 
 data/raw/*
 data/intermediate/*
+data/EUMETSAT_metadata.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
