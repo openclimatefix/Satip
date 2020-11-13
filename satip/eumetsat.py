@@ -417,8 +417,9 @@ class DownloadManager:
     def get_df_metadata(self):
         try:
             df_metadata = pd.DataFrame(self.metadata_table.all()).set_index('id')
+            return df_metadata
         except:
-            raise ValueError()
+            raise ValueError('You must download data before you can retrieve the metadata for it')
 
 # Cell
 def get_dir_size(directory='.'):
