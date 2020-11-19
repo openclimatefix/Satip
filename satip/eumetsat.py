@@ -10,7 +10,7 @@ import pandas as pd
 import dataset
 
 import FEAutils as hlp
-from typing import Union
+from typing import Union, List
 import xmltodict
 import dotenv
 import datetime
@@ -332,7 +332,7 @@ class DownloadManager:
         self.bucket_filenames = None
 
         if bucket_name:
-            print(f'Checking files in GCP bucket {bucket_name}, this will take a few seconds)')
+            print(f'Checking files in GCP bucket {bucket_name}, this will take a few seconds')
             self.bucket_filenames = get_eumetsat_filenames(bucket_name, prefix=bucket_prefix)
 
         return
@@ -401,14 +401,17 @@ class DownloadManager:
             if self.bucket_name:
                 if filename in self.bucket_filenames:
                     in_bucket.append(filename)
-            if filename in os.listdir(self.data_dir):
+
+            if f'{filename}.nat' in os.listdir(self.data_dir):
                 local.append(filename)
 
         # Download files if they are not locally downloaded or in the bucket
         to_download = set(filenames).difference(set(local).union(set(in_bucket)))
 
-        self.logger.info(f'{len(filenames)} queried, {len(in_bucket)} files in bucket,
-            {len(local)} files locally, {len(to_download)} to download.')
+        if self.bucket_name:
+            self.logger.info(f'{len(filenames)} files queried, {len(in_bucket)} found in bucket, {len(local)} found in {self.data_dir}, {len(to_download)} to download.')
+        else:
+            self.logger.info(f'{len(filenames)} files queried, {len(local)} found in {self.data_dir}, {len(to_download)} to download.')
 
         return to_download
 
@@ -430,9 +433,13 @@ class DownloadManager:
         dataset_ids = sorted([dataset['id'] for dataset in datasets])
 
         # Check which datasets to download
-        dataset_ids = check_if_downloaded(dataset_ids)
+        dataset_ids = self.check_if_downloaded(dataset_ids)
 
         # Downloading specified datasets
+        if not dataset_ids:
+            self.logger.info('No files will be downloaded. Set DownloadManager bucket_name argument for local download')
+            return
+
         for dataset_id in track(dataset_ids):
             dataset_link = dataset_id_to_link(dataset_id)
 
@@ -458,11 +465,7 @@ class DownloadManager:
 
         return
 
-    def get_df_metadata(self):
-        try:
-            df_metadata = pd.DataFrame(self.metadata_table.all()).set_index('id')
-        except:
-            raise ValueError()
+    get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
 
 # Cell
 def get_dir_size(directory='.'):
