@@ -107,7 +107,7 @@ def construct_area_def(scene, area_id, description,
 
     # If None then will use same number of x and y points
     # HRV's resolution will be more like 4km for Europe
-    if meters_per_pixel is not None:
+    if pixel_size is not None:
         width = int((east - west) / pixel_size)
         height = int((north - south) / pixel_size)
     else:
@@ -174,17 +174,18 @@ def reproj_to_xarray(da, x_coords, y_coords):
     return da_reproj
 
 # Cell
-def full_scene_pyresample(native_fp):
+def full_scene_pyresample(native_fp, correct_area_def=False):
     # Loading scene
     scene = load_scene(native_fp)
     dataset_names = scene.all_dataset_names()
     scene.load(dataset_names)
 
-    # Correcting HRV area definition
-    for dataset_name in dataset_names:
-        num_y_pixels, num_x_pixels = scene[dataset_name].shape
-        seviri_area_def = get_seviri_area_def(native_fp, num_x_pixels=num_x_pixels, num_y_pixels=num_y_pixels)
-        scene[dataset_name].attrs['area'] = seviri_area_def
+    # Correcting area definition
+    if correct_area_def == True:
+        for dataset_name in dataset_names:
+            num_y_pixels, num_x_pixels = scene[dataset_name].shape
+            seviri_area_def = get_seviri_area_def(native_fp, num_x_pixels=num_x_pixels, num_y_pixels=num_y_pixels)
+            scene[dataset_name].attrs['area'] = seviri_area_def
 
     # Resampling
     tm_area_def = construct_TM_area_def()
@@ -202,7 +203,7 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords):
     scene.load(dataset_names)
 
     # Correcting x coordinates
-    seviri_area_def = get_seviri_hrv_area_def(native_fp)
+    seviri_area_def = get_seviri_area_def(native_fp)
     area_extent = seviri_area_def.area_extent
     x_offset = calculate_x_offset(native_fp)
 
@@ -211,13 +212,14 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords):
     scene['HRV'] = scene['HRV'].assign_coords({'x': corrected_x_coords})
 
     # Reprojecting
-    dataset_name_to_da_reproj = dict()
+    reproj_vars = list()
 
     for dataset_name in dataset_names:
         da_reproj = reproj_to_xarray(scene[dataset_name], new_x_coords, new_y_coords)
-        dataset_name_to_da_reproj[dataset_name] = da_reproj
+        reproj_vars += [da_reproj]
 
-    ds_reproj = xr.Dataset(dataset_name_to_da_reproj)
+    variable_idx = pd.Index(dataset_names, name='variable')
+    ds_reproj = xr.concat(reproj_vars, dim=variable_idx).to_dataset(name='stacked_eumetsat_data')
 
     return ds_reproj
 
@@ -234,7 +236,7 @@ class Reprojector:
         if reproj_library == 'pyinterp':
             ds_reproj = full_scene_pyinterp(native_fp, self.new_x_coords, self.new_y_coords)
         elif reproj_library == 'pyresample':
-            ds_reproj = full_scene_pyresample(native_fp)
+            raise ValueError('`pyresample` is now deprecated, please use `pyinterp`')
         else:
             raise ValueError(f'`reproj_library` must be one of: pyresample, pyinterp. {reproj_library} can not be passed.')
 
