@@ -8,6 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import re
 import dotenv
 
 # Cell
@@ -99,5 +100,7 @@ def get_eumetsat_filenames(bucket_name, prefix, delimiter=None):
 
     for blob in blobs:
         if blob.name.endswith('.nat.bz2'):
-            names.append(blob.name.split('/')[-1].replace('.bz2', ''))
+            names.append(
+                re.match("([A-Z\d.]+-){6}", blob.name)[0][:-1] # just first part of filename
+            )
     return names
