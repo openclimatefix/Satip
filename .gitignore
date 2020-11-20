@@ -144,6 +144,4 @@ checklink/cookies.txt
 .gitconfig
 
 data/EUMETSAT_metadata.db
-logs/EUMETSAT_download.txt/EUMETSAT Download.txt
-logs/EUMETSAT_download.txt/EUMETSAT Download.txt
-logs/EUMETSAT_download.txt/EUMETSAT Download.txt
+logs/EUMETSAT_download.txt
