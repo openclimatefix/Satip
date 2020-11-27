@@ -25,6 +25,11 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "full_scene_pyresample": "02_reproj.ipynb",
          "full_scene_pyinterp": "02_reproj.ipynb",
          "Reprojector": "02_reproj.ipynb",
+         "is_retriable": "03_zarr.ipynb",
+         "load_from_zarr_bucket": "03_zarr.ipynb",
+         "gcsfs.utils.is_retriable": "03_zarr.ipynb",
+         "Compressor": "03_zarr.ipynb",
+         "save_da_to_zarr": "03_zarr.ipynb",
          "list_blobs_with_prefix": "04_gcp.ipynb",
          "blob_metadata": "04_gcp.ipynb",
          "get_eumetsat_filenames": "04_gcp.ipynb"}
@@ -32,6 +37,7 @@ index = {"create_markdown_table": "00_utils.ipynb",
 modules = ["utils.py",
            "eumetsat.py",
            "reproj.py",
+           "io.py",
            "gcp_helpers.py"]
 
 doc_url = "https://AyrtonB.github.io/satip/"
