@@ -100,7 +100,6 @@ def get_eumetsat_filenames(bucket_name, prefix, delimiter=None):
 
     for blob in blobs:
         if blob.name.endswith('.nat.bz2'):
-            names.append(
-                re.match("([A-Z\d.]+-){6}", blob.name)[0][:-1] # just first part of filename
-            )
+            filename = blob.name.split('/')[-1].replace('.bz2', '')
+            names.append(filename)
     return names
