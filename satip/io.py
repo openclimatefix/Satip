@@ -68,7 +68,10 @@ class Compressor:
         for attr in ['mins', 'maxs']:
             assert getattr(self, attr) is not None, f'{attr} must be set in initialisation or through `fit`'
 
-        da = da.reindex({'variable': self.variable_order})
+        da = (da
+              .reindex({'variable': self.variable_order})
+              .transpose('y', 'x', 'variable')
+             )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
         new_max = self.maxs - self.mins

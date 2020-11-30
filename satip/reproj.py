@@ -4,6 +4,7 @@ __all__ = ['calculate_x_offset', 'get_seviri_area_def', 'load_scene', 'construct
            'reproj_with_manual_grid', 'reproj_to_xarray', 'full_scene_pyresample', 'full_scene_pyinterp', 'Reprojector']
 
 # Cell
+import json
 import pandas as pd
 import xarray as xr
 import numpy as np
@@ -144,7 +145,7 @@ def construct_TM_area_def():
     return tm_area_def
 
 # Cell
-def reproj_with_manual_grid(da, new_x_positions, new_y_positions):
+def reproj_with_manual_grid(da, x_coords, y_coords, new_grid):
 
     x_axis = pyinterp.Axis(da.x.values)
     y_axis = pyinterp.Axis(da.y.values)
@@ -152,24 +153,24 @@ def reproj_with_manual_grid(da, new_x_positions, new_y_positions):
     grid = pyinterp.Grid2D(x_axis, y_axis, da.data.T)
 
     reproj_data = (pyinterp
-                   .bivariate(grid, new_x_positions, new_y_positions)
-                   .reshape((da_resampled.x.size, da_resampled.y.size))
+                   .bivariate(grid, x_coords, y_coords)
+                   .reshape((len(new_grid['x_coords']), len(new_grid['y_coords'])))
                   )
 
     return reproj_data
 
-def reproj_to_xarray(da, x_coords, y_coords):
+def reproj_to_xarray(da, x_coords, y_coords, new_grid):
     # We'll reproject the data
-    reproj_data = reproj_with_manual_grid(da, x_coords, y_coords)
+    reproj_data = reproj_with_manual_grid(da, x_coords, y_coords, new_grid)
 
     # Then put it in an XArray DataArray
     da_reproj = xr.DataArray(np.flip(reproj_data.T, axis=(0, 1)),
                              dims=('y', 'x'),
                              coords={
-                                 'x': da_resampled.x.values[::-1],
-                                 'y': da_resampled.y.values[::-1]
+                                 'x': new_grid['x_coords'][::-1],
+                                 'y': new_grid['y_coords'][::-1]
                              },
-                             attrs=da_resampled.attrs)
+                             attrs=da.attrs)
 
     return da_reproj
 
@@ -196,11 +197,14 @@ def full_scene_pyresample(native_fp, correct_area_def=False):
 
     return ds_reproj
 
-def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords):
+def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords, new_grid_fp):
     # Loading data
     scene = load_scene(native_fp)
     dataset_names = scene.all_dataset_names()
     scene.load(dataset_names)
+
+    with open(new_grid_fp, 'r') as fp:
+        new_grid = json.load(fp)
 
     # Correcting x coordinates
     seviri_area_def = get_seviri_area_def(native_fp)
@@ -215,7 +219,7 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords):
     reproj_vars = list()
 
     for dataset_name in dataset_names:
-        da_reproj = reproj_to_xarray(scene[dataset_name], new_x_coords, new_y_coords)
+        da_reproj = reproj_to_xarray(scene[dataset_name], new_x_coords, new_y_coords, new_grid)
         reproj_vars += [da_reproj]
 
     variable_idx = pd.Index(dataset_names, name='variable')
@@ -224,17 +228,18 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords):
     return ds_reproj
 
 class Reprojector:
-    def __init__(self, new_coords_fp):
+    def __init__(self, new_coords_fp, new_grid_fp):
         df_new_coords = pd.read_csv(new_coords_fp)
 
         self.new_x_coords = df_new_coords['x']
         self.new_y_coords = df_new_coords['y']
+        self.new_grid_fp = new_grid_fp
 
         return
 
     def reproject(self, native_fp, reproj_library='pyinterp'):
         if reproj_library == 'pyinterp':
-            ds_reproj = full_scene_pyinterp(native_fp, self.new_x_coords, self.new_y_coords)
+            ds_reproj = full_scene_pyinterp(native_fp, self.new_x_coords, self.new_y_coords, self.new_grid_fp)
         elif reproj_library == 'pyresample':
             raise ValueError('`pyresample` is now deprecated, please use `pyinterp`')
         else:

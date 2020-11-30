@@ -1,4 +1,3 @@
-# nbdev template
+# Satip
 
-Use this template to more easily create your nbdev project.
-
+`satip` is a library for <b>sat</b>ellite <b>i</b>mage <b>p</b>rocessing.
