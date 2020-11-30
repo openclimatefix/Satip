@@ -45,7 +45,7 @@ class Compressor:
                  variable_order=['HRV', 'IR_016', 'IR_039', 'IR_087', 'IR_097', 'IR_108', 'IR_120', 'IR_134', 'VIS006', 'VIS008', 'WV_062', 'WV_073']
                 ):
 
-        locals_ = locals3()
+        locals_ = locals()
         attrs_to_add = ['bits_per_pixel', 'mins', 'maxs', 'variable_order']
 
         for attr in attrs_to_add:

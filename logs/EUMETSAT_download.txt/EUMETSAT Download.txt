@@ -11,3 +11,29 @@
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,537 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,977 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:25,979 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:03:25,995 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,995 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:26,377 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:26,377 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:26,380 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:03:26,380 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
