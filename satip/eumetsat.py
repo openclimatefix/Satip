@@ -41,6 +41,13 @@ from ipypb import track
 from IPython.display import JSON
 
 # Cell
+def check_env_vars_have_loaded(env_vars):
+    for name, value in env_vars.items():
+        assert value is not None, f'{name}` should not be None'
+
+    return
+
+# Cell
 def request_access_token(user_key, user_secret):
     """
     Requests an access token from the EUMETSAT data API
@@ -158,7 +165,7 @@ def identify_available_datasets(start_date: str, end_date: str,
     return datasets
 
 # Cell
-dataset_id_to_link = lambda data_id: f'https://api.eumetsat.int/data/download/products/{data_id}'
+dataset_id_to_link = lambda data_id: f'https://api.eumetsat.int/data/download/products/{data_id}-NA'
 
 # Cell
 def json_extract(json_obj:Union[dict, list], locators:list):
@@ -438,10 +445,6 @@ class DownloadManager:
 
     def download_datasets(self, start_date:str, end_date:str, product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
         """
-        Downloads a set of dataset from the EUMETSAT API
-        in the defined date range and specified product
-
-        Parameters:
             start_date: Start of the requested data period
             end_date: End of the requested data period
             product_id: ID of the EUMETSAT product requested
@@ -533,12 +536,6 @@ def compress_downloaded_files(data_dir, sorted_dir):
 
         log.debug('Compressing %s', full_native_filename)
 
-        completed_process = subprocess.run(['pbzip2', '-5', full_native_filename])
-        try:
-            completed_process.check_returncode()
-        except:
-            log.exception('Compression failed!')
-            print('Compression failed!')
             raise
 
         EXTENSION = '.bz2'
@@ -547,11 +544,6 @@ def compress_downloaded_files(data_dir, sorted_dir):
         log.debug('Filesizes: Before compression = %.1f MB. After compression = %.1f MB.  Compressed file is %.1f x the size of the uncompressed file.',
                  native_filesize_mb, compressed_filesize_mb, compressed_filesize_mb / native_filesize_mb)
 
-        base_native_filename = os.path.basename(full_native_filename)
-        dt = eumetsat_filename_to_datetime(base_native_filename)
-        new_dst_path = os.path.join(sorted_dir, dt.strftime("%Y/%m/%d/%H/%M"))
-        if not os.path.exists(new_dst_path):
-            os.makedirs(new_dst_path)
 
         new_dst_full_filename = os.path.join(new_dst_path, base_native_filename + EXTENSION)
         log.debug('Moving %s to %s', full_compressed_filename, new_dst_full_filename)
@@ -560,6 +552,7 @@ def compress_downloaded_files(data_dir, sorted_dir):
             log.debug('%s already exists.  Deleting old file', new_dst_full_filename)
             os.remove(new_dst_full_filename)
         shutil.move(src=full_compressed_filename, dst=new_dst_path)
+
 
 # Cell
 def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX):

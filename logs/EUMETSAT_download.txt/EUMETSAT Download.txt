@@ -11,3 +11,106 @@
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
 2020-11-13 10:34:45,742 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,537 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,977 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:25,979 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:03:25,995 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:25,995 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:03:26,377 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:26,377 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-11-27 09:03:26,380 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:03:26,380 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,082 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,503 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:01,507 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,179 - INFO - ********** Download Manager Initialised **************
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-27 09:04:07,595 - INFO - 7 files queried, 6 found in ../data/raw, 1 to download.
+2020-11-30 18:29:50,686 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:29:51,213 - INFO - 6 files queried, 0 found in ../data/raw, 6 to download.
+2020-11-30 18:29:51,501 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:30:20,421 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:30:20,421 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:30:20,915 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:30:20,915 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:30:21,112 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:30:21,112 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:32:03,011 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:32:03,011 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:32:03,011 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:32:03,443 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:32:03,443 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:32:03,443 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:32:03,628 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:32:03,628 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:32:03,628 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:33:55,418 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:33:55,860 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:33:56,051 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:46:06,943 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:46:07,372 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:46:07,569 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 18:49:44,933 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:49:45,369 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:50:06,703 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:50:06,703 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:50:07,099 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:50:07,099 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 18:58:25,487 - INFO - ********** Download Manager Initialised **************
+2020-11-30 18:58:25,895 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:08:44,651 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:08:45,062 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:10:09,027 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:10:09,447 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:13:46,080 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:13:46,504 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:13:55,802 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 19:16:04,717 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:16:04,717 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:16:05,181 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:16:05,181 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:16:14,724 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 19:16:14,724 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 19:17:43,506 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:17:43,506 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:17:43,506 - INFO - ********** Download Manager Initialised **************
+2020-11-30 19:17:43,920 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:17:43,920 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 19:17:43,920 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 20:43:43,080 - INFO - ********** Download Manager Initialised **************
+2020-11-30 20:43:43,726 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 20:43:58,603 - INFO - The EUMETSAT access token has been refreshed
+2020-11-30 20:46:03,038 - INFO - ********** Download Manager Initialised **************
+2020-11-30 20:46:03,928 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 23:05:49,671 - INFO - ********** Download Manager Initialised **************
+2020-11-30 23:05:50,350 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 23:33:24,426 - INFO - ********** Download Manager Initialised **************
+2020-11-30 23:33:24,920 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-11-30 23:34:40,689 - INFO - ********** Download Manager Initialised **************
+2020-11-30 23:34:41,182 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 09:39:39,599 - INFO - ********** Download Manager Initialised **************
+2020-12-01 09:39:40,115 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 09:40:26,784 - INFO - ********** Download Manager Initialised **************
+2020-12-01 09:40:27,165 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 10:00:18,469 - INFO - ********** Download Manager Initialised **************
+2020-12-01 10:00:18,845 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 10:00:27,023 - INFO - The EUMETSAT access token has been refreshed
+2020-12-01 10:01:08,163 - INFO - ********** Download Manager Initialised **************
+2020-12-01 10:01:08,163 - INFO - ********** Download Manager Initialised **************
+2020-12-01 10:01:08,578 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 10:01:08,578 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 11:03:45,988 - INFO - ********** Download Manager Initialised **************
+2020-12-01 11:03:46,441 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 11:05:24,711 - INFO - ********** Download Manager Initialised **************
+2020-12-01 11:05:25,198 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
