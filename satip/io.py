@@ -130,13 +130,6 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], z
     chunks = (36, y_size, x_size, 1)
 
     ds = xr.Dataset({'stacked_eumetsat_data': da.chunk(chunks)})
-
-    encoding = {
-        'stacked_eumetsat_data': {
-            'compressor': numcodecs.Blosc(cname='zstd', clevel=5),
-            'chunks': chunks
-        }
-    }
     
     zarr_mode_to_extra_kwargs = {
         'a': {
