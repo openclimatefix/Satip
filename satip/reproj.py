@@ -25,6 +25,7 @@ import FEAutils as hlp
 
 import satpy
 from satpy import Scene
+from satpy.readers import seviri_l1b_native
 from pyresample.geometry import AreaDefinition
 import geopandas as gpd
 from shapely.geometry import Point
@@ -38,9 +39,12 @@ from rasterio.warp import reproject, Resampling, calculate_default_transform, tr
 from rasterio.control import GroundControlPoint
 from rasterio.transform import xy
 
+from IPython.display import JSON
+
 # Cell
+
 def calculate_x_offset(native_fp):
-    handler = satpy.readers.seviri_l1b_native.NativeMSGFileHandler(native_fp, {}, None)
+    handler = seviri_l1b_native.NativeMSGFileHandler(native_fp, {}, None)
     lower_east_column_planned = handler.header['15_DATA_HEADER']['ImageDescription']['PlannedCoverageHRV']['LowerEastColumnPlanned']
     x_offset = 32500 + ((2733 - lower_east_column_planned) * 1000)
 
@@ -95,7 +99,7 @@ def load_scene(native_fp):
     scene = Scene(filenames=[native_fp], reader='seviri_l1b_native')
 
     # Identifying and recording lower_east_column_planned
-    handler = satpy.readers.seviri_l1b_native.NativeMSGFileHandler(native_fp, {}, None)
+    handler = seviri_l1b_native.NativeMSGFileHandler(native_fp, {}, None)
     scene.attrs['lower_east_column_planned'] = handler.header['15_DATA_HEADER']['ImageDescription']['PlannedCoverageHRV']['LowerEastColumnPlanned']
 
     return scene
