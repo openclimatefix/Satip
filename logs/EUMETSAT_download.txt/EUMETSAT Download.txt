@@ -114,3 +114,26 @@
 2020-12-01 11:03:46,441 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
 2020-12-01 11:05:24,711 - INFO - ********** Download Manager Initialised **************
 2020-12-01 11:05:25,198 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 15:34:58,034 - INFO - ********** Download Manager Initialised **************
+2020-12-01 15:34:58,701 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 16:19:44,210 - INFO - ********** Download Manager Initialised **************
+2020-12-01 16:19:44,701 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 17:56:16,521 - INFO - ********** Download Manager Initialised **************
+2020-12-01 17:56:16,940 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 17:56:21,769 - INFO - The EUMETSAT access token has been refreshed
+2020-12-01 18:00:30,887 - INFO - ********** Download Manager Initialised **************
+2020-12-01 18:00:31,272 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 18:57:22,451 - INFO - ********** Download Manager Initialised **************
+2020-12-01 18:57:22,902 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 18:58:52,170 - INFO - ********** Download Manager Initialised **************
+2020-12-01 18:58:52,603 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 19:01:31,040 - INFO - ********** Download Manager Initialised **************
+2020-12-01 19:01:31,569 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 19:35:28,812 - INFO - ********** Download Manager Initialised **************
+2020-12-01 19:35:29,293 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 19:38:58,949 - INFO - ********** Download Manager Initialised **************
+2020-12-01 19:38:59,398 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 19:43:36,234 - INFO - ********** Download Manager Initialised **************
+2020-12-01 19:43:36,673 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-01 19:48:38,642 - INFO - ********** Download Manager Initialised **************
+2020-12-01 19:48:39,169 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
