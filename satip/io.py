@@ -90,11 +90,13 @@ class Compressor:
         return
 
     def compress(self, da):
+        da_meta = da.attrs 
+        
         for attr in ['mins', 'maxs']:
             assert getattr(self, attr) is not None, f'{attr} must be set in initialisation or through `fit`'
 
         if 'time' not in da.dims:
-            time = pd.to_datetime(da.attrs['end_time'])
+            time = pd.to_datetime(da_meta['end_time'])
             da = add_constant_coord_to_da(da, 'time', time)
 
         da = (da
@@ -115,10 +117,12 @@ class Compressor:
               .astype(np.int16)
              )
 
+        da.attrs = {'meta': str(da_meta)} # Must be serialisable
+
         return da
 
 # Cell
-def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable']):
+def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], zarr_mode='a'):
     da = da.transpose(*dim_order)
     _, y_size, x_size, _ = da.shape
     out_store = gcsfs.GCSMap(root=zarr_bucket, gcs=gcsfs.GCSFileSystem())
@@ -126,14 +130,24 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable']):
     chunks = (36, y_size, x_size, 1)
 
     ds = xr.Dataset({'stacked_eumetsat_data': da.chunk(chunks)})
-
-    encoding = {
-        'stacked_eumetsat_data': {
-            'compressor': numcodecs.Blosc(cname='zstd', clevel=5),
-            'chunks': chunks
+    
+    zarr_mode_to_extra_kwargs = {
+        'a': {
+            'append_dim': 'time'
+        },
+        'w': {
+            'encoding': {
+                'stacked_eumetsat_data': {
+                    'compressor': numcodecs.Blosc(cname='zstd', clevel=5),
+                    'chunks': chunks
+                }
+            }
         }
     }
-
-    ds.to_zarr(out_store, mode='w', encoding=encoding)
+    
+    assert zarr_mode in ['a', 'w'], '`zarr_mode` must be one of: `a`, `w`'
+    extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
+    
+    ds.to_zarr(out_store, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
     return
