@@ -42,9 +42,15 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "upload_blob": "04_gcp.ipynb",
          "get_eumetsat_filenames": "04_gcp.ipynb",
          "write_metadata_to_gcp": "04_gcp.ipynb",
-         "get_name": "05_pipeline.ipynb",
-         "hello": "05_pipeline.ipynb",
-         "hello_pipeline": "05_pipeline.ipynb"}
+         "download_eumetsat_files": "05_pipeline.ipynb",
+         "df_metadata_to_dt_to_fp_map": "05_pipeline.ipynb",
+         "reproject_datasets": "05_pipeline.ipynb",
+         "compress_and_save_datasets": "05_pipeline.ipynb",
+         "download_latest_data_pipeline": "05_pipeline.ipynb",
+         "user_key": "05_pipeline.ipynb",
+         "user_secret": "05_pipeline.ipynb",
+         "slack_webhook_url": "05_pipeline.ipynb",
+         "slack_id": "05_pipeline.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",

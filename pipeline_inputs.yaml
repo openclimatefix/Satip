@@ -1,0 +1,19 @@
+solids:
+  download_eumetsat_files:
+    inputs:
+      start_date: "2019-03-01 14:00"
+      end_date: "2019-03-01 14:20"
+      data_dir: "data/raw"
+      metadata_db_fp: "data/EUMETSAT_metadata.db"
+      debug_fp: "logs/EUMETSAT_download.txt"
+  df_metadata_to_dt_to_fp_map:
+    inputs:
+      data_dir: "data/raw"
+  reproject_datasets:
+    inputs:
+      new_coords_fp: "data/intermediate/reproj_coords_TM_4km.csv"
+      new_grid_fp: "data/intermediate/new_grid_4km_TM.json"
+  compress_and_save_datasets:
+    inputs:
+      zarr_bucket: "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_zarr_int16"
+      var_name: "stacked_eumetsat_data"
