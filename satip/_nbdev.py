@@ -37,13 +37,17 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "save_da_to_zarr": "03_zarr.ipynb",
          "list_blobs_with_prefix": "04_gcp.ipynb",
          "blob_metadata": "04_gcp.ipynb",
-         "get_eumetsat_filenames": "04_gcp.ipynb"}
+         "get_eumetsat_filenames": "04_gcp.ipynb",
+         "get_name": "05_pipeline.ipynb",
+         "hello": "05_pipeline.ipynb",
+         "hello_pipeline": "05_pipeline.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
            "reproj.py",
            "io.py",
-           "gcp_helpers.py"]
+           "gcp_helpers.py",
+           "mario.py"]
 
 doc_url = "https://AyrtonB.github.io/satip/"
 
