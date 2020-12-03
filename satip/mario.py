@@ -4,21 +4,24 @@ __all__ = ['download_eumetsat_files', 'df_metadata_to_dt_to_fp_map', 'reproject_
            'download_latest_data_pipeline', 'user_key', 'user_secret', 'slack_webhook_url', 'slack_id']
 
 # Cell
+# Imports
 import pandas as pd
 import xarray as xr
 
-from satip import eumetsat, reproj, io
+from satip import eumetsat, reproj, io, gcp_helpers
 from dagster import execute_pipeline, pipeline, solid, Field
 
 import os
 import dotenv
 dotenv.load_dotenv('.env')
 
+# Loading environment vars
 user_key = os.environ.get('USER_KEY')
 user_secret = os.environ.get('USER_SECRET')
 slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 slack_id = os.environ.get('SLACK_ID')
 
+# Pipeline components
 @solid(
     config_schema = {
         'user_key': Field(str, default_value=user_key, is_required=False),
@@ -27,13 +30,15 @@ slack_id = os.environ.get('SLACK_ID')
         'slack_id': Field(str, default_value=slack_id, is_required=False)
     }
 )
-def download_eumetsat_files(context, start_date: str, end_date: str, data_dir: str, metadata_db_fp: str, debug_fp: str):
+def download_eumetsat_files(context, start_date: str, end_date: str, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str):
     dm = eumetsat.DownloadManager(context.solid_config['user_key'], context.solid_config['user_secret'], data_dir, metadata_db_fp, debug_fp, slack_webhook_url=context.solid_config['slack_webhook_url'], slack_id=context.solid_config['slack_id'])
 
     df_new_metadata = dm.download_datasets(start_date, end_date)
 
     if df_new_metadata is None:
         df_new_metadata = pd.DataFrame(columns=['result_time', 'file_name'])
+    else:
+        gcp_helpers.write_metadata_to_gcp(df_new_metadata, table_id, project_id, append=True)
 
     return df_new_metadata
 
@@ -74,12 +79,18 @@ def reproject_datasets(_, datetime_to_filepath: dict, new_coords_fp: str, new_gr
         in datetime_to_filepath.items()
     ]
 
-    ds_combined_reproj = xr.concat(reprojected_dss, 'time', coords='all', data_vars='all')
-
-    return ds_combined_reproj
+    if len(reprojected_dss) > 0:
+        ds_combined_reproj = xr.concat(reprojected_dss, 'time', coords='all', data_vars='all')
+        return ds_combined_reproj
+    else:
+        return xr.Dataset()
 
 @solid()
 def compress_and_save_datasets(_, ds_combined_reproj, zarr_bucket: str, var_name: str='stacked_eumetsat_data'):
+    # Handle case where no new data exists
+    if len(ds_combined_reproj.dims) == 0:
+        return
+
     # Compressing the datasets
     compressor = io.Compressor()
 
@@ -91,8 +102,10 @@ def compress_and_save_datasets(_, ds_combined_reproj, zarr_bucket: str, var_name
 
     return
 
+# Pipeline
 @pipeline
 def download_latest_data_pipeline():
+    # Retrieving data, reprojecting, compressing, and saving to GCP
     df_new_metadata = download_eumetsat_files()
     datetime_to_filepath = df_metadata_to_dt_to_fp_map(df_new_metadata)
     ds_combined_reproj = reproject_datasets(datetime_to_filepath)

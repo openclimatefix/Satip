@@ -278,3 +278,22 @@
 2020-12-03 17:49:21,718 - INFO - 3 files queried, 2 found in data/raw, 1 to download.
 2020-12-03 17:51:02,239 - INFO - ********** Download Manager Initialised **************
 2020-12-03 17:51:02,689 - INFO - 4 files queried, 3 found in data/raw, 1 to download.
+2020-12-03 18:13:17,801 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:13:18,321 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-12-03 18:13:18,329 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:21:02,015 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:21:02,531 - INFO - 6 files queried, 6 found in ../data/raw, 0 to download.
+2020-12-03 18:21:02,539 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:34:21,782 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:34:22,201 - INFO - 5 files queried, 4 found in data/raw, 1 to download.
+2020-12-03 18:35:54,620 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:35:55,120 - INFO - 5 files queried, 5 found in data/raw, 0 to download.
+2020-12-03 18:35:55,120 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:40:14,129 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:40:14,520 - INFO - 5 files queried, 5 found in data/raw, 0 to download.
+2020-12-03 18:40:14,520 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:43:44,808 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:43:45,379 - INFO - 5 files queried, 5 found in data/raw, 0 to download.
+2020-12-03 18:43:45,379 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:47:47,053 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:47:47,528 - INFO - 9 files queried, 0 found in data/raw, 9 to download.

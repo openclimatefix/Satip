@@ -138,9 +138,11 @@ def get_eumetsat_filenames(bucket_name, prefix, delimiter=None):
 
 # Cell
 def write_metadata_to_gcp(df, table_id, project_id, credentials=None, append=True):
-    if_exists = "fail"
     if append:
         if_exists = "append"
+    else:
+        if_exists = "fail"
+
     if credentials:
         pandas_gbq.to_gbq(
             df,
@@ -156,6 +158,7 @@ def write_metadata_to_gcp(df, table_id, project_id, credentials=None, append=Tru
             project_id=project_id,
             if_exists=if_exists,
         )
+
     print(
         f"{len(df)} rows written to BQ {table_id}, append={append}"
     )
