@@ -10,12 +10,18 @@ jobs:
             os: ["ubuntu-latest"]
             
     steps:
-      - uses: actions/checkout@v2
-          
+      - name: Load in repo
+        uses: actions/checkout@v2
+    
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.x'
+        
       - name: Installing libs
         shell: bash -l {0}
         run: |
-          pip install nbdev
+          python -m pip install --upgrade pip
           pip install -e .
           pip install dagit
 
