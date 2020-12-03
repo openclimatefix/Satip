@@ -158,7 +158,7 @@ def identify_available_datasets(start_date: str, end_date: str,
     return datasets
 
 # Cell
-dataset_id_to_link = lambda data_id: f'https://api.eumetsat.int/data/download/products/{data_id}-NA'
+dataset_id_to_link = lambda data_id: f'https://api.eumetsat.int/data/download/products/{data_id}'
 
 # Cell
 def json_extract(json_obj:Union[dict, list], locators:list):
@@ -459,6 +459,8 @@ class DownloadManager:
         if not dataset_ids:
             self.logger.info('No files will be downloaded. Set DownloadManager bucket_name argument for local download')
             return
+        
+        all_metadata = []
 
         for dataset_id in track(dataset_ids):
             dataset_link = dataset_id_to_link(dataset_id)
@@ -474,6 +476,7 @@ class DownloadManager:
             # Extract and save metadata
             dataset_metadata = extract_metadata(self.data_dir, product_id=product_id)
             dataset_metadata.update({'downloaded': pd.Timestamp.now()})
+            all_metadata += [dataset_metadata]
             self.metadata_table.insert(dataset_metadata)
 
             # Delete old metadata files
@@ -482,8 +485,10 @@ class DownloadManager:
 
                 if os.path.isfile(xml_filepath):
                     os.remove(xml_filepath)
-
-        return
+                    
+        df_new_metadata = pd.DataFrame(all_metadata)
+                    
+        return df_new_metadata
 
     get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
 

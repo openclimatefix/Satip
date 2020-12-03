@@ -139,3 +139,90 @@
 2020-12-01 19:48:39,169 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
 2020-12-03 09:22:22,442 - INFO - ********** Download Manager Initialised **************
 2020-12-03 09:22:23,132 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:23:15,355 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:23:17,040 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-03 10:23:17,041 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:24:53,534 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:25:04,568 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:25:04,568 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:25:05,016 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-03 10:25:05,016 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-03 10:25:05,016 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:25:05,016 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:32:47,578 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:32:47,578 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:32:47,578 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:32:47,997 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:32:47,997 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:32:47,997 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:32:48,277 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:32:48,277 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:32:48,277 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:33:52,586 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:33:52,586 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:33:52,586 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:33:52,586 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:33:52,978 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:33:52,978 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:33:52,978 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:33:52,978 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-03 10:33:53,170 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:33:53,170 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:33:53,170 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:33:53,170 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:01,965 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:01,965 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:01,965 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:01,965 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:01,965 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:02,365 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:02,365 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:02,365 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:02,365 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:02,365 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:02,384 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:02,384 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:02,384 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:02,384 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:02,384 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:48,772 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,148 - INFO - 0 files queried, 0 found in ../data/raw, 0 to download.
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:49,154 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:55,897 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,307 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:34:56,560 - INFO - The EUMETSAT access token has been refreshed
+2020-12-03 10:36:34,875 - INFO - ********** Download Manager Initialised **************
+2020-12-03 10:36:35,310 - INFO - 3 files queried, 0 found in ../data/raw, 3 to download.
