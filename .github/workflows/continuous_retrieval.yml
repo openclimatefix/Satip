@@ -15,6 +15,7 @@ jobs:
       - name: Installing libs
         shell: bash -l {0}
         run: |
+          pip install nbdev
           pip install -e .
           pip install dagit
 
