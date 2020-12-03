@@ -1,0 +1,41 @@
+name: CI
+on: workflow_dispatch
+
+jobs:
+  miniconda:
+    name: Miniconda ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        matrix:
+            os: ["ubuntu-latest"]
+            
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goanpeca/setup-miniconda@v2
+        with:
+          activate-environment: test
+          environment-file: environment.yml
+          python-version: 3.8
+          auto-activate-base: true
+          
+      - name: Installing libs
+        shell: bash -l {0}
+        run: =
+          pip install satip
+          pip install dagit
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Run tests
+        shell: bash -l {0}
+        env: 
+          USER_KEY: ${{ secrets.USER_KEY }}
+          USER_SECRET: ${{ secrets.USER_SECRET }}
+          SLACK_ID: ${{ secrets.SLACK_ID }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: dagster pipeline execute -m satip.mario -c pipeline_inputs.yaml
