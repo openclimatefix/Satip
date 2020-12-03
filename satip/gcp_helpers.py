@@ -141,8 +141,6 @@ def write_metadata_to_gcp(df, table_id, project_id, credentials=None, append=Tru
     if_exists = "fail"
     if append:
         if_exists = "append"
-    if replace:
-        if_exists = "replace"
     if credentials:
         pandas_gbq.to_gbq(
             df,
