@@ -58,7 +58,10 @@ def add_constant_coord_to_da(da, coord_name, coord_val):
 
     """
 
-    da = da.assign_coords({coord_name:coord_val}).expand_dims(coord_name)
+    da = (da
+          .assign_coords({coord_name:coord_val})
+          .expand_dims(coord_name)
+         )
 
     return da
 
@@ -90,8 +93,8 @@ class Compressor:
         return
 
     def compress(self, da):
-        da_meta = da.attrs 
-        
+        da_meta = da.attrs
+
         for attr in ['mins', 'maxs']:
             assert getattr(self, attr) is not None, f'{attr} must be set in initialisation or through `fit`'
 
@@ -130,7 +133,7 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], z
     chunks = (36, y_size, x_size, 1)
 
     ds = xr.Dataset({'stacked_eumetsat_data': da.chunk(chunks)})
-    
+
     zarr_mode_to_extra_kwargs = {
         'a': {
             'append_dim': 'time'
@@ -144,10 +147,10 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], z
             }
         }
     }
-    
+
     assert zarr_mode in ['a', 'w'], '`zarr_mode` must be one of: `a`, `w`'
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
-    
+
     ds.to_zarr(out_store, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
     return
