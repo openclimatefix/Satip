@@ -3,8 +3,7 @@
 __all__ = ['request_access_token', 'query_data_products', 'format_dt_str', 'identify_available_datasets',
            'dataset_id_to_link', 'json_extract', 'extract_metadata', 'metadata_maps', 'check_valid_request',
            'DownloadManager', 'get_dir_size', 'debug_fp', 'log', 'get_filesize_megabytes',
-           'eumetsat_filename_to_datetime', 'NATIVE_FILESIZE_MB', 'compress_downloaded_files',
-           'upload_compressed_files']
+           'eumetsat_filename_to_datetime', 'compress_downloaded_files', 'upload_compressed_files']
 
 # Cell
 import numpy as np
@@ -518,14 +517,11 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 # Cell
-NATIVE_FILESIZE_MB = 102.210123  # Expected filesize of each Native file.
-
-# Cell
-def compress_downloaded_files(data_dir, sorted_dir):
+def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210123, log=None):
     full_native_filenames = glob.glob(os.path.join(data_dir, '*.nat'))
-    log.info('Found %d native files.', len(full_native_filenames))
     print(f'Found {len(full_native_filenames)} native files.')
-
+    if log:
+        log.info('Found %d native files.', len(full_native_filenames))
 
     for full_native_filename in full_native_filenames:
         # Check filesize is correct
@@ -534,23 +530,27 @@ def compress_downloaded_files(data_dir, sorted_dir):
         if not math.isclose(native_filesize_mb, NATIVE_FILESIZE_MB, abs_tol=1):
             msg = 'Filesize incorrect for {}!  Expected {} MB.  Actual = {} MB.'.format(
                 full_native_filename, NATIVE_FILESIZE_MB, native_filesize_mb)
-            log.error(msg)
+            if log:
+                log.error(msg)
 
-        log.debug('Compressing %s', full_native_filename)
+        if log:
+            log.debug('Compressing %s', full_native_filename)
 
         completed_process = subprocess.run(['pbzip2', '-5', full_native_filename])
         try:
             completed_process.check_returncode()
         except:
-            log.exception('Compression failed!')
+            if log:
+                log.exception('Compression failed!')
             print('Compression failed!')
             raise
 
         EXTENSION = '.bz2'
         full_compressed_filename = full_native_filename + EXTENSION
         compressed_filesize_mb = get_filesize_megabytes(full_compressed_filename)
-        log.debug('Filesizes: Before compression = %.1f MB. After compression = %.1f MB.  Compressed file is %.1f x the size of the uncompressed file.',
-                 native_filesize_mb, compressed_filesize_mb, compressed_filesize_mb / native_filesize_mb)
+        if log:
+            log.debug('Filesizes: Before compression = %.1f MB. After compression = %.1f MB.  Compressed file is %.1f x the size of the uncompressed file.',
+                     native_filesize_mb, compressed_filesize_mb, compressed_filesize_mb / native_filesize_mb)
 
         base_native_filename = os.path.basename(full_native_filename)
         dt = eumetsat_filename_to_datetime(base_native_filename)
@@ -559,18 +559,21 @@ def compress_downloaded_files(data_dir, sorted_dir):
             os.makedirs(new_dst_path)
 
         new_dst_full_filename = os.path.join(new_dst_path, base_native_filename + EXTENSION)
-        log.debug('Moving %s to %s', full_compressed_filename, new_dst_full_filename)
+        if log:
+            log.debug('Moving %s to %s', full_compressed_filename, new_dst_full_filename)
 
         if os.path.exists(new_dst_full_filename):
-            log.debug('%s already exists.  Deleting old file', new_dst_full_filename)
+            if log:
+                log.debug('%s already exists.  Deleting old file', new_dst_full_filename)
             os.remove(new_dst_full_filename)
         shutil.move(src=full_compressed_filename, dst=new_dst_path)
 
 # Cell
-def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX):
+def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX, log=None):
     paths = Path(sorted_dir).rglob('*.nat.bz2')
     full_compressed_files = [x for x in paths if x.is_file()]
-    log.info('Found %d compressed files.', len(full_compressed_files))
+    if log:
+        log.info('Found %d compressed files.', len(full_compressed_files))
 
     for file in full_compressed_files:
         rel_path = os.path.relpath(file.absolute(), sorted_dir)
