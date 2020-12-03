@@ -50,3 +50,4 @@ dependencies:
       - mkdocstrings
       - google-cloud-storage
       - configparser
+      - pandas_gbq
