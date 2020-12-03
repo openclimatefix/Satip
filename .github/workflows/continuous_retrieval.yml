@@ -15,7 +15,7 @@ jobs:
       - name: Installing libs
         shell: bash -l {0}
         run: |
-          pip install satip
+          pip install -e .
           pip install dagit
 
       - name: Set up Cloud SDK
