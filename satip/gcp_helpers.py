@@ -137,19 +137,27 @@ def get_eumetsat_filenames(bucket_name, prefix, delimiter=None):
     return names
 
 # Cell
-def write_metadata_to_gcp(df, table_id, project_id, credentials, append=True):
+def write_metadata_to_gcp(df, table_id, project_id, credentials=None, append=True):
     if_exists = "fail"
     if append:
         if_exists = "append"
     if replace:
         if_exists = "replace"
-    pandas_gbq.to_gbq(
-        df,
-        table_id,
-        project_id=project_id,
-        credentials=credentials,
-        if_exists=if_exists,
-    )
+    if credentials:
+        pandas_gbq.to_gbq(
+            df,
+            table_id,
+            project_id=project_id,
+            credentials=credentials,
+            if_exists=if_exists,
+        )
+    else:
+        pandas_gbq.to_gbq(
+            df,
+            table_id,
+            project_id=project_id,
+            if_exists=if_exists,
+        )
     print(
         f"{len(df)} rows written to BQ {table_id}, append={append}"
     )
