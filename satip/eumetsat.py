@@ -459,7 +459,7 @@ class DownloadManager:
         if not dataset_ids:
             self.logger.info('No files will be downloaded. Set DownloadManager bucket_name argument for local download')
             return
-        
+
         all_metadata = []
 
         for dataset_id in track(dataset_ids):
@@ -485,9 +485,9 @@ class DownloadManager:
 
                 if os.path.isfile(xml_filepath):
                     os.remove(xml_filepath)
-                    
+
         df_new_metadata = pd.DataFrame(all_metadata)
-                    
+
         return df_new_metadata
 
     get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')

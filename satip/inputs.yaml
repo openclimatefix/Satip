@@ -1,0 +1,8 @@
+solids:
+  download_eumetsat_files:
+    config:
+      start_date: "2019-03-01 14:00"
+      end_date: "2019-03-01 14:05"
+    inputs:
+      start_date: "2019-03-01 14:00"
+      end_date: "2019-03-01 14:05"
