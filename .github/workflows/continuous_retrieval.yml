@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Load in repo
         uses: actions/checkout@v2
+        
+      - name: Set up conda
+        uses: s-weigand/setup-conda@v1
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
@@ -34,6 +37,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           python -m pip install --upgrade pip
-          pip install numpy
+          conda install pyinterp
           pip install satip
           dagster pipeline execute -m satip.mario -c pipeline_inputs.yaml
