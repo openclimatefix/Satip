@@ -36,6 +36,8 @@ dependencies:
   - twine
   - gcsfs
   - zarr
+  - dagster
+  - dagit
   - pip
   
   - pip:
