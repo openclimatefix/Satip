@@ -51,9 +51,11 @@ def download_eumetsat_files(context, start_date: str, end_date: str, data_dir: s
         'slack_id': Field(str, default_value=slack_id, is_required=False)
     }
 )
-def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str):
-    sql_query = f'select * from {table_id} where result_time = (select max(result_time) from {table_id})'
-    start_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0].strftime('%Y-%m-%d %H:%M')
+def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str=''):
+    if start_date == '':
+        sql_query = f'select * from {table_id} where result_time = (select max(result_time) from {table_id})'
+        start_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0].strftime('%Y-%m-%d %H:%M')
+
     end_date = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')
 
     dm = eumetsat.DownloadManager(context.solid_config['user_key'], context.solid_config['user_secret'], data_dir, metadata_db_fp, debug_fp, slack_webhook_url=context.solid_config['slack_webhook_url'], slack_id=context.solid_config['slack_id'])
@@ -96,7 +98,7 @@ def reproject_datasets(_, datetime_to_filepath: dict, new_coords_fp: str, new_gr
 
     reprojected_dss = [
         (reprojector
-         .reproject(filepath, reproj_library='pyinterp')
+         .reproject(filepath, reproj_library='pyresample')
          .pipe(io.add_constant_coord_to_da, 'time', pd.to_datetime(datetime))
         )
         for datetime, filepath
