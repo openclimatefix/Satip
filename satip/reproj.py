@@ -115,7 +115,7 @@ def construct_area_def(scene, area_id, description,
 
     return area_def
 
-def construct_TM_area_def():
+def construct_TM_area_def(scene):
     meters_per_pixel = 4000
     west, south, east, north = (-3090000, 1690000, 4390000, 9014000)
 
@@ -174,7 +174,7 @@ def full_scene_pyresample(native_fp):
     scene.load(dataset_names)
 
     # Constructing target area definition
-    tm_area_def = construct_TM_area_def()
+    tm_area_def = construct_TM_area_def(scene)
 
     # Reprojecting
     reproj_vars = list()
