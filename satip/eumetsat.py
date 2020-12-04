@@ -2,8 +2,8 @@
 
 __all__ = ['request_access_token', 'query_data_products', 'format_dt_str', 'identify_available_datasets',
            'dataset_id_to_link', 'json_extract', 'extract_metadata', 'metadata_maps', 'check_valid_request',
-           'DownloadManager', 'get_dir_size', 'debug_fp', 'log', 'get_filesize_megabytes',
-           'eumetsat_filename_to_datetime', 'compress_downloaded_files', 'upload_compressed_files']
+           'DownloadManager', 'get_dir_size', 'get_filesize_megabytes', 'eumetsat_filename_to_datetime',
+           'compress_downloaded_files', 'upload_compressed_files']
 
 # Cell
 import numpy as np
@@ -504,10 +504,6 @@ def get_dir_size(directory='.'):
                 total_size += os.path.getsize(fp)
 
     return total_size
-
-# Cell
-debug_fp = '../logs/EUMETSAT_download.txt'
-log = utils.set_up_logging('EUMETSAT Processing', debug_fp)
 
 # Cell
 def get_filesize_megabytes(filename):
