@@ -28,8 +28,6 @@ from satpy import Scene
 from satpy.readers import seviri_l1b_native
 import pyresample
 from pyresample.geometry import AreaDefinition
-import pyinterp
-import pyinterp.backends.xarray
 
 # Cell
 
@@ -240,7 +238,7 @@ class Reprojector:
 
         return
 
-    def reproject(self, native_fp, reproj_library='pyinterp'):
+    def reproject(self, native_fp, reproj_library='pyresample'):
         if reproj_library == 'pyinterp':
             ds_reproj = full_scene_pyinterp(native_fp, self.new_x_coords, self.new_y_coords, self.new_grid_fp)
         elif reproj_library == 'pyresample':
