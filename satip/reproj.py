@@ -26,6 +26,7 @@ import FEAutils as hlp
 import satpy
 from satpy import Scene
 from satpy.readers import seviri_l1b_native
+import pyresample
 from pyresample.geometry import AreaDefinition
 import pyinterp
 import pyinterp.backends.xarray
@@ -168,24 +169,33 @@ def reproj_to_xarray(da, x_coords, y_coords, new_grid):
     return da_reproj
 
 # Cell
-def full_scene_pyresample(native_fp, correct_area_def=False):
+def full_scene_pyresample(native_fp):
     # Loading scene
     scene = load_scene(native_fp)
     dataset_names = scene.all_dataset_names()
     scene.load(dataset_names)
 
-    # Correcting area definition
-    if correct_area_def == True:
-        for dataset_name in dataset_names:
-            num_y_pixels, num_x_pixels = scene[dataset_name].shape
-            seviri_area_def = get_seviri_area_def(native_fp, num_x_pixels=num_x_pixels, num_y_pixels=num_y_pixels)
-            scene[dataset_name].attrs['area'] = seviri_area_def
-
-    # Resampling
+    # Constructing target area definition
     tm_area_def = construct_TM_area_def()
-    ds_reproj = (scene
-                 .resample(tm_area_def, resampler='nearest')
-                 .to_xarray_dataset()
+
+    # Reprojecting
+    reproj_vars = list()
+
+    for dataset_name in dataset_names:
+        da = scene[dataset_name].sortby('y', ascending=False).sortby('x')
+        num_y_pixels, num_x_pixels = da.shape
+        seviri_area_def = get_seviri_area_def(native_fp, num_x_pixels=num_x_pixels, num_y_pixels=num_y_pixels)
+
+        resampler = satpy.resample.KDTreeResampler(seviri_area_def, tm_area_def)
+        da_reproj = resampler.resample(da)
+        reproj_vars += [da_reproj]
+
+    variable_idx = pd.Index(dataset_names, name='variable')
+
+    ds_reproj = (xr
+                 .concat(reproj_vars, dim=variable_idx)
+                 .to_dataset(name='stacked_eumetsat_data')
+                 .drop(labels='crs')
                 )
 
     return ds_reproj
@@ -234,7 +244,7 @@ class Reprojector:
         if reproj_library == 'pyinterp':
             ds_reproj = full_scene_pyinterp(native_fp, self.new_x_coords, self.new_y_coords, self.new_grid_fp)
         elif reproj_library == 'pyresample':
-            raise ValueError('`pyresample` is now deprecated, please use `pyinterp`')
+            ds_reproj = full_scene_pyresample(native_fp)
         else:
             raise ValueError(f'`reproj_library` must be one of: pyresample, pyinterp. {reproj_library} can not be passed.')
 
