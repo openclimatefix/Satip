@@ -2,7 +2,6 @@ name: satip_dev
 
 channels:
   - conda-forge
-  - pytorch
   - pvlib
   - coecms
   
@@ -25,7 +24,6 @@ dependencies:
   - rasterio
   - pillow  # for image loading and processing
   - gdal
-  - pytorch
   - pvlib
   - tabulate
   - python-dotenv
