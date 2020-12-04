@@ -23,7 +23,7 @@ dependencies:
   - pyinterp
   - geopandas
   - rasterio
-  - pillow  # for image loading and processing
+  - pillow  
   - gdal
   - pytorch
   - pvlib

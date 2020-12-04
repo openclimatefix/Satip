@@ -27,19 +27,8 @@ import satpy
 from satpy import Scene
 from satpy.readers import seviri_l1b_native
 from pyresample.geometry import AreaDefinition
-import geopandas as gpd
-from shapely.geometry import Point
-import cartopy.crs as ccrs
 import pyinterp
 import pyinterp.backends.xarray
-
-import rasterio
-from rasterio import Affine as A
-from rasterio.warp import reproject, Resampling, calculate_default_transform, transform
-from rasterio.control import GroundControlPoint
-from rasterio.transform import xy
-
-from IPython.display import JSON
 
 # Cell
 
