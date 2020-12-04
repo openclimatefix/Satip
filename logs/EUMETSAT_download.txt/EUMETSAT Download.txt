@@ -297,3 +297,14 @@
 2020-12-03 18:43:45,379 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
 2020-12-03 18:47:47,053 - INFO - ********** Download Manager Initialised **************
 2020-12-03 18:47:47,528 - INFO - 9 files queried, 0 found in data/raw, 9 to download.
+2020-12-03 18:58:07,380 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:58:08,248 - INFO - 9 files queried, 9 found in data/raw, 0 to download.
+2020-12-03 18:58:08,248 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-03 18:59:20,658 - INFO - ********** Download Manager Initialised **************
+2020-12-03 18:59:21,102 - INFO - 11 files queried, 9 found in data/raw, 2 to download.
+2020-12-03 19:09:58,438 - INFO - ********** Download Manager Initialised **************
+2020-12-03 19:09:58,912 - INFO - 12 files queried, 11 found in data/raw, 1 to download.
+2020-12-03 19:22:55,188 - INFO - ********** Download Manager Initialised **************
+2020-12-03 19:22:55,603 - INFO - 15 files queried, 12 found in data/raw, 3 to download.
+2020-12-03 19:55:03,484 - INFO - ********** Download Manager Initialised **************
+2020-12-03 19:55:03,952 - INFO - 8 files queried, 1 found in data/raw, 7 to download.
