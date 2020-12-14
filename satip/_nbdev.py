@@ -59,7 +59,8 @@ modules = ["utils.py",
            "reproj.py",
            "io.py",
            "gcp_helpers.py",
-           "mario.py"]
+           "mario.py",
+           "usage.py"]
 
 doc_url = "https://AyrtonB.github.io/satip/"
 

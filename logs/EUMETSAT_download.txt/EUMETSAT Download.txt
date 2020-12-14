@@ -319,3 +319,23 @@
 2020-12-04 10:59:19,608 - INFO - 4 files queried, 3 found in data/raw, 1 to download.
 2020-12-04 11:23:13,532 - INFO - ********** Download Manager Initialised **************
 2020-12-04 11:23:14,073 - INFO - 8 files queried, 4 found in data/raw, 4 to download.
+2020-12-14 22:13:25,193 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:13:25,690 - INFO - 12 files queried, 0 found in ../data/raw, 12 to download.
+2020-12-14 22:18:34,270 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:18:34,682 - INFO - 4 files queried, 4 found in ../data/raw, 0 to download.
+2020-12-14 22:18:34,682 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-14 22:27:07,229 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:27:07,656 - INFO - 4 files queried, 4 found in ../data/raw, 0 to download.
+2020-12-14 22:27:07,660 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-14 22:40:43,842 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:40:43,842 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:40:46,685 - INFO - 3014 files queried, 20 found in ../data/raw, 2994 to download.
+2020-12-14 22:40:46,685 - INFO - 3014 files queried, 20 found in ../data/raw, 2994 to download.
+2020-12-14 22:42:34,383 - INFO - The EUMETSAT access token has been refreshed
+2020-12-14 22:42:34,383 - INFO - The EUMETSAT access token has been refreshed
+2020-12-14 22:56:05,456 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:56:05,456 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:56:05,456 - INFO - ********** Download Manager Initialised **************
+2020-12-14 22:56:05,863 - INFO - 4 files queried, 0 found in ../data/raw, 4 to download.
+2020-12-14 22:56:05,863 - INFO - 4 files queried, 0 found in ../data/raw, 4 to download.
+2020-12-14 22:56:05,863 - INFO - 4 files queried, 0 found in ../data/raw, 4 to download.
