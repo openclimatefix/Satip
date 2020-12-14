@@ -46,6 +46,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install ipypb
-          pip install pyproj
+          pip install pyproj>=1.9.5.1
           conda install -c conda-forge pyinterp
           dagster pipeline execute -m satip.mario -c pipeline_inputs.yaml
