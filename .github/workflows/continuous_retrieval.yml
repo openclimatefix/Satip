@@ -26,7 +26,7 @@ jobs:
           python-version: '3.7'
           
       - name: Install miniconda
-      - uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
@@ -34,7 +34,6 @@ jobs:
       - name: Conda info
         shell: bash -l {0}
         run: conda info
-      - name: Conda list
         
       - name: Running pipeline
         shell: bash -l {0}
