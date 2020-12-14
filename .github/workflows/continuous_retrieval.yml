@@ -36,4 +36,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install satip
           pip install ipypb
+          pip install pyproj
           dagster pipeline execute -m satip.mario -c pipeline_inputs.yaml
