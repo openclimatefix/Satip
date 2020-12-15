@@ -28,6 +28,8 @@ from satpy import Scene
 from satpy.readers import seviri_l1b_native
 import pyresample
 from pyresample.geometry import AreaDefinition
+import pyinterp
+import pyinterp.backends.xarray
 
 # Cell
 

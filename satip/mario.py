@@ -98,7 +98,7 @@ def reproject_datasets(_, datetime_to_filepath: dict, new_coords_fp: str, new_gr
 
     reprojected_dss = [
         (reprojector
-         .reproject(filepath, reproj_library='pyresample')
+         .reproject(filepath, reproj_library='pyinterp')
          .pipe(io.add_constant_coord_to_da, 'time', pd.to_datetime(datetime))
         )
         for datetime, filepath
