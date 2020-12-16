@@ -36,6 +36,8 @@ dependencies:
   - zarr
   - dagster
   - dagit
+  - mkdocs
+  - mkdocs-material
   - pip
   
   - pip:
@@ -50,3 +52,4 @@ dependencies:
       - google-cloud-storage
       - configparser
       - pandas_gbq
+      - junix

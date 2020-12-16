@@ -1,0 +1,50 @@
+site_name: Data-Hub Documentation
+repo_url: https://github.com/Future-Energy-Associates/data-hub
+repo_name: Future-Energy-Associates/data-hub
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/git-alt
+  features:
+    - header.autohide
+    - navigation.tabs
+    - navigation.instant
+    - search.suggest
+  palette:
+    primary: black
+
+extra:
+  generator: false
+      
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.tasklist
+  - footnotes
+  - attr_list
+  - pymdownx.snippets
+  - pymdownx.highlight
+  - pymdownx.superfences
+  
+plugins:
+  - search
+      
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  
+nav:
+  - Home: index.md
+  - User Guide:
+    - Parsers: 01-parsers-ug.md
+  - Development:
+    - Utilities: 00_utils.md
+    - Downloading: 01_eumetsat.md
+    - Reprojection: 02_reproj.md
+    - Saving with Zarr: 03_zarr.md
+    - GCP Analytics: 04_gcp.md
+    - Pipelines: 05_pipeline.md
