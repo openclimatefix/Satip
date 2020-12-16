@@ -29,7 +29,7 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
         'slack_id': Field(str, default_value=slack_id, is_required=False)
     }
 )
-def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, start_date: str=''):
+def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str=''):
     if start_date == '':
         sql_query = f'select * from {table_id} where result_time = (select max(result_time) from {table_id})'
         start_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0]
