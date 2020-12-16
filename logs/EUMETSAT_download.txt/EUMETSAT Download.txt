@@ -466,3 +466,38 @@
 2020-12-16 15:23:36,140 - INFO - 3 files queried, 1 found in ../data/raw, 2 to download.
 2020-12-16 16:12:24,753 - INFO - ********** Download Manager Initialised **************
 2020-12-16 16:12:25,253 - INFO - 11 files queried, 1 found in ../data/raw, 10 to download.
+2020-12-16 16:34:46,147 - INFO - ********** Download Manager Initialised **************
+2020-12-16 16:34:46,739 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2020-12-16 17:11:53,638 - INFO - ********** Download Manager Initialised **************
+2020-12-16 17:11:53,638 - INFO - ********** Download Manager Initialised **************
+2020-12-16 17:11:54,170 - INFO - 9 files queried, 1 found in ../data/raw, 8 to download.
+2020-12-16 17:11:54,170 - INFO - 9 files queried, 1 found in ../data/raw, 8 to download.
+2020-12-16 17:43:01,637 - INFO - ********** Download Manager Initialised **************
+2020-12-16 17:43:01,637 - INFO - ********** Download Manager Initialised **************
+2020-12-16 17:43:01,637 - INFO - ********** Download Manager Initialised **************
+2020-12-16 17:43:02,049 - INFO - 7 files queried, 1 found in ../data/raw, 6 to download.
+2020-12-16 17:43:02,049 - INFO - 7 files queried, 1 found in ../data/raw, 6 to download.
+2020-12-16 17:43:02,049 - INFO - 7 files queried, 1 found in ../data/raw, 6 to download.
+2020-12-16 18:43:45,155 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:43:45,155 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:43:45,155 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:43:45,155 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:43:45,654 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-16 18:43:45,654 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-16 18:43:45,654 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-16 18:43:45,654 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-16 18:46:52,539 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:46:52,539 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:46:52,539 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:46:52,539 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:46:52,539 - INFO - ********** Download Manager Initialised **************
+2020-12-16 18:46:53,127 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 18:46:53,127 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 18:46:53,127 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 18:46:53,127 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 18:46:53,127 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download

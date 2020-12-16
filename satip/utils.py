@@ -81,7 +81,8 @@ def set_up_logging(name: str, log_dir: str,
     - 'NOTSET'
 
     Parameters:
-        name: Name of the logger
+        name: Name of the logger, if a logging.Logger object
+              is passed then that will be used instead.
         log_dir: directory where the logs will be stored
         main_logging_level: Logging level for file and Jupyter
         slack_logging_level: Logging level for Slack
@@ -108,7 +109,11 @@ def set_up_logging(name: str, log_dir: str,
     """
 
     # Initialising logger
-    logger = logging.getLogger(name)
+    if isinstance(name, str):
+        logger = logging.getLogger(name)
+    else:
+        # instance where a logger object is passed
+        logger = name
 
     # Configuring log level
     logging_levels = [
