@@ -4,9 +4,7 @@ solids:
       data_dir: "data/raw"
       metadata_db_fp: "data/EUMETSAT_metadata.db"
       debug_fp: "logs/EUMETSAT_download.txt"
-      table_id: "eumetsat.metadata"
-      project_id: "solar-pv-nowcasting"
-      start_date: "2020-12-04 10:35" # if null will use last date added to the metadata db
+      start_date: ""
   df_metadata_to_dt_to_fp_map:
     inputs:
       data_dir: "data/raw"
@@ -18,3 +16,7 @@ solids:
     inputs:
       zarr_bucket: "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_zarr_int16"
       var_name: "stacked_eumetsat_data"
+  save_metadata:
+    inputs:
+      table_id: "eumetsat.metadata"
+      project_id: "solar-pv-nowcasting"
