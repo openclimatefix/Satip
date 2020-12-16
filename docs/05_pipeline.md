@@ -40,8 +40,6 @@ zarr_bucket = 'solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_exten
 
 ```python
 #exports
-dotenv.load_dotenv(env_vars_fp)
-
 user_key = os.environ.get('USER_KEY')
 user_secret = os.environ.get('USER_SECRET')
 slack_id = os.environ.get('SLACK_ID')
@@ -55,6 +53,7 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 We're now going to combine these steps into a pipeline using `dagster`
 
 ```python
+#exports
 @solid(
     config_schema = {
         'user_key': Field(str, default_value=user_key, is_required=False),
@@ -63,7 +62,7 @@ We're now going to combine these steps into a pipeline using `dagster`
         'slack_id': Field(str, default_value=slack_id, is_required=False)
     }
 )
-def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, start_date: str=''):
+def download_latest_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str=''):
     if start_date == '':
         sql_query = f'select * from {table_id} where result_time = (select max(result_time) from {table_id})'
         start_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0]
@@ -146,6 +145,7 @@ def save_metadata(_, df_new_metadata, table_id: str, project_id: str):
 ```
 
 ```python
+#exports
 @pipeline
 def download_latest_data_pipeline():  
     # Retrieving data, reprojecting, compressing, and saving to GCP
@@ -164,6 +164,8 @@ run_config = {
                 'data_dir': "../data/raw",
                 'metadata_db_fp': "../data/EUMETSAT_metadata.db",
                 'debug_fp': "../logs/EUMETSAT_download.txt",
+                'table_id': "eumetsat.metadata",
+                'project_id': "solar-pv-nowcasting",
                 'start_date': "2020-12-16 19:30"
             },
         },

@@ -28,8 +28,12 @@ from satpy import Scene
 from satpy.readers import seviri_l1b_native
 import pyresample
 from pyresample.geometry import AreaDefinition
-import pyinterp
-import pyinterp.backends.xarray
+
+try:
+    import pyinterp
+    import pyinterp.backends.xarray
+except:
+    pass
 
 # Cell
 
@@ -231,7 +235,10 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords, new_grid_fp):
     return ds_reproj
 
 class Reprojector:
-    def __init__(self, new_coords_fp, new_grid_fp):
+    def __init__(self, new_coords_fp=None, new_grid_fp=None):
+        if new_coords_fp is None and new_grid_fp is None:
+            return
+
         df_new_coords = pd.read_csv(new_coords_fp)
 
         self.new_x_coords = df_new_coords['x']

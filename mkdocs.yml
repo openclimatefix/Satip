@@ -40,7 +40,9 @@ extra_javascript:
 nav:
   - Home: index.md
   - User Guide:
-    - Parsers: 01-parsers-ug.md
+    - Loading from Zarr: 103_loading.md
+  - About:
+    - Parsers: about/OCF.md
   - Development:
     - Utilities: 00_utils.md
     - Downloading: 01_eumetsat.md
