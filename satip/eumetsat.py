@@ -281,7 +281,7 @@ class DownloadManager:
                  data_dir: str, metadata_db_fp: str, log_fp: str,
                  main_logging_level: str='DEBUG', slack_logging_level: str='CRITICAL',
                  slack_webhook_url: str=None, slack_id: str=None,
-                 bucket_name=None, bucket_prefix=None):
+                 bucket_name=None, bucket_prefix=None, logger_name='EUMETSAT Download'):
         """
         Initialises the download manager by:
         * Setting up the logger
@@ -309,7 +309,7 @@ class DownloadManager:
         """
 
         # Configuring the logger
-        self.logger = utils.set_up_logging('EUMETSAT Download', log_fp,
+        self.logger = utils.set_up_logging(logger_name, log_fp,
                                            main_logging_level, slack_logging_level,
                                            slack_webhook_url, slack_id)
 
