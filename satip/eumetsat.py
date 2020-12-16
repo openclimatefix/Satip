@@ -425,9 +425,6 @@ class DownloadManager:
 
             download.append(filename)
 
-        # Download files if they are not locally downloaded or in the bucket
-#          to_download = set(filenames).difference(set(local).union(set(in_bucket)))
-
         if self.bucket_name:
             self.logger.info(f'{len(filenames)} files queried, {len(in_bucket)} found in bucket, {len(local)} found in {self.data_dir}, {len(download)} to download.')
         else:
