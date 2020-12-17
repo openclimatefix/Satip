@@ -40,9 +40,11 @@ extra_javascript:
 nav:
   - Home: index.md
   - User Guide:
+    - Downloading from EUMETSAT: 101_downloading.md
+    - Reprojecting: 102_reprojecting.md
     - Loading from Zarr: 103_loading.md
   - About:
-    - Parsers: about/OCF.md
+    - OCF: about/OCF.md
   - Development:
     - Utilities: 00_utils.md
     - Downloading: 01_eumetsat.md

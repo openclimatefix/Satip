@@ -501,3 +501,18 @@
 2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
 2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
 2020-12-16 18:46:53,136 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 23:12:02,565 - INFO - ********** Download Manager Initialised **************
+2020-12-16 23:12:03,112 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-16 23:12:03,115 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-16 23:16:13,598 - INFO - ********** Download Manager Initialised **************
+2020-12-17 00:20:20,712 - INFO - ********** Download Manager Initialised **************
+2020-12-17 00:20:21,257 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-17 00:20:21,259 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2020-12-17 00:20:43,263 - INFO - ********** Download Manager Initialised **************
+2020-12-17 00:20:43,263 - INFO - ********** Download Manager Initialised **************
+2020-12-17 00:20:43,782 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-17 00:20:43,782 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-17 00:21:11,192 - INFO - ********** Download Manager Initialised **************
+2020-12-17 00:21:11,777 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2020-12-17 00:21:31,507 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2020-12-17 00:21:31,512 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download

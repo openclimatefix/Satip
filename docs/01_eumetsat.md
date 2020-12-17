@@ -4,7 +4,7 @@
 
     C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\google\auth\_default.py:69: UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. You might receive a "quota exceeded" or "API not enabled" error. We recommend you rerun `gcloud auth application-default login` and make sure a quota project is added. Or you can use service accounts instead. For more information about service accounts, see https://cloud.google.com/docs/authentication/
       warnings.warn(_CLOUD_SDK_CREDENTIALS_WARNING)
-    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  1.41rows/s]
+    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  1.09rows/s]
     
 
 <br>
@@ -111,8 +111,7 @@ print(f'{len(datasets)} datasets have been identified')
 ```
 
     1728 datasets have been identified
-    CPU times: user 200 ms, sys: 17.9 ms, total: 218 ms
-    Wall time: 1.27 s
+    Wall time: 1.19 s
     
 
 <br>
@@ -135,7 +134,7 @@ example_data_link
 
 
 
-    'https://api.eumetsat.int/data/download/products/MSG3-SEVI-MSG15-0100-NA-20201001000414.060000000Z-NA'
+    'https://api.eumetsat.int/data/download/products/MSG3-SEVI-MSG15-0100-NA-20191001000415.000000000Z-NA'
 
 
 
@@ -164,15 +163,6 @@ We're now ready to create a download manager that will handle all of the queryin
 We'll now see what it looks like when we initialise the download manager
 
 ```python
-# dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp)
-# start_date = '2019-10-01 00:00'
-# end_date = '2019-10-01 00:05'
-
-# if download_data == True:
-#     dm.download_datasets(start_date, end_date)
-```
-
-```python
 dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, 
                      slack_webhook_url=slack_webhook_url, slack_id=slack_id)
 
@@ -187,6 +177,150 @@ df_metadata = dm.get_df_metadata()
 df_metadata.head()
 ```
 
+    2020-12-16 23:12:02,565 - INFO - ********** Download Manager Initialised **************
+    2020-12-16 23:12:03,112 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+    2020-12-16 23:12:03,115 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+    
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>result_time</th>
+      <th>platform_short_name</th>
+      <th>platform_orbit_type</th>
+      <th>instrument_name</th>
+      <th>sensor_op_mode</th>
+      <th>center_srs_name</th>
+      <th>center_position</th>
+      <th>file_name</th>
+      <th>file_size</th>
+      <th>missing_pct</th>
+      <th>downloaded</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>2020-10-01 12:05:09.428</td>
+      <td>2020-10-01 12:09:15.775</td>
+      <td>2020-10-01 12:09:15.775</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201001120915.7750000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-11-13 10:32:40.853958</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2020-10-01 12:10:09.249</td>
+      <td>2020-10-01 12:14:15.596</td>
+      <td>2020-10-01 12:14:15.596</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201001121415.5960000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-11-13 10:32:56.874131</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2020-10-01 12:15:09.071</td>
+      <td>2020-10-01 12:19:15.417</td>
+      <td>2020-10-01 12:19:15.417</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201001121915.4170000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-11-13 10:33:13.998136</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2020-10-01 12:20:08.892</td>
+      <td>2020-10-01 12:24:15.239</td>
+      <td>2020-10-01 12:24:15.239</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201001122415.2390000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-11-13 10:33:30.656217</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2020-10-01 12:25:08.714</td>
+      <td>2020-10-01 12:29:15.060</td>
+      <td>2020-10-01 12:29:15.060</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201001122915.0600000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-11-13 10:33:46.352754</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
+
 <br>
 
 The `get_size` function was adapted from <a href="https://stackoverflow.com/questions/1392413/calculating-a-directorys-size-using-python">this stackoverflow answer</a>
@@ -197,6 +331,21 @@ data_dir_size = get_dir_size(data_dir)
 print(f'The data directory is currently {round(data_dir_size/1_000_000_000, 2):,} Gb')
 ```
 
+    The data directory is currently 30.36 Gb
+    
+
+<br>
+<br>
+<br>
+<br>
+
+# Need to Clean Notebook Below Here
+
+<br>
+<br>
+<br>
+<br>
+
 ## Trying out bucket files
 
 If GCP flags are passed (`bucket_name` and `bucket_prefix`), when downloading the `DownloadManager` should first check to see if the files already exist in the specified bucket.  
@@ -204,7 +353,6 @@ If the files already exist, then don't download them.
 
 ```python
 BUCKET_NAME = "solar-pv-nowcasting-data"
-# PREFIX = "satellite/EUMETSAT/SEVIRI_RSS/native/"
 PREFIX = "satellite/EUMETSAT/SEVIRI_RSS/native/2020"
 ```
 

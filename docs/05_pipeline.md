@@ -50,7 +50,7 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 
 ### Dagster Pipeline
 
-We're now going to combine these steps into a pipeline using `dagster`
+We're now going to combine these steps into a pipeline using `dagster`, first we'll create the individual components.
 
 ```python
 #exports
@@ -144,6 +144,10 @@ def save_metadata(_, df_new_metadata, table_id: str, project_id: str):
     gcp_helpers.write_metadata_to_gcp(df_new_metadata, table_id, project_id, append=True)
 ```
 
+<br>
+
+Then we'll combine them in a pipeline
+
 ```python
 #exports
 @pipeline
@@ -155,6 +159,10 @@ def download_latest_data_pipeline():
     ds_combined_compressed = compress_and_save_datasets(ds_combined_reproj)
     save_metadata(df_new_metadata)
 ```
+
+<br>
+
+Which we'll now run a test with
 
 ```python
 run_config = {

@@ -4,7 +4,7 @@
 
     C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\google\auth\_default.py:69: UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. You might receive a "quota exceeded" or "API not enabled" error. We recommend you rerun `gcloud auth application-default login` and make sure a quota project is added. Or you can use service accounts instead. For more information about service accounts, see https://cloud.google.com/docs/authentication/
       warnings.warn(_CLOUD_SDK_CREDENTIALS_WARNING)
-    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  3.31rows/s]
+    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  1.34rows/s]
     
 
 ```python
@@ -49,11 +49,155 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 
 We'll start by loading in one of the datasets we've just downloaded, in this instance we'll take the most recent one by identifying it from the metadata db.
 
+```python
 dm = eumetsat.DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp)
 
 df_metadata = dm.get_df_metadata()
 
 df_metadata.tail()
+```
+
+    2020-12-16 23:16:13,598 - INFO - ********** Download Manager Initialised **************
+    
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>start_date</th>
+      <th>end_date</th>
+      <th>result_time</th>
+      <th>platform_short_name</th>
+      <th>platform_orbit_type</th>
+      <th>instrument_name</th>
+      <th>sensor_op_mode</th>
+      <th>center_srs_name</th>
+      <th>center_position</th>
+      <th>file_name</th>
+      <th>file_size</th>
+      <th>missing_pct</th>
+      <th>downloaded</th>
+    </tr>
+    <tr>
+      <th>id</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>317</th>
+      <td>2020-12-16 17:20:10.024</td>
+      <td>2020-12-16 17:24:16.395</td>
+      <td>2020-12-16 17:24:16.395</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201216172416.3950000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-12-16 17:43:23.976507</td>
+    </tr>
+    <tr>
+      <th>318</th>
+      <td>2020-12-16 17:25:11.077</td>
+      <td>2020-12-16 17:29:17.447</td>
+      <td>2020-12-16 17:29:17.447</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201216172917.4470000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-12-16 17:43:30.350041</td>
+    </tr>
+    <tr>
+      <th>319</th>
+      <td>2020-12-16 17:30:12.129</td>
+      <td>2020-12-16 17:34:18.500</td>
+      <td>2020-12-16 17:34:18.500</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201216173418.5000000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-12-16 17:43:36.259900</td>
+    </tr>
+    <tr>
+      <th>320</th>
+      <td>2020-12-16 17:35:11.980</td>
+      <td>2020-12-16 17:39:18.350</td>
+      <td>2020-12-16 17:39:18.350</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201216173918.3500000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-12-16 17:43:43.114954</td>
+    </tr>
+    <tr>
+      <th>321</th>
+      <td>2020-12-16 18:35:08.985</td>
+      <td>2020-12-16 18:39:15.355</td>
+      <td>2020-12-16 18:39:15.355</td>
+      <td>MSG3</td>
+      <td>GEO</td>
+      <td>SEVIRI</td>
+      <td>RSS</td>
+      <td>EPSG:4326</td>
+      <td>0 9.5</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20201216183915.3550000...</td>
+      <td>99819</td>
+      <td>0.0</td>
+      <td>2020-12-16 18:43:56.975095</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+
 
 <br>
 
@@ -97,7 +241,7 @@ ax.coastlines(resolution='50m', alpha=0.8, color='white')
 
 
 
-![png](img/nbs/output_10_1.png)
+![png](img/nbs/output_11_1.png)
 
 
 <br>
@@ -144,7 +288,7 @@ ax.coastlines(resolution='50m', alpha=0.8, color='white')
 
 
 
-![png](img/nbs/output_14_2.png)
+![png](img/nbs/output_15_2.png)
 
 
 <br>
@@ -735,6 +879,10 @@ Coordinates:
 
 
 
+<br>
+
+And finally we can plot the results
+
 ```python
 fig = plt.figure(dpi=250, figsize=(10, 10))
 ax = plt.axes(projection=ccrs.TransverseMercator())
@@ -756,41 +904,5 @@ ax.coastlines(resolution='50m', alpha=0.8, color='white')
 
 
 
-![png](img/nbs/output_26_2.png)
+![png](img/nbs/output_28_2.png)
 
-
-```python
-# Disk space is priority, then look at io speeds
-# 
-# Priority order
-# * notebook examples
-# * airflow
-# * end-to-end pipeline with benchmarking
-# * publish documentation
-# * add more tests
-```
-
-<br>
-
-Brief
-- [x] Tweak Zarr data types to minimise storage space (e.g. re-scale all channels to [0, 1023] and store as int16s, with missing values encoded as -1; and compressed using zstd level 5).  (To re-scale to [0, 1023], you'll need to know the min and max values!  I've computed the mins and maxes for as 12 channels from James Fulton's 'all_zarr' array.  The mins and maxes are listed here.  Not sure if these mins and maxes will be the same after you've re-projected the entire geographical scope though.  
-- [x] Each Zarr chunk could be something like 32 timesteps, 512 pixels wide, 512 pixels high, and 1 channel.  (We're not sure how many channels will be useful for PV nowcasting.  So, it's probably best to keep the channels in separate chunks.)
-- [x] Would be great to use all the CPU cores on the VM.  If the reprojection library doesn't do this itself, then maybe consider spinning up multiple processes, maybe using concurrent.futures.ProcessPoolExecutor.map(worker_func, [list of native files to re-projected]); or using dask.delayed.  Zarr supports parallel writes as long as the writes are to different chunks (see Zarr's docs on parallel processing).
-- [x] One challenge will be that, if each Zarr chunk is multiple timesteps, then the conversion script may have to load multiple timesteps in memory, or in temporary files on the VM, before concatenating multiple timesteps into one Zarr chunk.
-- [ ] When the script is finished processing a Native file, maybe we should move the native file to a cheaper storage class (e.g. coldline storage or archive storage).
-
-<br>
-
-### WMS Notes
-
-https://en.wikipedia.org/wiki/Tiled_web_map
-
-Conventions:
-* Tiles are 256x256 pixels
-* At the outer most zoom level, 0, the entire world can be rendered in a single map tile.
-* Each zoom level doubles in both dimensions, so a single tile is replaced by 4 tiles when zooming in. This means that about 22 zoom levels are sufficient for most practical purposes.
-* The Web Mercator projection is used, with latitude limits of around 85 degrees.
-* An X and Y numbering scheme
-* PNG images for tiles
-* Images are served through a Web server, with a URL like http://.../Z/X/Y.png, where Z is the zoom level, and X and Y identify the tile.
-* Tile Map Service: (0 to 2zoom-1, 2zoom-1 to 0) for the range (-180, +85.0511) - (+180, -85.0511).
