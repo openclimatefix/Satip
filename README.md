@@ -31,7 +31,7 @@ N.b. on the last goal we currently having the data loading example, as well as o
 
 | Id            | Directory   | Number   | Description                                        | Maintainer      |
 |:--------------|:------------|:---------|:---------------------------------------------------|:----------------|
-| utils         | nbs         | 00       | Code for keeping the repository tidy               | Ayrton Bourn    |
+| Utilities     | nbs         | 00       | Code for keeping the repository tidy               | Ayrton Bourn    |
 | EUMETSAT      | nbs         | 01       | Development of the API wrapper for ems             | Ayrton Bourn    |
 | Reprojection  | nbs         | 02       | Development of the reprojection operator           | Ayrton Bourn    |
 | Zarr          | nbs         | 03       | Development of wrappers for loading/saving to Zarr | Ayrton Bourn    |
