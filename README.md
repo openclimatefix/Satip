@@ -1,6 +1,6 @@
 # Satip
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Future-Energy-Associates/Satip/master?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Future-Energy-Associates/Satip/master?urlpath=lab) [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
 
 > Satip is a library for <b>sat</b>ellite <b>i</b>mage <b>p</b>rocessing, and provides all of the functionality necessary for retrieving, transforming and storing EUMETSAT data
 
