@@ -1,6 +1,6 @@
 site_name: Data-Hub Documentation
-repo_url: https://github.com/Future-Energy-Associates/data-hub
-repo_name: Future-Energy-Associates/data-hub
+repo_url: https://github.com/Future-Energy-Associates/satip
+repo_name: Future-Energy-Associates/satip
 
 theme:
   name: material
