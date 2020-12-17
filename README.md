@@ -6,6 +6,16 @@
 
 <br>
 
+### Installation
+
+To install the `satip` library please run:
+
+```bash
+pip install satip
+```
+
+<br>
+
 ### Goals
 
 - [x] Entire EUMETSAT SEVIRI RSS archive available as one big Zarr array (tens of TBytes) in Google Public Datasets bucket, spatially reprojected, and saved in a very space-efficient way.
@@ -35,7 +45,7 @@ N.b. on the last goal we currently having the data loading example, as well as o
 <br>
 <br>
 
-### Installation/Set-Up
+### Development Set-Up
 
 To create a new environment you can follow the following code blocks or run the `setup_env` batch script located in the batch_scripts directory.
 
