@@ -19,7 +19,7 @@ pip install satip
 ### Goals
 
 - [x] Entire EUMETSAT SEVIRI RSS archive available as one big Zarr array (tens of TBytes) in Google Public Datasets bucket, spatially reprojected, and saved in a very space-efficient way.
-- [x] Automatic job to update archive on GCP from EUMETSAT's new API once a day.
+- [x] Automatic job to update archive on GCP from EUMETSAT's new API once a day (Now running every half-hour).
 - [x] Documentation.  Possibly user-editable.  (source on GitHub, maybe?)
 - [ ] A few example Jupyter Notebooks showing how to load the data, train simple ML model, and compute metrics.
 
@@ -35,14 +35,13 @@ N.b. on the last goal we currently having the data loading example, as well as o
 | EUMETSAT      | nbs         | 01       | Development of the API wrapper for ems             | Ayrton Bourn    |
 | Reprojection  | nbs         | 02       | Development of the reprojection operator           | Ayrton Bourn    |
 | Zarr          | nbs         | 03       | Development of wrappers for loading/saving to Zarr | Ayrton Bourn    |
-| GCP           | nbs         | 04       | Development of wrappers for interfacing with GCP   | Laurence Watson |
+| GCP           | nbs         | 04       | Development of GCP interface wrappers              | Laurence Watson |
 | Pipeline      | nbs         | 05       | Development of the pipeline processes              | Ayrton Bourn    |
 | Downloading   | nbs         | 101      | Guidance for using the ems download manager        | Ayrton Bourn    |
 | Reprojecting  | nbs         | 102      | Guidance for using the reprojection operator       | Ayrton Bourn    |
 | Loading       | nbs         | 103      | Guidance for retrieving saved data from Zarr       | Ayrton Bourn    |
 | Documentation | docs        | -        | Automated generation of docs from notebooks        | Ayrton Bourn    |
 
-<br>
 <br>
 
 ### Development Set-Up
