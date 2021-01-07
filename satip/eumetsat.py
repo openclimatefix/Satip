@@ -451,7 +451,7 @@ class DownloadManager:
         return df_new_metadata
 
 
-    def download_datasets(self, datasets, product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
+    def download_datasets(self, datasets, product_id='EO:EUM:DAT:MSG:MSG15-RSS', download_all=True):
         """
         Downloads a set of dataset from the EUMETSAT API
         in the defined date range and specified product
@@ -478,7 +478,7 @@ class DownloadManager:
             dataset_link = dataset_id_to_link(dataset_id)
 
             # Download the raw data
-            if dataset_id in download_ids:
+            if (dataset_id in download_ids) or (download_all == True):
                 try:
                     self.download_single_dataset(dataset_link)
                 except:
@@ -531,7 +531,7 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 # Cell
-def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210123, log=None):
+def compress_downloaded_files(data_dir, compressed_dir, NATIVE_FILESIZE_MB = 102.210123, log=None):
     full_native_filenames = glob.glob(os.path.join(data_dir, '*.nat'))
     print(f'Found {len(full_native_filenames)} native files.')
     if log:
@@ -568,7 +568,12 @@ def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210
 
         base_native_filename = os.path.basename(full_native_filename)
         dt = eumetsat_filename_to_datetime(base_native_filename)
-        new_dst_path = os.path.join(sorted_dir, dt.strftime("%Y/%m/%d/%H/%M"))
+
+        # Creating compressed_dir if not already made
+        if not os.path.exists(compressed_dir):
+            os.makedirs(compressed_dir)
+
+        new_dst_path = os.path.join(compressed_dir, dt.strftime("%Y/%m/%d/%H/%M"))
         if not os.path.exists(new_dst_path):
             os.makedirs(new_dst_path)
 
@@ -583,12 +588,12 @@ def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210
         shutil.move(src=full_compressed_filename, dst=new_dst_path)
 
 # Cell
-def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX, log=None):
-    paths = Path(sorted_dir).rglob('*.nat.bz2')
+def upload_compressed_files(compressed_dir, BUCKET_NAME="solar-pv-nowcasting-data", PREFIX="satellite/EUMETSAT/SEVIRI_RSS/native/", log=None):
+    paths = Path(compressed_dir).rglob('*.nat.bz2')
     full_compressed_files = [x for x in paths if x.is_file()]
     if log:
         log.info('Found %d compressed files.', len(full_compressed_files))
 
     for file in full_compressed_files:
-        rel_path = os.path.relpath(file.absolute(), sorted_dir)
+        rel_path = os.path.relpath(file.absolute(), compressed_dir)
         upload_blob(bucket_name=BUCKET_NAME, source_file_name=file.absolute(), destination_blob_name=rel_path, prefix=PREFIX)

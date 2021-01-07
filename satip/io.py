@@ -167,9 +167,9 @@ def load_from_zarr_bucket(zarr_bucket):
     return ds
 
 # Cell
-def identifying_missing_datasets(start_date=None, end_date=None, eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'):
+def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'):
     # Identifying date range if not fully provided
-    if (start_date is None) or (end_date is None):
+    if (start_date is '') or (end_date is ''):
         ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
         start_date = ds_eumetsat.time.min().values
         end_date = ds_eumetsat.time.max().values
@@ -182,8 +182,9 @@ def identifying_missing_datasets(start_date=None, end_date=None, eumetsat_zarr_b
     cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
 
     # Identifying missing datasets from the Zarr DB
+    ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
     end_dates_to_datasets = dict(zip(cleaned_end_dates, datasets))
-    missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(loaded_xarray.time.values))
+    missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(ds_eumetsat.time.values))
     missing_datasets = [data for date, data in end_dates_to_datasets.items() if date in missing_dates]
 
     return missing_datasets

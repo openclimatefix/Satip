@@ -525,3 +525,111 @@
 2021-01-07 12:54:19,799 - INFO - 6255 files queried, 0 found in ../data/raw, 6255 to download.
 2021-01-07 12:58:22,138 - INFO - ********** Download Manager Initialised **************
 2021-01-07 12:58:22,584 - INFO - 7 files queried, 0 found in ../data/raw, 7 to download.
+2021-01-07 13:10:22,661 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:10:23,354 - INFO - 2 files queried, 1 found in ../data/raw, 1 to download.
+2021-01-07 13:18:56,885 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:18:57,281 - INFO - 5 files queried, 2 found in ../data/raw, 3 to download.
+2021-01-07 13:25:10,960 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:25:10,960 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:25:11,390 - INFO - 2 files queried, 1 found in ../data/raw, 1 to download.
+2021-01-07 13:25:11,390 - INFO - 2 files queried, 1 found in ../data/raw, 1 to download.
+2021-01-07 13:25:43,584 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:25:43,584 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:25:43,584 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:25:44,053 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:25:44,053 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:25:44,053 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:25:44,057 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:25:44,057 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:25:44,057 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:27:12,948 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:27:12,948 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:27:12,948 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:27:12,948 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:27:13,335 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:27:13,335 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:27:13,335 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:27:13,335 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:27:13,340 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:27:13,340 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:27:13,340 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:27:13,340 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:29:40,430 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:29:40,835 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
+2021-01-07 13:29:40,836 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 13:31:12,330 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:31:12,727 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 13:31:20,188 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 13:33:53,652 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:33:54,065 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 13:38:31,345 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:38:31,345 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:38:31,743 - INFO - 4 files queried, 3 found in ../data/raw, 1 to download.
+2021-01-07 13:38:31,743 - INFO - 4 files queried, 3 found in ../data/raw, 1 to download.
+2021-01-07 13:49:39,427 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:49:39,902 - INFO - 6 files queried, 4 found in ../data/raw, 2 to download.
+2021-01-07 13:57:33,108 - INFO - ********** Download Manager Initialised **************
+2021-01-07 13:57:33,659 - INFO - 9 files queried, 6 found in ../data/raw, 3 to download.
+2021-01-07 14:20:47,881 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:20:47,881 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:20:52,988 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:20:52,988 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:20:52,988 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:20:52,988 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:25:15,605 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:25:15,605 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:25:15,605 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:25:19,852 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:25:19,852 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:25:19,852 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:25:19,852 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:25:19,852 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:25:19,852 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:27:00,406 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:00,406 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:00,406 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:00,406 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:05,125 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:27:05,125 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:27:05,125 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:27:05,125 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 14:27:05,125 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:27:05,125 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:27:05,125 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:27:05,125 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 14:27:20,413 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:20,413 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:20,413 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:20,413 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:20,413 - INFO - ********** Download Manager Initialised **************
+2021-01-07 14:27:20,829 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-07 14:27:20,829 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-07 14:27:20,829 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-07 14:27:20,829 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-07 14:27:20,829 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:12,160 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,035 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:03:18,051 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-07 15:10:44,546 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:10:45,044 - INFO - 9 files queried, 1 found in ../data/raw, 8 to download.
+2021-01-07 15:13:46,409 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:13:46,945 - INFO - 11 files queried, 1 found in ../data/raw, 10 to download.
+2021-01-07 15:45:50,006 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:45:50,006 - INFO - ********** Download Manager Initialised **************
+2021-01-07 15:45:58,002 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 15:45:58,002 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
