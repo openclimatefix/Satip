@@ -753,7 +753,7 @@ def compress_downloaded_files(data_dir, sorted_dir, log=None):
 
 
 # Cell
-def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX, log=None):
+def upload_compressed_files(compressed_dir, BUCKET_NAME, PREFIX, log=None):
     """Uploads compressed native files to a Google Cloud storage bucket
 
     For example,
@@ -769,14 +769,14 @@ def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX, log=None):
     etc
 
         Parameters:
-            sorted_dir: (str), directory where compressed files are stored locally
+            compressed_dir: (str), directory where compressed files are stored locally
             BUCKET_NAME: (str), name of Google Cloud storage bucket
             PREFIX: (str), string prefix to use as part of the bucket storage path
 
         Returns:
             -
     """
-    paths = Path(sorted_dir).rglob("*.nat.bz2")
+    paths = Path(compressed_dir).rglob("*.nat.bz2")
     full_compressed_files = [x for x in paths if x.is_file()]
     if log:
         log.info("Found %d compressed files.", len(full_compressed_files))
