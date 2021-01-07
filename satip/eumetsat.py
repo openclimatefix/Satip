@@ -563,7 +563,7 @@ def compress_downloaded_files(data_dir, compressed_dir, log=None):
                 log.error(msg)
 
         if log:
-            log.debug('Compressing %s', full_native_filename)
+            log.debug(f'Compressing {full_native_filename}')
 
         completed_process = subprocess.run(['pbzip2', '-5', full_native_filename])
         try:
