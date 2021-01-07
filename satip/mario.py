@@ -120,8 +120,8 @@ def save_metadata(context, ds_combined_compressed, df_new_metadata, table_id: st
 @solid()
 def compress_export_then_delete_raw(context, ds_combined_compressed, data_dir: str, compressed_dir: str, BUCKET_NAME: str='solar-pv-nowcasting-data', PREFIX: str='satellite/EUMETSAT/SEVIRI_RSS/native/'):
     if ds_combined_compressed is not None:
-        io.compress_downloaded_files(data_dir=data_dir, compressed_dir=compressed_dir, log=context.log)
-        io.upload_compressed_files(compressed_dir, BUCKET_NAME=BUCKET_NAME, PREFIX=PREFIX, log=None)
+        eumetsat.compress_downloaded_files(data_dir=data_dir, compressed_dir=compressed_dir, log=context.log)
+        eumetsat.upload_compressed_files(compressed_dir, BUCKET_NAME=BUCKET_NAME, PREFIX=PREFIX, log=None)
 
         for dir_ in [data_dir, compressed_dir]:
             files = glob.glob(f'{dir_}/*')

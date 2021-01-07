@@ -633,3 +633,66 @@
 2021-01-07 15:45:50,006 - INFO - ********** Download Manager Initialised **************
 2021-01-07 15:45:58,002 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
 2021-01-07 15:45:58,002 - INFO - 5 files queried, 5 found in ../data/raw, 0 to download.
+2021-01-07 16:58:22,893 - INFO - ********** Download Manager Initialised **************
+2021-01-07 16:58:23,362 - INFO - 21 files queried, 1 found in ../data/raw, 20 to download.
+2021-01-07 18:24:10,115 - INFO - ********** Download Manager Initialised **************
+2021-01-07 18:24:10,115 - INFO - ********** Download Manager Initialised **************
+2021-01-07 18:24:10,543 - INFO - 6 files queried, 0 found in ../data/raw, 6 to download.
+2021-01-07 18:24:10,543 - INFO - 6 files queried, 0 found in ../data/raw, 6 to download.
+2021-01-07 19:02:01,870 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:02:01,870 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:02:01,870 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:02:02,316 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2021-01-07 19:02:02,316 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2021-01-07 19:02:02,316 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2021-01-07 19:36:14,923 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:36:14,923 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:36:14,923 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:36:14,923 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:36:15,514 - INFO - 2 files queried, 0 found in ../data/raw, 2 to download.
+2021-01-07 19:36:15,514 - INFO - 2 files queried, 0 found in ../data/raw, 2 to download.
+2021-01-07 19:36:15,514 - INFO - 2 files queried, 0 found in ../data/raw, 2 to download.
+2021-01-07 19:36:15,514 - INFO - 2 files queried, 0 found in ../data/raw, 2 to download.
+2021-01-07 19:41:03,195 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:03,195 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:03,195 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:03,195 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:03,195 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:03,674 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:03,674 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:03,674 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:03,674 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:03,674 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:14,444 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:41:14,444 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:41:14,444 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:41:14,444 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:41:14,444 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:57,920 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:41:58,414 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:42:09,422 - INFO - The EUMETSAT access token has been refreshed
+2021-01-07 19:43:44,070 - INFO - ********** Download Manager Initialised **************
+2021-01-07 19:43:44,505 - INFO - 3 files queried, 2 found in ../data/raw, 1 to download.
+2021-01-07 20:03:52,316 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:03:52,791 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+2021-01-07 20:04:34,925 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:04:35,393 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
+2021-01-07 20:05:05,483 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:05:05,483 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:05:17,746 - INFO - 5 files queried, 0 found in ../data/raw, 5 to download.
+2021-01-07 20:05:17,746 - INFO - 5 files queried, 0 found in ../data/raw, 5 to download.

@@ -669,7 +669,7 @@ def eumetsat_filename_to_datetime(inner_tar_name):
 
 
 # Cell
-def compress_downloaded_files(data_dir, sorted_dir, log=None):
+def compress_downloaded_files(data_dir, compressed_dir, log=None):
     """
     Compresses downloaded files, stores them locally,
     and ensures they are approximately the correct filesize.
@@ -677,7 +677,7 @@ def compress_downloaded_files(data_dir, sorted_dir, log=None):
 
         Parameters:
             data_dir: (string), directory path containing raw downloaded files from EUMETSAT API
-            sorted_dir: (string), directory path for compressed .nat files
+            compressed_dir: (string), directory path for compressed .nat files
             log: (bool), flag to enable logging
 
         Returns:
@@ -757,7 +757,7 @@ def upload_compressed_files(compressed_dir, BUCKET_NAME, PREFIX, log=None):
     """Uploads compressed native files to a Google Cloud storage bucket
 
     For example,
-    sorted_dir:  /home/srv/data/intermediate/
+    compressed_dir:  /home/srv/data/intermediate/
     bucket name: solar-pv-nowcasting-data
     prefix:      satellite/EUMETSAT/SEVIRI_RSS/native/
 
