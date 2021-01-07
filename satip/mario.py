@@ -153,7 +153,7 @@ def download_latest_data_pipeline():
 def download_missing_eumetsat_files(context, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str='', end_date: str=''):
     dm = eumetsat.DownloadManager(context.solid_config['user_key'], context.solid_config['user_secret'], data_dir, metadata_db_fp, debug_fp, slack_webhook_url=context.solid_config['slack_webhook_url'], slack_id=context.solid_config['slack_id'])
 
-    missing_datasets = io.identifying_missing_datasets(start_date, end_date)[:5]
+    missing_datasets = io.identifying_missing_datasets(start_date, end_date)[:5] # <- remove after tests
     df_new_metadata = dm.download_datasets(missing_datasets)
 
     if df_new_metadata is None:
