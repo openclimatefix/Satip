@@ -446,12 +446,12 @@ class DownloadManager:
         """
 
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
-        df_new_metadata = self.download_datasets(datasets)
+        df_new_metadata = self.download_datasets(datasets, product_id=product_id)
 
         return df_new_metadata
 
 
-    def download_datasets(self, datasets):
+    def download_datasets(self, datasets, product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
         """
         Downloads a set of dataset from the EUMETSAT API
         in the defined date range and specified product

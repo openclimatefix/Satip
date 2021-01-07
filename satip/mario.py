@@ -118,4 +118,6 @@ def download_latest_data_pipeline():
     datetime_to_filepath = df_metadata_to_dt_to_fp_map(df_new_metadata)
     ds_combined_reproj = reproject_datasets(datetime_to_filepath)
     ds_combined_compressed = compress_and_save_datasets(ds_combined_reproj)
-    save_metadata(df_new_metadata)
+
+    if ds_combined_compressed is not None:
+        save_metadata(df_new_metadata)
