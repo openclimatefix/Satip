@@ -2,8 +2,7 @@
 
 __all__ = ['user_key', 'user_secret', 'slack_id', 'slack_webhook_url', 'download_eumetsat_files',
            'df_metadata_to_dt_to_fp_map', 'reproject_datasets', 'compress_and_save_datasets', 'save_metadata',
-           'compress_export_then_delete_raw', 'download_latest_data_pipeline', 'download_missing_eumetsat_files',
-           'download_missing_data_pipeline']
+           'compress_export_then_delete_raw', 'download_latest_data_pipeline', 'download_missing_eumetsat_files']
 
 # Cell
 import pandas as pd
@@ -14,6 +13,9 @@ from dagster import execute_pipeline, pipeline, solid, Field
 
 import os
 import dotenv
+
+# Cell
+_ = dotenv.load_dotenv(env_vars_fp)
 
 # Cell
 user_key = os.environ.get('USER_KEY')
@@ -162,15 +164,3 @@ def download_missing_eumetsat_files(context, data_dir: str, metadata_db_fp: str,
         df_new_metadata = df_new_metadata.iloc[1:] # the first entry is the last one we downloaded
 
     return df_new_metadata
-
-# Cell
-@pipeline
-def download_missing_data_pipeline():
-    # Retrieving data, reprojecting, compressing, and saving to GCP
-    df_new_metadata = download_missing_eumetsat_files()
-    datetime_to_filepath = df_metadata_to_dt_to_fp_map(df_new_metadata)
-    ds_combined_reproj = reproject_datasets(datetime_to_filepath)
-    ds_combined_compressed = compress_and_save_datasets(ds_combined_reproj)
-
-    save_metadata(ds_combined_compressed, df_new_metadata)
-    compress_export_then_delete_raw(ds_combined_compressed)
