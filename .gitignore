@@ -145,3 +145,5 @@ checklink/cookies.txt
 
 data/EUMETSAT_metadata.db
 logs/EUMETSAT_download.txt
+data/sorted/2020/01/01/12/09/MSG3-SEVI-MSG15-0100-NA-20200101120916.896000000Z-NA.nat.bz2
+data/sorted/2020/01/01/12/04/MSG3-SEVI-MSG15-0100-NA-20200101120418.186000000Z-NA.nat.bz2
