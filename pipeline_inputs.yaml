@@ -4,6 +4,8 @@ solids:
       data_dir: "data/raw"
       metadata_db_fp: "data/EUMETSAT_metadata.db"
       debug_fp: "logs/EUMETSAT_download.txt"
+      table_id: "eumetsat.metadata"
+      project_id: "solar-pv-nowcasting"
       start_date: ""
   df_metadata_to_dt_to_fp_map:
     inputs:
@@ -14,7 +16,7 @@ solids:
       new_grid_fp: "data/intermediate/new_grid_4km_TM.json"
   compress_and_save_datasets:
     inputs:
-      zarr_bucket: "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_zarr_int16"
+      zarr_bucket: "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16"
       var_name: "stacked_eumetsat_data"
   save_metadata:
     inputs:

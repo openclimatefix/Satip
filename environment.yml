@@ -2,7 +2,6 @@ name: satip_dev
 
 channels:
   - conda-forge
-  - pvlib
   - coecms
   
 dependencies:
@@ -24,7 +23,6 @@ dependencies:
   - rasterio
   - pillow  
   - gdal
-  - pvlib
   - tabulate
   - python-dotenv
   - xmltodict
@@ -36,6 +34,8 @@ dependencies:
   - zarr
   - dagster
   - dagit
+  - mkdocs
+  - mkdocs-material
   - pip
   
   - pip:
@@ -50,3 +50,4 @@ dependencies:
       - google-cloud-storage
       - configparser
       - pandas_gbq
+      - junix
