@@ -18,7 +18,7 @@ import datetime
 import zipfile
 import copy
 import os
-import io
+from io import BytesIO
 import re
 import glob
 import logging
@@ -388,7 +388,7 @@ class DownloadManager:
         r = requests.get(data_link, params=params)
         check_valid_request(r)
 
-        zipped_files = zipfile.ZipFile(io.BytesIO(r.content))
+        zipped_files = zipfile.ZipFile(BytesIO(r.content))
         zipped_files.extractall(f'{self.data_dir}')
 
         return
@@ -430,7 +430,7 @@ class DownloadManager:
         else:
             self.logger.info(f'{len(filenames)} files queried, {len(local)} found in {self.data_dir}, {len(download)} to download.')
 
-        return download
+        return download, local
 
 
     def download_date_range(self, start_date:str, end_date:str, product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
@@ -465,7 +465,7 @@ class DownloadManager:
         dataset_ids = sorted([dataset['id'] for dataset in datasets])
 
         # Check which datasets to download
-        dataset_ids = self.check_if_downloaded(dataset_ids)
+        download_ids, local_ids = self.check_if_downloaded(dataset_ids)
 
         # Downloading specified datasets
         if not dataset_ids:
@@ -478,12 +478,13 @@ class DownloadManager:
             dataset_link = dataset_id_to_link(dataset_id)
 
             # Download the raw data
-            try:
-                self.download_single_dataset(dataset_link)
-            except:
-                self.logger.info('The EUMETSAT access token has been refreshed')
-                self.request_access_token()
-                self.download_single_dataset(dataset_link)
+            if dataset_id in download_ids:
+                try:
+                    self.download_single_dataset(dataset_link)
+                except:
+                    self.logger.info('The EUMETSAT access token has been refreshed')
+                    self.request_access_token()
+                    self.download_single_dataset(dataset_link)
 
             # Extract and save metadata
             dataset_metadata = extract_metadata(self.data_dir, product_id=product_id)
