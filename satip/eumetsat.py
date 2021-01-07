@@ -446,7 +446,7 @@ class DownloadManager:
         """
 
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
-        df_new_metadata = self.download_datasets()
+        df_new_metadata = self.download_datasets(datasets)
 
         return df_new_metadata
 
