@@ -696,3 +696,9 @@
 2021-01-07 20:05:05,483 - INFO - ********** Download Manager Initialised **************
 2021-01-07 20:05:17,746 - INFO - 5 files queried, 0 found in ../data/raw, 5 to download.
 2021-01-07 20:05:17,746 - INFO - 5 files queried, 0 found in ../data/raw, 5 to download.
+2021-01-07 20:18:17,315 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:18:17,808 - INFO - 4 files queried, 1 found in ../data/raw, 3 to download.
+2021-01-07 20:34:52,133 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:34:52,578 - INFO - 2 files queried, 0 found in ../data/raw, 2 to download.
+2021-01-07 20:35:58,028 - INFO - ********** Download Manager Initialised **************
+2021-01-07 20:35:58,480 - INFO - 2 files queried, 2 found in ../data/raw, 0 to download.
