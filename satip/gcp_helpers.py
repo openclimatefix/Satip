@@ -166,6 +166,11 @@ def write_metadata_to_gcp(df, table_id, project_id, credentials=None, append=Tru
 
 # Cell
 def query(sql_query, project_id):
+    """Wrapper around BigQuery for a given Google project
+
+        Returns:
+            pandas.DataFrame of the query results
+    """
     df = pandas_gbq.read_gbq(sql_query, project_id=project_id)
 
     return df

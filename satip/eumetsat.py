@@ -530,7 +530,23 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 # Cell
-def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210123, log=None):
+def compress_downloaded_files(data_dir, sorted_dir,  log=None):
+    """
+    Compresses downloaded files, stores them locally,
+    and ensures they are approximately the correct filesize.
+    Uses pbzip2 for compression.
+
+        Parameters:
+            data_dir: (string), directory path containing raw downloaded files from EUMETSAT API
+            sorted_dir: (string), directory path for compressed .nat files
+            log: (bool), flag to enable logging
+
+        Returns:
+            -
+    """
+    NATIVE_FILESIZE_MB = 102.210123
+    EXTENSION = '.bz2'
+
     full_native_filenames = glob.glob(os.path.join(data_dir, '*.nat'))
     print(f'Found {len(full_native_filenames)} native files.')
     if log:
@@ -558,7 +574,6 @@ def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210
             print('Compression failed!')
             raise
 
-        EXTENSION = '.bz2'
         full_compressed_filename = full_native_filename + EXTENSION
         compressed_filesize_mb = get_filesize_megabytes(full_compressed_filename)
         if log:
@@ -583,6 +598,28 @@ def compress_downloaded_files(data_dir, sorted_dir, NATIVE_FILESIZE_MB = 102.210
 
 # Cell
 def upload_compressed_files(sorted_dir, BUCKET_NAME, PREFIX, log=None):
+    """Uploads compressed native files to a Google Cloud storage bucket
+
+    For example,
+    sorted_dir:  /home/srv/data/intermediate/
+    bucket name: solar-pv-nowcasting-data
+    prefix:      satellite/EUMETSAT/SEVIRI_RSS/native/
+
+    With some files like:
+    /home/srv/data/intermediate/2018/01/01/01/23/04/MSG3-SEVI-MSG15-0100-NA-20191001120415.883000000Z-NA.nat.bz2
+
+    Would upload the files to:
+    gs://solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/native/2018/01/01/01/23/04/MSG3-SEVI-MSG15-0100-NA-20191001120415.883000000Z-NA.nat.bz2
+    etc
+
+        Parameters:
+            sorted_dir: (str), directory where compressed files are stored locally
+            BUCKET_NAME: (str), name of Google Cloud storage bucket
+            PREFIX: (str), string prefix to use as part of the bucket storage path
+
+        Returns:
+            -
+    """
     paths = Path(sorted_dir).rglob('*.nat.bz2')
     full_compressed_files = [x for x in paths if x.is_file()]
     if log:
