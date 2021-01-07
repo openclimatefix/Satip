@@ -1,4 +1,4 @@
-# EUMETSAT API Wrapper Development    
+# EUMETSAT API Wrapper Development
 
 <br>
 
@@ -37,7 +37,7 @@ And test they were loaded successfully
 def check_env_vars_have_loaded(env_vars):
     for name, value in env_vars.items():
         assert value is not None, f'{name}` should not be None'
-    
+
     return
 
 env_vars = {
@@ -97,7 +97,6 @@ print(f'{len(datasets)} datasets have been identified')
 
     1728 datasets have been identified
     Wall time: 1.19 s
-    
 
 <br>
 
@@ -116,12 +115,7 @@ example_data_link = dataset_id_to_link(dataset_ids[0])
 example_data_link
 ```
 
-
-
-
     'https://api.eumetsat.int/data/download/products/MSG3-SEVI-MSG15-0100-NA-20191001000415.000000000Z-NA'
-
-
 
 <br>
 
@@ -148,14 +142,14 @@ We're now ready to create a download manager that will handle all of the queryin
 We'll now see what it looks like when we initialise the download manager
 
 ```python
-dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, 
+dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp,
                      slack_webhook_url=slack_webhook_url, slack_id=slack_id)
 
 start_date = '2020-10-01 12:00'
 end_date = '2020-10-01 12:05'
 
 if download_data == True:
-    dm.download_datasets(start_date, end_date)
+    dm.download_date_range(start_date, end_date)
 
 df_metadata = dm.get_df_metadata()
 
@@ -165,10 +159,6 @@ df_metadata.head()
     2020-12-16 23:12:02,565 - INFO - ********** Download Manager Initialised **************
     2020-12-16 23:12:03,112 - INFO - 1 files queried, 1 found in ../data/raw, 0 to download.
     2020-12-16 23:12:03,115 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
-    
-
-
-
 
 <div>
 <style scoped>
@@ -183,6 +173,7 @@ df_metadata.head()
     .dataframe thead th {
         text-align: right;
     }
+
 </style>
 <table border="1" class="dataframe">
   <thead>
@@ -304,8 +295,6 @@ df_metadata.head()
 </table>
 </div>
 
-
-
 <br>
 
 The `get_size` function was adapted from <a href="https://stackoverflow.com/questions/1392413/calculating-a-directorys-size-using-python">this stackoverflow answer</a>
@@ -317,7 +306,6 @@ print(f'The data directory is currently {round(data_dir_size/1_000_000_000, 2):,
 ```
 
     The data directory is currently 30.36 Gb
-    
 
 <br>
 <br>
@@ -334,7 +322,7 @@ print(f'The data directory is currently {round(data_dir_size/1_000_000_000, 2):,
 ## Trying out bucket files
 
 If GCP flags are passed (`bucket_name` and `bucket_prefix`), when downloading the `DownloadManager` should first check to see if the files already exist in the specified bucket.  
-If the files already exist, then don't download them.  
+If the files already exist, then don't download them.
 
 ```python
 BUCKET_NAME = "solar-pv-nowcasting-data"
@@ -346,21 +334,15 @@ dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, 
 ```
 
     2020-11-30 10:21:30,271 - INFO - ********** Download Manager Initialised **************
-    
+
 
     Checking files in GCP bucket solar-pv-nowcasting-data, this will take a few seconds
-    
 
 ```python
 len(dm.bucket_filenames)
 ```
 
-
-
-
     2
-
-
 
 ```python
 %time # took around 2 hours to download 1 day.
@@ -368,16 +350,14 @@ len(dm.bucket_filenames)
 # DownloadManager should find these 2019 files on the VM
 start_date = '2020-01-01 00:00'
 end_date = '2020-01-02 00:00'
-dm.download_datasets(start_date, end_date)
+dm.download_date_range(start_date, end_date)
 ```
 
     CPU times: user 3 Âµs, sys: 1 Âµs, total: 4 Âµs
     Wall time: 6.2 Âµs
-    
+
 
     2020-11-30 10:22:42,304 - INFO - 288 files queried, 2 found in bucket, 0 found in ../data/raw, 286 to download.
-    
-
 
 <div><span class="Text-label" style="display:inline-block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0; max-width:15ex; vertical-align:middle; text-align:right"></span>
 <progress style="width:60ex" max="286" value="286" class="Progress-main"/></progress>
@@ -385,19 +365,17 @@ dm.download_datasets(start_date, end_date)
 <span class="Iteration-label">286/286</span>
 <span class="Time-label">[02:08:45<00:22, 27.01s/it]</span></div>
 
-
     2020-11-30 11:31:58,945 - INFO - The EUMETSAT access token has been refreshed
-    
 
 However, the already downloaded files follow a different file name convention.
 
 Files through new API:
 `MSG3-SEVI-MSG15-0100-NA-20191001120415.883000000Z-NA.nat`  
-SatProgram-Instrument-SatNumber-AlgoVersion-InstrumentMode(?)-ReceptionStartDateUTC   
+SatProgram-Instrument-SatNumber-AlgoVersion-InstrumentMode(?)-ReceptionStartDateUTC
 
 Files on GCP:  
 ` MSG3-SEVI-MSG15-0100-NA-20191001120415.883000000Z-20191001120433-1399526-1.nat.bz2`  
-SatProgram-Instrument-SatNumber-AlgoVersion-InstrumentMode(?)-ReceptionStartDateUTC-SensingStartDateUTC-OrderNumber-PartNumber 
+SatProgram-Instrument-SatNumber-AlgoVersion-InstrumentMode(?)-ReceptionStartDateUTC-SensingStartDateUTC-OrderNumber-PartNumber
 
 Let's have a look at the filename lengths.
 
@@ -449,26 +427,20 @@ full_native_filenames = glob.glob(os.path.join(data_dir, '*.nat'))
 full_native_filenames
 ```
 
-
-
-
     []
-
-
 
 We will compress locally downloaded files here using `pbzip2`  
 On ubuntu: `sudo apt-get install -y pbzip2`  
-On mac: `brew install pbzip2`  
+On mac: `brew install pbzip2`
 
 ```python
 compress_downloaded_files(data_dir=data_dir, sorted_dir=sorted_dir)
 ```
 
     2020-11-29 22:10:05,805 - INFO - Found 0 native files.
-    
+
 
     Found 0 native files.
-    
 
 ## Sync to GCP Storage
 
