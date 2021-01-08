@@ -119,9 +119,11 @@ def save_metadata(context, ds_combined_compressed, df_new_metadata, table_id: st
         else:
             context.log.info('No metadata was available to be added')
 
+    return True
+
 @solid()
-def compress_export_then_delete_raw(context, ds_combined_compressed, data_dir: str, compressed_dir: str, BUCKET_NAME: str='solar-pv-nowcasting-data', PREFIX: str='satellite/EUMETSAT/SEVIRI_RSS/native/'):
-    if ds_combined_compressed is not None:
+def compress_export_then_delete_raw(context, ds_combined_compressed, data_dir: str, compressed_dir: str, BUCKET_NAME: str='solar-pv-nowcasting-data', PREFIX: str='satellite/EUMETSAT/SEVIRI_RSS/native/', ready_to_delete: bool=True):
+    if ready_to_delete == True:
         eumetsat.compress_downloaded_files(data_dir=data_dir, compressed_dir=compressed_dir, log=context.log)
         eumetsat.upload_compressed_files(compressed_dir, BUCKET_NAME=BUCKET_NAME, PREFIX=PREFIX, log=None)
 
@@ -140,8 +142,8 @@ def download_latest_data_pipeline():
     ds_combined_reproj = reproject_datasets(datetime_to_filepath)
     ds_combined_compressed = compress_and_save_datasets(ds_combined_reproj)
 
-    save_metadata(ds_combined_compressed, df_new_metadata)
-    compress_export_then_delete_raw(ds_combined_compressed)
+    ready_to_delete = save_metadata(ds_combined_compressed, df_new_metadata)
+    compress_export_then_delete_raw(ready_to_delete)
 
 # Cell
 @solid(
