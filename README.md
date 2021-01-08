@@ -14,16 +14,11 @@ To install the `satip` library please run:
 pip install satip
 ```
 
-<br>
+Or if you're working in the development environment you can run the following from the directory root:
 
-### Goals
-
-- [x] Entire EUMETSAT SEVIRI RSS archive available as one big Zarr array (tens of TBytes) in Google Public Datasets bucket, spatially reprojected, and saved in a very space-efficient way.
-- [x] Automatic job to update archive on GCP from EUMETSAT's new API once a day (Now running every half-hour).
-- [x] Documentation.  Possibly user-editable.  (source on GitHub, maybe?)
-- [ ] A few example Jupyter Notebooks showing how to load the data, train simple ML model, and compute metrics.
-
-N.b. on the last goal we currently having the data loading example, as well as other examples for how to interface with the satip library. We still need to add an ML example, which we will do with a custom data-loader from Zarr.
+```bash
+pip install -e .
+```
 
 <br>
 
