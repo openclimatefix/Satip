@@ -735,3 +735,36 @@
 2021-01-08 01:26:44,223 - INFO - 17 files queried, 13 found in ../data/raw, 4 to download.
 2021-01-08 01:26:54,072 - INFO - The EUMETSAT access token has been refreshed
 2021-01-08 01:26:54,072 - INFO - The EUMETSAT access token has been refreshed
+2021-01-08 01:33:04,034 - INFO - ********** Download Manager Initialised **************
+2021-01-08 01:33:04,469 - INFO - 6 files queried, 1 found in ../data/raw, 5 to download.
+2021-01-08 12:19:20,714 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:19:21,238 - INFO - 89 files queried, 1 found in data/raw, 88 to download.
+2021-01-08 12:19:28,575 - INFO - The EUMETSAT access token has been refreshed
+2021-01-08 12:20:01,593 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:20:01,993 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:20:01,993 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:21:45,323 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:21:45,738 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:21:45,738 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:22:27,417 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:22:27,842 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:22:27,842 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:22:54,933 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:22:55,320 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:22:55,320 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:23:58,318 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:23:58,700 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:23:58,701 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:25:32,468 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:25:32,850 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:25:32,851 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:26:31,676 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:26:32,152 - INFO - 34 files queried, 0 found in data/raw, 34 to download.
+2021-01-08 12:26:37,053 - INFO - The EUMETSAT access token has been refreshed
+2021-01-08 12:26:54,126 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:26:54,533 - INFO - 0 files queried, 0 found in data/raw, 0 to download.
+2021-01-08 12:26:54,533 - INFO - No files will be downloaded. Set DownloadManager bucket_name argument for local download
+2021-01-08 12:27:28,400 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:27:28,816 - INFO - 10 files queried, 0 found in data/raw, 10 to download.
+2021-01-08 12:40:36,873 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:40:37,329 - INFO - 1 files queried, 1 found in data/raw, 0 to download.

@@ -1,12 +1,14 @@
 solids:
-  download_latest_eumetsat_files:
+  download_eumetsat_files:
     inputs:
+      env_vars_fp: ".env"
       data_dir: "data/raw"
       metadata_db_fp: "data/EUMETSAT_metadata.db"
       debug_fp: "logs/EUMETSAT_download.txt"
       table_id: "eumetsat.metadata"
       project_id: "solar-pv-nowcasting"
       start_date: ""
+      end_date: ""
   df_metadata_to_dt_to_fp_map:
     inputs:
       data_dir: "data/raw"
@@ -22,3 +24,10 @@ solids:
     inputs:
       table_id: "eumetsat.metadata"
       project_id: "solar-pv-nowcasting"
+  compress_export_then_delete_raw:
+    inputs:
+      data_dir: "../data/raw"
+      compressed_dir: "../data/compressed"
+      BUCKET_NAME: "solar-pv-nowcasting-data"
+      PREFIX: "satellite/EUMETSAT/SEVIRI_RSS/native/"
+      ready_to_delete: true
