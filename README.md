@@ -37,6 +37,7 @@ N.b. on the last goal we currently having the data loading example, as well as o
 | Zarr          | nbs         | 03       | Development of wrappers for loading/saving to Zarr | Ayrton Bourn    |
 | GCP           | nbs         | 04       | Development of GCP interface wrappers              | Laurence Watson |
 | Pipeline      | nbs         | 05       | Development of the pipeline processes              | Ayrton Bourn    |
+| CI/CD         | nbs         | 06       | Development of CI/CD helper functions              | Ayrton Bourn    |
 | Downloading   | nbs         | 101      | Guidance for using the ems download manager        | Ayrton Bourn    |
 | Reprojecting  | nbs         | 102      | Guidance for using the reprojection operator       | Ayrton Bourn    |
 | Loading       | nbs         | 103      | Guidance for retrieving saved data from Zarr       | Ayrton Bourn    |
@@ -67,7 +68,9 @@ jupyter labextension install jupyter-matplotlib
 
 ### Publishing to PyPi
 
-To publish the `satip` module to PyPi simply run the following from the batch_scripts directory
+To automatically publish the `satip` module to PyPi you can add a GitHub tag of the form `v.X.X.X`, where the version number must be higher than the current one. This will also generate a GitHub release at the same time.
+
+To manually publish the `satip` module to PyPi simply run the following from the batch_scripts directory
 
 ```bash
 pypi_publish <anaconda_dir>
