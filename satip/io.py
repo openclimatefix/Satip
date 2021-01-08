@@ -11,6 +11,7 @@ import dask
 import zarr
 import gcsfs
 import numcodecs
+from ipypb import track
 
 from satip import eumetsat, reproj
 
@@ -169,22 +170,30 @@ def load_from_zarr_bucket(zarr_bucket):
 # Cell
 def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'):
     # Identifying date range if not fully provided
-    if (start_date is '') or (end_date is ''):
+    if (start_date == '') or (end_date == ''):
         ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
         start_date = ds_eumetsat.time.min().values
         end_date = ds_eumetsat.time.max().values
 
-    # Identifying all potential datasets over specified date range
-    datasets = eumetsat.identify_available_datasets(start_date, end_date)
+    print(f'Earliest {start_date}, latest {end_date}')
 
-    # Extracting the datetime each dataset was finished
-    end_dates = [dataset['properties']['date'].split('/')[-1] for dataset in datasets]
-    cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
+    # have to loop this by month for the API
+    month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="M")
+    missing_datasets = []
 
-    # Identifying missing datasets from the Zarr DB
-    ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
-    end_dates_to_datasets = dict(zip(cleaned_end_dates, datasets))
-    missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(ds_eumetsat.time.values))
-    missing_datasets = [data for date, data in end_dates_to_datasets.items() if date in missing_dates]
+    for i in track(range(len(month_split) - 1)):
+
+        # Identifying all potential datasets over specified date range
+        datasets = eumetsat.identify_available_datasets(month_split[i], month_split[i+1])
+
+        # Extracting the datetime each dataset was finished
+        end_dates = [dataset['properties']['date'].split('/')[-1] for dataset in datasets]
+        cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
+
+        # Identifying missing datasets from the Zarr DB
+        ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
+        end_dates_to_datasets = dict(zip(cleaned_end_dates, datasets))
+        missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(ds_eumetsat.time.values))
+        missing_datasets.append([data for date, data in end_dates_to_datasets.items() if date in missing_dates])
 
     return missing_datasets
