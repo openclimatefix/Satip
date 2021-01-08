@@ -36,6 +36,7 @@ dependencies:
   - dagit
   - mkdocs
   - mkdocs-material
+  - typer
   - pip
   
   - pip:

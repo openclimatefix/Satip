@@ -768,3 +768,15 @@
 2021-01-08 12:27:28,816 - INFO - 10 files queried, 0 found in data/raw, 10 to download.
 2021-01-08 12:40:36,873 - INFO - ********** Download Manager Initialised **************
 2021-01-08 12:40:37,329 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:44:43,970 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:44:44,371 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:46:03,243 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:46:03,616 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:46:54,329 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:46:54,744 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:50:44,093 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:50:44,543 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:52:03,358 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:52:03,747 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
+2021-01-08 12:52:50,114 - INFO - ********** Download Manager Initialised **************
+2021-01-08 12:52:50,725 - INFO - 1 files queried, 1 found in data/raw, 0 to download.
