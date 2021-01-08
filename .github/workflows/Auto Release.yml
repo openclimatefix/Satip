@@ -34,7 +34,6 @@ jobs:
 
       - name: Create latest distribution
         run: |
-          pip install -e . # reinstalling with new version number
           python setup.py sdist bdist_wheel
       - name: Publish package to PyPi
         uses: pypa/gh-action-pypi-publish@master
