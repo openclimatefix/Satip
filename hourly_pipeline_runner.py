@@ -3,6 +3,7 @@ import yaml
 import pandas as pd
 import sys
 import os
+from retrying import retry
 
 
 def main(start_date="2020-01-01 00:00", end_date="2020-01-01 01:00"):
@@ -20,9 +21,13 @@ def main(start_date="2020-01-01 00:00", end_date="2020-01-01 01:00"):
     with open("pipeline_inputs.yaml") as f:
         pipeline_inputs = yaml.safe_load(f)
 
+    # split into days
+    # each day try each hour
+
     hourly_dates = pd.date_range(start_date, end_date, freq="60min")
 
-    for i in range(len(hourly_dates) - 1):
+    @retry
+    def hour_download(i):
         print(f"Starting {hourly_dates[i]}")
         pipeline_inputs["solids"]["download_eumetsat_files"]["inputs"][
             "start_date"
@@ -35,6 +40,9 @@ def main(start_date="2020-01-01 00:00", end_date="2020-01-01 01:00"):
             shell=True,
             check=True,
         )
+
+    for i in range(len(hourly_dates) - 1):
+        hour_download(i)
 
 
 if __name__ == "__main__":
