@@ -520,11 +520,15 @@ def get_dir_size(directory='.'):
 
 # Cell
 def get_filesize_megabytes(filename):
+    """Returns filesize in megabytes"""
     filesize_bytes = os.path.getsize(filename)
     return filesize_bytes / 1E6
 
 
 def eumetsat_filename_to_datetime(inner_tar_name):
+    """Takes a file from the EUMETSAT API and returns
+    the date and time part of the filename"""
+
     p = re.compile('^MSG[23]-SEVI-MSG15-0100-NA-(\d*)\.')
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
@@ -592,7 +596,7 @@ def compress_downloaded_files(data_dir, compressed_dir, log=None):
 
         new_dst_full_filename = os.path.join(new_dst_path, base_native_filename + EXTENSION)
         if log:
-            log.debug('Moving %s to %s', full_compressed_filename, new_dst_full_filename)
+            log.debug(f'Moving {full_compressed_filename} to {new_dst_full_filename}')
 
         if os.path.exists(new_dst_full_filename):
             if log:

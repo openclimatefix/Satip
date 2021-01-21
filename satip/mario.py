@@ -20,16 +20,21 @@ import warnings
 warnings.filterwarnings('ignore', message='divide by zero encountered in true_divide')
 warnings.filterwarnings('ignore', message='invalid value encountered in sin')
 warnings.filterwarnings('ignore', message='invalid value encountered in cos')
+warnings.filterwarnings('ignore', message='invalid value encountered in subtract')
 warnings.filterwarnings('ignore', message='You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems')
 
 # Cell
 @solid()
-def download_eumetsat_files(context, env_vars_fp: str, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str='', end_date: str=''):
+def download_eumetsat_files(context, env_vars_fp: str, data_dir: str, metadata_db_fp: str, debug_fp: str, table_id: str, project_id: str, start_date: str='', end_date: str='', max_mins: int=60):
     _ = dotenv.load_dotenv(env_vars_fp)
 
     if start_date == '':
         sql_query = f'select * from {table_id} where result_time = (select max(result_time) from {table_id})'
-        start_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0]
+
+        latest_saved_date = gcp_helpers.query(sql_query, project_id)['result_time'].iloc[0].tz_localize(None)
+        earliest_start_date = pd.Timestamp.now() - pd.Timedelta(max_mins, unit='minutes')
+
+        start_date = max(earliest_start_date, latest_saved_date).strftime('%Y-%m-%d %H:%M')
 
     if end_date == '':
         end_date = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')
@@ -146,7 +151,7 @@ def download_missing_eumetsat_files(context, env_vars_fp: str, data_dir: str, me
     _ = dotenv.load_dotenv(env_vars_fp)
     dm = eumetsat.DownloadManager(os.environ.get('USER_KEY'), os.environ.get('USER_SECRET'), data_dir, metadata_db_fp, debug_fp, slack_webhook_url=os.environ.get('SLACK_WEBHOOK_URL'), slack_id=os.environ.get('SLACK_ID'))
 
-    missing_datasets = io.identifying_missing_datasets(start_date, end_date)[:5] # <- remove after tests
+    missing_datasets = io.identifying_missing_datasets(start_date, end_date)
     df_new_metadata = dm.download_datasets(missing_datasets)
 
     if df_new_metadata is None:
