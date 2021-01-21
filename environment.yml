@@ -23,6 +23,7 @@ dependencies:
   - rasterio
   - pillow  
   - gdal
+  - lxml
   - tabulate
   - python-dotenv
   - xmltodict
