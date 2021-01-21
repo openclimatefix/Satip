@@ -2,9 +2,7 @@
 
 
 
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\google\auth\_default.py:69: UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. You might receive a "quota exceeded" or "API not enabled" error. We recommend you rerun `gcloud auth application-default login` and make sure a quota project is added. Or you can use service accounts instead. For more information about service accounts, see https://cloud.google.com/docs/authentication/
-      warnings.warn(_CLOUD_SDK_CREDENTIALS_WARNING)
-    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  1.34rows/s]
+    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  2.10rows/s]
     
 
 ```python
@@ -13,6 +11,8 @@ import dotenv
 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+
+from IPython.display import JSON
 ```
 
 <br>
@@ -57,7 +57,7 @@ df_metadata = dm.get_df_metadata()
 df_metadata.tail()
 ```
 
-    2020-12-16 23:16:13,598 - INFO - ********** Download Manager Initialised **************
+    2021-01-08 09:43:50,879 - INFO - ********** Download Manager Initialised **************
     
 
 
@@ -114,84 +114,84 @@ df_metadata.tail()
   </thead>
   <tbody>
     <tr>
-      <th>317</th>
-      <td>2020-12-16 17:20:10.024</td>
-      <td>2020-12-16 17:24:16.395</td>
-      <td>2020-12-16 17:24:16.395</td>
+      <th>332</th>
+      <td>2020-01-01 00:00:07.683</td>
+      <td>2020-01-01 00:04:14.102</td>
+      <td>2020-01-01 00:04:14.102</td>
       <td>MSG3</td>
       <td>GEO</td>
       <td>SEVIRI</td>
       <td>RSS</td>
       <td>EPSG:4326</td>
       <td>0 9.5</td>
-      <td>MSG3-SEVI-MSG15-0100-NA-20201216172416.3950000...</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20200101000414.1020000...</td>
       <td>99819</td>
       <td>0.0</td>
-      <td>2020-12-16 17:43:23.976507</td>
+      <td>2021-01-07 20:39:02.727875</td>
     </tr>
     <tr>
-      <th>318</th>
-      <td>2020-12-16 17:25:11.077</td>
-      <td>2020-12-16 17:29:17.447</td>
-      <td>2020-12-16 17:29:17.447</td>
+      <th>333</th>
+      <td>2020-01-01 00:05:08.795</td>
+      <td>2020-01-01 00:09:15.215</td>
+      <td>2020-01-01 00:09:15.215</td>
       <td>MSG3</td>
       <td>GEO</td>
       <td>SEVIRI</td>
       <td>RSS</td>
       <td>EPSG:4326</td>
       <td>0 9.5</td>
-      <td>MSG3-SEVI-MSG15-0100-NA-20201216172917.4470000...</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20200101000915.2150000...</td>
       <td>99819</td>
       <td>0.0</td>
-      <td>2020-12-16 17:43:30.350041</td>
+      <td>2021-01-07 20:40:35.463153</td>
     </tr>
     <tr>
-      <th>319</th>
-      <td>2020-12-16 17:30:12.129</td>
-      <td>2020-12-16 17:34:18.500</td>
-      <td>2020-12-16 17:34:18.500</td>
+      <th>334</th>
+      <td>2020-01-01 00:10:09.908</td>
+      <td>2020-01-01 00:14:16.328</td>
+      <td>2020-01-01 00:14:16.328</td>
       <td>MSG3</td>
       <td>GEO</td>
       <td>SEVIRI</td>
       <td>RSS</td>
       <td>EPSG:4326</td>
       <td>0 9.5</td>
-      <td>MSG3-SEVI-MSG15-0100-NA-20201216173418.5000000...</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20200101001416.3280000...</td>
       <td>99819</td>
       <td>0.0</td>
-      <td>2020-12-16 17:43:36.259900</td>
+      <td>2021-01-07 20:42:01.806167</td>
     </tr>
     <tr>
-      <th>320</th>
-      <td>2020-12-16 17:35:11.980</td>
-      <td>2020-12-16 17:39:18.350</td>
-      <td>2020-12-16 17:39:18.350</td>
+      <th>335</th>
+      <td>2020-01-01 00:15:11.021</td>
+      <td>2020-01-01 00:19:17.440</td>
+      <td>2020-01-01 00:19:17.440</td>
       <td>MSG3</td>
       <td>GEO</td>
       <td>SEVIRI</td>
       <td>RSS</td>
       <td>EPSG:4326</td>
       <td>0 9.5</td>
-      <td>MSG3-SEVI-MSG15-0100-NA-20201216173918.3500000...</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20200101001917.4400000...</td>
       <td>99819</td>
       <td>0.0</td>
-      <td>2020-12-16 17:43:43.114954</td>
+      <td>2021-01-07 20:42:42.769446</td>
     </tr>
     <tr>
-      <th>321</th>
-      <td>2020-12-16 18:35:08.985</td>
-      <td>2020-12-16 18:39:15.355</td>
-      <td>2020-12-16 18:39:15.355</td>
+      <th>336</th>
+      <td>2021-01-07 20:50:09.828</td>
+      <td>2021-01-07 20:54:16.209</td>
+      <td>2021-01-07 20:54:16.209</td>
       <td>MSG3</td>
       <td>GEO</td>
       <td>SEVIRI</td>
       <td>RSS</td>
       <td>EPSG:4326</td>
       <td>0 9.5</td>
-      <td>MSG3-SEVI-MSG15-0100-NA-20201216183915.3550000...</td>
+      <td>MSG3-SEVI-MSG15-0100-NA-20210107205416.2090000...</td>
       <td>99819</td>
       <td>0.0</td>
-      <td>2020-12-16 18:43:56.975095</td>
+      <td>2021-01-07 21:37:09.110106</td>
     </tr>
   </tbody>
 </table>
@@ -214,9 +214,9 @@ scene = reproj.load_scene(native_fp)
 scene.load(['HRV'])
 ```
 
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\pyproj\crs\crs.py:543: UserWarning: You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems
+    /Users/laurence/software/anaconda3/envs/satip_dev/lib/python3.8/site-packages/pyproj/crs/crs.py:543: UserWarning: You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems
       proj_string = self.to_proj4()
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\pyproj\crs\crs.py:543: UserWarning: You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems
+    /Users/laurence/software/anaconda3/envs/satip_dev/lib/python3.8/site-packages/pyproj/crs/crs.py:543: UserWarning: You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems
       proj_string = self.to_proj4()
     
 
@@ -236,7 +236,7 @@ ax.coastlines(resolution='50m', alpha=0.8, color='white')
 
 
 
-    <cartopy.mpl.feature_artist.FeatureArtist at 0x292182c9a30>
+    <cartopy.mpl.feature_artist.FeatureArtist at 0x7fdf79164ca0>
 
 
 
@@ -256,7 +256,8 @@ reprojector = reproj.Reprojector(new_coords_fp, new_grid_fp)
 ds_reproj = reprojector.reproject(native_fp, reproj_library='pyresample')
 ```
 
-    Wall time: 4.59 s
+    CPU times: user 4.79 s, sys: 356 ms, total: 5.14 s
+    Wall time: 5.41 s
     
 
 <br>
@@ -272,18 +273,18 @@ ds_reproj['stacked_eumetsat_data'].sel(variable='HRV').plot.imshow(ax=ax, cmap='
 ax.coastlines(resolution='50m', alpha=0.8, color='white')
 ```
 
-    <ipython-input-67-53f177b0781d>:2: UserWarning: The default value for the *approx* keyword argument to TransverseMercator will change from True to False after 0.18.
+    <ipython-input-12-53f177b0781d>:2: UserWarning: The default value for the *approx* keyword argument to TransverseMercator will change from True to False after 0.18.
       ax = plt.axes(projection=ccrs.TransverseMercator())
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\dask\core.py:121: RuntimeWarning: invalid value encountered in cos
+    /Users/laurence/software/anaconda3/envs/satip_dev/lib/python3.8/site-packages/dask/core.py:121: RuntimeWarning: invalid value encountered in cos
       return func(*(_execute_task(a, cache) for a in args))
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\dask\core.py:121: RuntimeWarning: invalid value encountered in sin
+    /Users/laurence/software/anaconda3/envs/satip_dev/lib/python3.8/site-packages/dask/core.py:121: RuntimeWarning: invalid value encountered in sin
       return func(*(_execute_task(a, cache) for a in args))
     
 
 
 
 
-    <cartopy.mpl.feature_artist.FeatureArtist at 0x292178ed7f0>
+    <cartopy.mpl.feature_artist.FeatureArtist at 0x7fdf55fddf70>
 
 
 
@@ -395,8 +396,8 @@ compressor = Compressor()
 da_compressed = compressor.compress(ds_reproj['stacked_eumetsat_data'])
 ```
 
-    2020-12-15 12:20:10.182808
-    Wall time: 19 ms
+    CPU times: user 20.5 ms, sys: 1.85 ms, total: 22.3 ms
+    Wall time: 21.2 ms
     
 
 <br>
@@ -447,16 +448,12 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], z
 Now we can save it!
 
 ```python
-out_zarr_bucket = 'solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'
+save_data = False
 
-ds = save_da_to_zarr(da_compressed, out_zarr_bucket, zarr_mode='w')
+if save_data == True:
+    out_zarr_bucket = 'solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'
+    ds = save_da_to_zarr(da_compressed, out_zarr_bucket, zarr_mode='w')
 ```
-
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\dask\core.py:121: RuntimeWarning: invalid value encountered in sin
-      return func(*(_execute_task(a, cache) for a in args))
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\dask\core.py:121: RuntimeWarning: invalid value encountered in cos
-      return func(*(_execute_task(a, cache) for a in args))
-    
 
 <br>
 
@@ -476,7 +473,8 @@ loaded_xarray = load_from_zarr_bucket(out_zarr_bucket)
 loaded_xarray.time.compute()
 ```
 
-    Wall time: 2.27 s
+    CPU times: user 760 ms, sys: 73.8 ms, total: 834 ms
+    Wall time: 3.56 s
     
 
 
@@ -833,49 +831,19 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray &#x27;time&#x27; (time: 26)&gt;
-array([&#x27;2020-12-16T15:19:15.000000000&#x27;, &#x27;2020-12-16T15:24:16.000000000&#x27;,
-       &#x27;2020-12-16T15:29:17.000000000&#x27;, &#x27;2020-12-16T15:34:18.000000000&#x27;,
-       &#x27;2020-12-16T15:39:18.000000000&#x27;, &#x27;2020-12-16T15:44:18.000000000&#x27;,
-       &#x27;2020-12-16T15:49:18.000000000&#x27;, &#x27;2020-12-16T15:54:16.000000000&#x27;,
-       &#x27;2020-12-16T15:59:15.000000000&#x27;, &#x27;2020-12-16T16:04:13.000000000&#x27;,
-       &#x27;2020-12-16T16:14:13.000000000&#x27;, &#x27;2020-12-16T16:19:13.000000000&#x27;,
-       &#x27;2020-12-16T16:24:14.000000000&#x27;, &#x27;2020-12-16T16:29:15.000000000&#x27;,
-       &#x27;2020-12-16T16:39:16.000000000&#x27;, &#x27;2020-12-16T16:44:16.000000000&#x27;,
-       &#x27;2020-12-16T16:49:16.000000000&#x27;, &#x27;2020-12-16T16:54:16.000000000&#x27;,
-       &#x27;2020-12-16T16:59:15.000000000&#x27;, &#x27;2020-12-16T17:04:15.000000000&#x27;,
-       &#x27;2020-12-16T17:09:15.000000000&#x27;, &#x27;2020-12-16T17:19:15.000000000&#x27;,
-       &#x27;2020-12-16T17:24:16.000000000&#x27;, &#x27;2020-12-16T17:29:17.000000000&#x27;,
-       &#x27;2020-12-16T17:34:18.000000000&#x27;, &#x27;2020-12-16T17:39:18.000000000&#x27;],
+</style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray &#x27;time&#x27; (time: 781)&gt;
+array([&#x27;2020-12-16T18:40:08.000000000&#x27;, &#x27;2021-01-07T12:04:16.000000000&#x27;,
+       &#x27;2021-01-07T12:09:16.000000000&#x27;, ..., &#x27;2021-01-08T01:19:16.000000000&#x27;,
+       &#x27;2021-01-08T01:24:16.000000000&#x27;, &#x27;2021-01-08T01:29:15.000000000&#x27;],
       dtype=&#x27;datetime64[ns]&#x27;)
 Coordinates:
-  * time     (time) datetime64[ns] 2020-12-16T15:19:15 ... 2020-12-16T17:39:18</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'>'time'</div><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 26</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-2100848d-ebb5-455a-98a1-f8da3af258f3' class='xr-array-in' type='checkbox' checked><label for='section-2100848d-ebb5-455a-98a1-f8da3af258f3' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>2020-12-16T15:19:15 2020-12-16T15:24:16 ... 2020-12-16T17:39:18</span></div><div class='xr-array-data'><pre>array([&#x27;2020-12-16T15:19:15.000000000&#x27;, &#x27;2020-12-16T15:24:16.000000000&#x27;,
-       &#x27;2020-12-16T15:29:17.000000000&#x27;, &#x27;2020-12-16T15:34:18.000000000&#x27;,
-       &#x27;2020-12-16T15:39:18.000000000&#x27;, &#x27;2020-12-16T15:44:18.000000000&#x27;,
-       &#x27;2020-12-16T15:49:18.000000000&#x27;, &#x27;2020-12-16T15:54:16.000000000&#x27;,
-       &#x27;2020-12-16T15:59:15.000000000&#x27;, &#x27;2020-12-16T16:04:13.000000000&#x27;,
-       &#x27;2020-12-16T16:14:13.000000000&#x27;, &#x27;2020-12-16T16:19:13.000000000&#x27;,
-       &#x27;2020-12-16T16:24:14.000000000&#x27;, &#x27;2020-12-16T16:29:15.000000000&#x27;,
-       &#x27;2020-12-16T16:39:16.000000000&#x27;, &#x27;2020-12-16T16:44:16.000000000&#x27;,
-       &#x27;2020-12-16T16:49:16.000000000&#x27;, &#x27;2020-12-16T16:54:16.000000000&#x27;,
-       &#x27;2020-12-16T16:59:15.000000000&#x27;, &#x27;2020-12-16T17:04:15.000000000&#x27;,
-       &#x27;2020-12-16T17:09:15.000000000&#x27;, &#x27;2020-12-16T17:19:15.000000000&#x27;,
-       &#x27;2020-12-16T17:24:16.000000000&#x27;, &#x27;2020-12-16T17:29:17.000000000&#x27;,
-       &#x27;2020-12-16T17:34:18.000000000&#x27;, &#x27;2020-12-16T17:39:18.000000000&#x27;],
-      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></div></li><li class='xr-section-item'><input id='section-81e5a5c3-e284-4c96-9625-84d6cb6bc9d9' class='xr-section-summary-in' type='checkbox'  checked><label for='section-81e5a5c3-e284-4c96-9625-84d6cb6bc9d9' class='xr-section-summary' >Coordinates: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2020-12-16T15:19:15 ... 2020-12-...</div><input id='attrs-e000d2c7-6ba6-4b2c-8c5b-6a9407160808' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-e000d2c7-6ba6-4b2c-8c5b-6a9407160808' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a773b7b9-69a8-48c7-826b-824267c00f73' class='xr-var-data-in' type='checkbox'><label for='data-a773b7b9-69a8-48c7-826b-824267c00f73' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;2020-12-16T15:19:15.000000000&#x27;, &#x27;2020-12-16T15:24:16.000000000&#x27;,
-       &#x27;2020-12-16T15:29:17.000000000&#x27;, &#x27;2020-12-16T15:34:18.000000000&#x27;,
-       &#x27;2020-12-16T15:39:18.000000000&#x27;, &#x27;2020-12-16T15:44:18.000000000&#x27;,
-       &#x27;2020-12-16T15:49:18.000000000&#x27;, &#x27;2020-12-16T15:54:16.000000000&#x27;,
-       &#x27;2020-12-16T15:59:15.000000000&#x27;, &#x27;2020-12-16T16:04:13.000000000&#x27;,
-       &#x27;2020-12-16T16:14:13.000000000&#x27;, &#x27;2020-12-16T16:19:13.000000000&#x27;,
-       &#x27;2020-12-16T16:24:14.000000000&#x27;, &#x27;2020-12-16T16:29:15.000000000&#x27;,
-       &#x27;2020-12-16T16:39:16.000000000&#x27;, &#x27;2020-12-16T16:44:16.000000000&#x27;,
-       &#x27;2020-12-16T16:49:16.000000000&#x27;, &#x27;2020-12-16T16:54:16.000000000&#x27;,
-       &#x27;2020-12-16T16:59:15.000000000&#x27;, &#x27;2020-12-16T17:04:15.000000000&#x27;,
-       &#x27;2020-12-16T17:09:15.000000000&#x27;, &#x27;2020-12-16T17:19:15.000000000&#x27;,
-       &#x27;2020-12-16T17:24:16.000000000&#x27;, &#x27;2020-12-16T17:29:17.000000000&#x27;,
-       &#x27;2020-12-16T17:34:18.000000000&#x27;, &#x27;2020-12-16T17:39:18.000000000&#x27;],
-      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-ffb9d52e-f8fa-487b-ba0a-8707a9a1dc6c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-ffb9d52e-f8fa-487b-ba0a-8707a9a1dc6c' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div>
+  * time     (time) datetime64[ns] 2020-12-16T18:40:08 ... 2021-01-08T01:29:15</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'>'time'</div><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 781</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-6a1a37d4-f518-47c3-afe1-18382c743487' class='xr-array-in' type='checkbox' checked><label for='section-6a1a37d4-f518-47c3-afe1-18382c743487' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>2020-12-16T18:40:08 2021-01-07T12:04:16 ... 2021-01-08T01:29:15</span></div><div class='xr-array-data'><pre>array([&#x27;2020-12-16T18:40:08.000000000&#x27;, &#x27;2021-01-07T12:04:16.000000000&#x27;,
+       &#x27;2021-01-07T12:09:16.000000000&#x27;, ..., &#x27;2021-01-08T01:19:16.000000000&#x27;,
+       &#x27;2021-01-08T01:24:16.000000000&#x27;, &#x27;2021-01-08T01:29:15.000000000&#x27;],
+      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></div></li><li class='xr-section-item'><input id='section-3c87c3f6-d6d0-4949-85f5-df76a1c0dd5c' class='xr-section-summary-in' type='checkbox'  checked><label for='section-3c87c3f6-d6d0-4949-85f5-df76a1c0dd5c' class='xr-section-summary' >Coordinates: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2020-12-16T18:40:08 ... 2021-01-...</div><input id='attrs-99b82b26-f8ed-4c75-a648-669bd577346a' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-99b82b26-f8ed-4c75-a648-669bd577346a' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-4fc21742-90d1-428a-930f-262d050cdcc0' class='xr-var-data-in' type='checkbox'><label for='data-4fc21742-90d1-428a-930f-262d050cdcc0' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;2020-12-16T18:40:08.000000000&#x27;, &#x27;2021-01-07T12:04:16.000000000&#x27;,
+       &#x27;2021-01-07T12:09:16.000000000&#x27;, ..., &#x27;2021-01-08T01:19:16.000000000&#x27;,
+       &#x27;2021-01-08T01:24:16.000000000&#x27;, &#x27;2021-01-08T01:29:15.000000000&#x27;],
+      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-28bcaf3a-987d-4dcb-b444-b52439e493ee' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-28bcaf3a-987d-4dcb-b444-b52439e493ee' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div>
 
 
 
@@ -892,17 +860,75 @@ loaded_xarray['stacked_eumetsat_data'].isel(variable=0, time=0).T.plot(ax=ax, cm
 ax.coastlines(resolution='50m', alpha=0.8, color='white')
 ```
 
-    <ipython-input-82-f7e189d5f897>:2: UserWarning: The default value for the *approx* keyword argument to TransverseMercator will change from True to False after 0.18.
+    <ipython-input-19-f7e189d5f897>:2: UserWarning: The default value for the *approx* keyword argument to TransverseMercator will change from True to False after 0.18.
       ax = plt.axes(projection=ccrs.TransverseMercator())
     
 
 
 
 
-    <cartopy.mpl.feature_artist.FeatureArtist at 0x2925b42afa0>
+    <cartopy.mpl.feature_artist.FeatureArtist at 0x7fdf4185de80>
 
 
 
 
 ![png](img/nbs/output_28_2.png)
 
+
+<br>
+
+We can also identify missing datasets which will be useful for filling them in later
+
+```python
+#exports
+def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16'):
+    # Identifying date range if not fully provided
+    if (start_date == '') or (end_date == ''):
+        ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
+        start_date = ds_eumetsat.time.min().values
+        end_date = ds_eumetsat.time.max().values
+    
+    print(f'Earliest {start_date}, latest {end_date}')
+    
+    # have to loop this by month for the API
+    month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="M")
+    missing_datasets = []
+    
+    for i in track(range(len(month_split) - 1)):
+    
+        # Identifying all potential datasets over specified date range
+        datasets = eumetsat.identify_available_datasets(month_split[i], month_split[i+1])
+
+        # Extracting the datetime each dataset was finished
+        end_dates = [dataset['properties']['date'].split('/')[-1] for dataset in datasets]
+        cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
+
+        # Identifying missing datasets from the Zarr DB
+        ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
+        end_dates_to_datasets = dict(zip(cleaned_end_dates, datasets))
+        missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(ds_eumetsat.time.values))
+        missing_datasets.append([data for date, data in end_dates_to_datasets.items() if date in missing_dates])
+    
+    return missing_datasets
+```
+
+```python
+missing_datasets = identifying_missing_datasets()
+
+JSON(missing_datasets)
+```
+
+    Earliest 2020-01-01T00:09:15.000000000, latest 2021-01-08T01:29:15.000000000
+    
+
+
+<div><span class="Text-label" style="display:inline-block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0; max-width:15ex; vertical-align:middle; text-align:right"></span>
+<progress style="width:60ex" max="11" value="3" class="Progress-main"/></progress>
+<span class="Progress-label"><strong>27%</strong></span>
+<span class="Iteration-label">3/11</span>
+<span class="Time-label">[00:18<00:06, 6.02s/it]</span></div>
+
+
+```python
+JSON(missing_datasets)
+```
