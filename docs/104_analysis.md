@@ -1,18 +1,17 @@
-# Loading from Zarr 
+# Extracting Time-Series for Analysis
 
 
 
 ```python
 from satip import io
 
+import shapely
+import geopandas as gpd
+
+import seaborn as sns
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 ```
-
-    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\google\auth\_default.py:69: UserWarning: Your application has authenticated using end user credentials from Google Cloud SDK without a quota project. You might receive a "quota exceeded" or "API not enabled" error. We recommend you rerun `gcloud auth application-default login` and make sure a quota project is added. Or you can use service accounts instead. For more information about service accounts, see https://cloud.google.com/docs/authentication/
-      warnings.warn(_CLOUD_SDK_CREDENTIALS_WARNING)
-    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  1.29rows/s]
-    
 
 <br>
 
@@ -538,7 +537,7 @@ Area extent: (2792875.1692, 5571248.3904, -2775872.8853, 1394687.3495), &#x27;na
 We can then index this as we would any other `xarray` object
 
 ```python
-da_HRV_sample = ds['stacked_eumetsat_data'].isel(time=slice(0, 100)).sel(variable='HRV')
+da_HRV_sample = ds['stacked_eumetsat_data'].isel(time=slice(800, 900)).sel(variable='HRV')
 
 da_HRV_sample
 ```
@@ -900,12 +899,12 @@ dl.xr-attrs {
 </style><pre class='xr-text-repr-fallback'>&lt;xarray.DataArray &#x27;stacked_eumetsat_data&#x27; (time: 100, x: 1870, y: 1831)&gt;
 dask.array&lt;getitem, shape=(100, 1870, 1831), dtype=int16, chunksize=(36, 1870, 1831), chunktype=numpy.ndarray&gt;
 Coordinates:
-  * time      (time) datetime64[ns] 2020-12-16T18:40:08 ... 2021-01-07T20:09:16
+  * time      (time) datetime64[ns] 2021-01-08T03:09:15 ... 2020-01-01T00:59:16
     variable  &lt;U3 &#x27;HRV&#x27;
   * x         (x) float64 -3.088e+06 -3.084e+06 ... 4.384e+06 4.388e+06
   * y         (y) float64 9.012e+06 9.008e+06 9.004e+06 ... 1.696e+06 1.692e+06
 Attributes:
-    meta:     {&#x27;orbital_parameters&#x27;: {&#x27;projection_longitude&#x27;: 9.5, &#x27;projectio...</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'>'stacked_eumetsat_data'</div><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 100</li><li><span class='xr-has-index'>x</span>: 1870</li><li><span class='xr-has-index'>y</span>: 1831</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-6fb99322-4742-401e-a872-1046031cbb8c' class='xr-array-in' type='checkbox' checked><label for='section-6fb99322-4742-401e-a872-1046031cbb8c' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>dask.array&lt;chunksize=(36, 1870, 1831), meta=np.ndarray&gt;</span></div><div class='xr-array-data'><table>
+    meta:     {&#x27;orbital_parameters&#x27;: {&#x27;projection_longitude&#x27;: 9.5, &#x27;projectio...</pre><div class='xr-wrap' hidden><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'>'stacked_eumetsat_data'</div><ul class='xr-dim-list'><li><span class='xr-has-index'>time</span>: 100</li><li><span class='xr-has-index'>x</span>: 1870</li><li><span class='xr-has-index'>y</span>: 1831</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-9f1b9b21-f49c-4876-9fc5-fbfce3f09181' class='xr-array-in' type='checkbox' checked><label for='section-9f1b9b21-f49c-4876-9fc5-fbfce3f09181' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>dask.array&lt;chunksize=(28, 1870, 1831), meta=np.ndarray&gt;</span></div><div class='xr-array-data'><table>
 <tr>
 <td>
 <table>
@@ -929,8 +928,8 @@ Attributes:
 
   <!-- Vertical lines -->
   <line x1="10" y1="0" x2="10" y2="120" style="stroke-width:2" />
-  <line x1="17" y1="7" x2="17" y2="127" />
-  <line x1="24" y1="14" x2="24" y2="134" />
+  <line x1="15" y1="5" x2="15" y2="125" />
+  <line x1="23" y1="13" x2="23" y2="133" />
   <line x1="30" y1="20" x2="30" y2="140" style="stroke-width:2" />
 
   <!-- Colored Rectangle -->
@@ -938,8 +937,8 @@ Attributes:
 
   <!-- Horizontal lines -->
   <line x1="10" y1="0" x2="127" y2="0" style="stroke-width:2" />
-  <line x1="17" y1="7" x2="134" y2="7" />
-  <line x1="24" y1="14" x2="142" y2="14" />
+  <line x1="15" y1="5" x2="133" y2="5" />
+  <line x1="23" y1="13" x2="140" y2="13" />
   <line x1="30" y1="20" x2="148" y2="20" style="stroke-width:2" />
 
   <!-- Vertical lines -->
@@ -967,57 +966,57 @@ Attributes:
 </svg>
 </td>
 </tr>
-</table></div></div></li><li class='xr-section-item'><input id='section-332c9c13-6734-4f8f-9f87-59001bf8e62f' class='xr-section-summary-in' type='checkbox'  checked><label for='section-332c9c13-6734-4f8f-9f87-59001bf8e62f' class='xr-section-summary' >Coordinates: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2020-12-16T18:40:08 ... 2021-01-...</div><input id='attrs-7b033d6a-5399-4ff9-825b-5dc5db3197db' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-7b033d6a-5399-4ff9-825b-5dc5db3197db' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-a2e36c9d-e47b-4e12-b4ca-ffba80331d69' class='xr-var-data-in' type='checkbox'><label for='data-a2e36c9d-e47b-4e12-b4ca-ffba80331d69' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;2020-12-16T18:40:08.000000000&#x27;, &#x27;2021-01-07T12:04:16.000000000&#x27;,
-       &#x27;2021-01-07T12:09:16.000000000&#x27;, &#x27;2021-01-07T12:14:15.000000000&#x27;,
-       &#x27;2021-01-07T12:19:15.000000000&#x27;, &#x27;2021-01-07T12:24:16.000000000&#x27;,
-       &#x27;2021-01-07T12:29:17.000000000&#x27;, &#x27;2021-01-07T12:34:19.000000000&#x27;,
-       &#x27;2021-01-07T12:39:18.000000000&#x27;, &#x27;2021-01-07T12:44:18.000000000&#x27;,
-       &#x27;2021-01-07T12:49:18.000000000&#x27;, &#x27;2021-01-07T12:54:17.000000000&#x27;,
-       &#x27;2021-01-07T13:09:16.000000000&#x27;, &#x27;2021-01-07T13:14:16.000000000&#x27;,
-       &#x27;2021-01-07T13:39:16.000000000&#x27;, &#x27;2021-01-07T13:49:15.000000000&#x27;,
-       &#x27;2021-01-07T13:54:15.000000000&#x27;, &#x27;2021-01-07T14:04:15.000000000&#x27;,
-       &#x27;2021-01-07T14:09:15.000000000&#x27;, &#x27;2021-01-07T14:14:15.000000000&#x27;,
-       &#x27;2021-01-07T14:19:14.000000000&#x27;, &#x27;2021-01-07T14:24:16.000000000&#x27;,
-       &#x27;2021-01-07T14:29:17.000000000&#x27;, &#x27;2021-01-07T14:34:18.000000000&#x27;,
-       &#x27;2021-01-07T14:39:18.000000000&#x27;, &#x27;2021-01-07T14:44:17.000000000&#x27;,
-       &#x27;2021-01-07T14:49:17.000000000&#x27;, &#x27;2021-01-07T14:54:17.000000000&#x27;,
-       &#x27;2021-01-07T14:59:17.000000000&#x27;, &#x27;2021-01-07T15:04:17.000000000&#x27;,
-       &#x27;2021-01-07T15:09:17.000000000&#x27;, &#x27;2021-01-07T13:29:16.000000000&#x27;,
-       &#x27;2021-01-07T13:34:16.000000000&#x27;, &#x27;2021-01-07T13:44:15.000000000&#x27;,
-       &#x27;2021-01-07T13:59:15.000000000&#x27;, &#x27;2021-01-07T15:14:17.000000000&#x27;,
-       &#x27;2021-01-07T15:19:16.000000000&#x27;, &#x27;2021-01-07T15:24:16.000000000&#x27;,
-       &#x27;2021-01-07T15:29:16.000000000&#x27;, &#x27;2021-01-07T15:34:16.000000000&#x27;,
-       &#x27;2021-01-07T15:39:16.000000000&#x27;, &#x27;2021-01-07T15:44:16.000000000&#x27;,
-       &#x27;2021-01-07T15:49:16.000000000&#x27;, &#x27;2021-01-07T15:54:15.000000000&#x27;,
-       &#x27;2021-01-07T15:59:15.000000000&#x27;, &#x27;2021-01-07T16:04:15.000000000&#x27;,
-       &#x27;2021-01-07T16:09:15.000000000&#x27;, &#x27;2021-01-07T16:14:15.000000000&#x27;,
-       &#x27;2021-01-07T16:19:15.000000000&#x27;, &#x27;2021-01-07T16:24:16.000000000&#x27;,
-       &#x27;2021-01-07T16:29:17.000000000&#x27;, &#x27;2021-01-07T16:34:18.000000000&#x27;,
-       &#x27;2021-01-07T16:39:18.000000000&#x27;, &#x27;2021-01-07T16:44:18.000000000&#x27;,
-       &#x27;2021-01-07T16:49:18.000000000&#x27;, &#x27;2021-01-07T17:14:16.000000000&#x27;,
-       &#x27;2021-01-07T17:19:16.000000000&#x27;, &#x27;2021-01-07T17:24:15.000000000&#x27;,
-       &#x27;2021-01-07T17:34:15.000000000&#x27;, &#x27;2021-01-07T17:39:15.000000000&#x27;,
-       &#x27;2021-01-07T17:44:15.000000000&#x27;, &#x27;2021-01-07T17:49:15.000000000&#x27;,
-       &#x27;2021-01-07T17:54:16.000000000&#x27;, &#x27;2021-01-07T17:59:16.000000000&#x27;,
-       &#x27;2021-01-07T18:04:16.000000000&#x27;, &#x27;2021-01-07T18:09:15.000000000&#x27;,
-       &#x27;2021-01-07T18:14:15.000000000&#x27;, &#x27;2021-01-07T18:19:15.000000000&#x27;,
-       &#x27;2021-01-07T18:04:16.000000000&#x27;, &#x27;2021-01-07T18:09:15.000000000&#x27;,
-       &#x27;2021-01-07T18:14:15.000000000&#x27;, &#x27;2021-01-07T18:19:15.000000000&#x27;,
-       &#x27;2021-01-07T18:24:15.000000000&#x27;, &#x27;2021-01-07T18:34:15.000000000&#x27;,
-       &#x27;2021-01-07T18:39:15.000000000&#x27;, &#x27;2021-01-07T18:44:14.000000000&#x27;,
-       &#x27;2021-01-07T18:49:14.000000000&#x27;, &#x27;2021-01-07T18:54:15.000000000&#x27;,
-       &#x27;2021-01-07T19:04:15.000000000&#x27;, &#x27;2021-01-07T19:09:15.000000000&#x27;,
-       &#x27;2021-01-07T19:14:15.000000000&#x27;, &#x27;2021-01-07T19:19:15.000000000&#x27;,
-       &#x27;2021-01-07T19:24:16.000000000&#x27;, &#x27;2021-01-07T19:29:17.000000000&#x27;,
-       &#x27;2021-01-07T19:29:17.000000000&#x27;, &#x27;2021-01-07T19:34:18.000000000&#x27;,
-       &#x27;2021-01-07T19:34:18.000000000&#x27;, &#x27;2021-01-07T19:39:18.000000000&#x27;,
-       &#x27;2021-01-07T19:44:18.000000000&#x27;, &#x27;2021-01-07T19:49:17.000000000&#x27;,
-       &#x27;2021-01-07T19:54:16.000000000&#x27;, &#x27;2021-01-07T17:09:16.000000000&#x27;,
-       &#x27;2021-01-07T17:29:15.000000000&#x27;, &#x27;2021-01-07T18:29:15.000000000&#x27;,
-       &#x27;2021-01-07T18:59:15.000000000&#x27;, &#x27;2021-01-07T19:59:16.000000000&#x27;,
-       &#x27;2021-01-07T20:04:16.000000000&#x27;, &#x27;2021-01-07T20:09:16.000000000&#x27;,
-       &#x27;2021-01-07T20:04:16.000000000&#x27;, &#x27;2021-01-07T20:09:16.000000000&#x27;],
-      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>variable</span></div><div class='xr-var-dims'>()</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;HRV&#x27;</div><input id='attrs-b5f3ac73-1c40-42a2-859e-7f6e28f608e0' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b5f3ac73-1c40-42a2-859e-7f6e28f608e0' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-613a84ab-20d5-4bad-87b0-89ce76d5bcad' class='xr-var-data-in' type='checkbox'><label for='data-613a84ab-20d5-4bad-87b0-89ce76d5bcad' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array(&#x27;HRV&#x27;, dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>x</span></div><div class='xr-var-dims'>(x)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-3.088e+06 -3.084e+06 ... 4.388e+06</div><input id='attrs-04ee20e0-3260-491f-bc5e-34d08000af27' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-04ee20e0-3260-491f-bc5e-34d08000af27' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2f13b489-2ee5-459d-b271-de95c14db1d3' class='xr-var-data-in' type='checkbox'><label for='data-2f13b489-2ee5-459d-b271-de95c14db1d3' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([-3088000., -3084000., -3080000., ...,  4380000.,  4384000.,  4388000.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>y</span></div><div class='xr-var-dims'>(y)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>9.012e+06 9.008e+06 ... 1.692e+06</div><input id='attrs-b9a7c4c1-a90d-42ca-98c0-2c52e5998f99' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-b9a7c4c1-a90d-42ca-98c0-2c52e5998f99' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-13c1d268-cdb0-4293-888e-2810bd1cdfab' class='xr-var-data-in' type='checkbox'><label for='data-13c1d268-cdb0-4293-888e-2810bd1cdfab' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([9012000., 9008000., 9004000., ..., 1700000., 1696000., 1692000.])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-57c610db-5d29-4694-865f-e37c8bec18c6' class='xr-section-summary-in' type='checkbox'  checked><label for='section-57c610db-5d29-4694-865f-e37c8bec18c6' class='xr-section-summary' >Attributes: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>meta :</span></dt><dd>{&#x27;orbital_parameters&#x27;: {&#x27;projection_longitude&#x27;: 9.5, &#x27;projection_latitude&#x27;: 0.0, &#x27;projection_altitude&#x27;: 35785831.0}, &#x27;sun_earth_distance_correction_applied&#x27;: True, &#x27;sun_earth_distance_correction_factor&#x27;: 0.9680361623200268, &#x27;units&#x27;: &#x27;%&#x27;, &#x27;wavelength&#x27;: WavelengthRange(min=0.5, central=0.7, max=0.9, unit=&#x27;Âµm&#x27;), &#x27;standard_name&#x27;: &#x27;toa_bidirectional_reflectance&#x27;, &#x27;platform_name&#x27;: &#x27;Meteosat-10&#x27;, &#x27;sensor&#x27;: &#x27;seviri&#x27;, &#x27;start_time&#x27;: datetime.datetime(2020, 12, 16, 18, 35, 8, 985163), &#x27;end_time&#x27;: datetime.datetime(2020, 12, 16, 18, 40, 8, 829133), &#x27;area&#x27;: Area ID: geos_seviri_hrv
+</table></div></div></li><li class='xr-section-item'><input id='section-fc198abd-3af9-40aa-85a0-d03d601783b9' class='xr-section-summary-in' type='checkbox'  checked><label for='section-fc198abd-3af9-40aa-85a0-d03d601783b9' class='xr-section-summary' >Coordinates: <span>(4)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>time</span></div><div class='xr-var-dims'>(time)</div><div class='xr-var-dtype'>datetime64[ns]</div><div class='xr-var-preview xr-preview'>2021-01-08T03:09:15 ... 2020-01-...</div><input id='attrs-c9fbb0f3-c333-4b7d-aad3-aa3ca4aa4744' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-c9fbb0f3-c333-4b7d-aad3-aa3ca4aa4744' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-8755389a-16d1-44a1-b844-e8bca7217e87' class='xr-var-data-in' type='checkbox'><label for='data-8755389a-16d1-44a1-b844-e8bca7217e87' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([&#x27;2021-01-08T03:09:15.000000000&#x27;, &#x27;2021-01-08T03:14:15.000000000&#x27;,
+       &#x27;2021-01-08T03:19:15.000000000&#x27;, &#x27;2021-01-08T03:24:16.000000000&#x27;,
+       &#x27;2021-01-08T03:29:17.000000000&#x27;, &#x27;2021-01-08T03:34:18.000000000&#x27;,
+       &#x27;2021-01-08T03:39:18.000000000&#x27;, &#x27;2021-01-08T03:44:18.000000000&#x27;,
+       &#x27;2021-01-08T03:49:18.000000000&#x27;, &#x27;2021-01-08T03:54:16.000000000&#x27;,
+       &#x27;2021-01-08T03:59:16.000000000&#x27;, &#x27;2021-01-08T04:04:16.000000000&#x27;,
+       &#x27;2021-01-08T04:09:16.000000000&#x27;, &#x27;2021-01-08T04:14:16.000000000&#x27;,
+       &#x27;2021-01-08T04:19:16.000000000&#x27;, &#x27;2021-01-08T04:24:15.000000000&#x27;,
+       &#x27;2021-01-08T04:29:15.000000000&#x27;, &#x27;2021-01-08T04:34:15.000000000&#x27;,
+       &#x27;2021-01-08T04:39:15.000000000&#x27;, &#x27;2021-01-08T04:44:15.000000000&#x27;,
+       &#x27;2021-01-08T04:49:15.000000000&#x27;, &#x27;2021-01-08T04:54:16.000000000&#x27;,
+       &#x27;2021-01-08T04:59:16.000000000&#x27;, &#x27;2021-01-08T05:04:16.000000000&#x27;,
+       &#x27;2021-01-08T05:09:15.000000000&#x27;, &#x27;2021-01-08T05:14:15.000000000&#x27;,
+       &#x27;2021-01-08T05:19:15.000000000&#x27;, &#x27;2021-01-08T05:24:16.000000000&#x27;,
+       &#x27;2021-01-08T05:29:17.000000000&#x27;, &#x27;2021-01-08T05:34:18.000000000&#x27;,
+       &#x27;2021-01-08T05:39:18.000000000&#x27;, &#x27;2021-01-08T05:44:18.000000000&#x27;,
+       &#x27;2021-01-08T05:49:18.000000000&#x27;, &#x27;2021-01-08T05:54:17.000000000&#x27;,
+       &#x27;2021-01-08T05:59:16.000000000&#x27;, &#x27;2021-01-08T06:04:16.000000000&#x27;,
+       &#x27;2021-01-08T06:09:16.000000000&#x27;, &#x27;2021-01-08T06:14:16.000000000&#x27;,
+       &#x27;2021-01-08T06:19:16.000000000&#x27;, &#x27;2021-01-08T06:24:16.000000000&#x27;,
+       &#x27;2021-01-08T06:29:16.000000000&#x27;, &#x27;2021-01-08T06:34:15.000000000&#x27;,
+       &#x27;2021-01-08T06:39:15.000000000&#x27;, &#x27;2021-01-08T06:44:15.000000000&#x27;,
+       &#x27;2021-01-08T06:49:15.000000000&#x27;, &#x27;2021-01-08T06:54:15.000000000&#x27;,
+       &#x27;2021-01-08T06:59:15.000000000&#x27;, &#x27;2021-01-08T07:04:15.000000000&#x27;,
+       &#x27;2021-01-08T07:09:15.000000000&#x27;, &#x27;2021-01-08T07:14:14.000000000&#x27;,
+       &#x27;2021-01-08T07:19:14.000000000&#x27;, &#x27;2021-01-08T07:24:15.000000000&#x27;,
+       &#x27;2021-01-08T07:29:16.000000000&#x27;, &#x27;2021-01-08T07:34:17.000000000&#x27;,
+       &#x27;2021-01-08T07:39:17.000000000&#x27;, &#x27;2021-01-08T07:44:17.000000000&#x27;,
+       &#x27;2021-01-08T07:49:17.000000000&#x27;, &#x27;2021-01-08T07:54:17.000000000&#x27;,
+       &#x27;2021-01-08T07:59:17.000000000&#x27;, &#x27;2021-01-08T08:04:17.000000000&#x27;,
+       &#x27;2021-01-08T08:09:17.000000000&#x27;, &#x27;2021-01-08T08:14:16.000000000&#x27;,
+       &#x27;2021-01-08T08:19:16.000000000&#x27;, &#x27;2021-01-08T08:24:16.000000000&#x27;,
+       &#x27;2021-01-08T08:29:16.000000000&#x27;, &#x27;2021-01-08T08:34:16.000000000&#x27;,
+       &#x27;2021-01-08T08:39:16.000000000&#x27;, &#x27;2021-01-08T08:44:16.000000000&#x27;,
+       &#x27;2021-01-08T08:49:15.000000000&#x27;, &#x27;2021-01-08T08:09:17.000000000&#x27;,
+       &#x27;2021-01-08T08:14:16.000000000&#x27;, &#x27;2021-01-08T08:19:16.000000000&#x27;,
+       &#x27;2021-01-08T08:24:16.000000000&#x27;, &#x27;2021-01-08T08:29:16.000000000&#x27;,
+       &#x27;2021-01-08T08:34:16.000000000&#x27;, &#x27;2021-01-08T08:39:16.000000000&#x27;,
+       &#x27;2021-01-08T08:44:16.000000000&#x27;, &#x27;2021-01-08T08:49:15.000000000&#x27;,
+       &#x27;2020-01-01T00:09:15.000000000&#x27;, &#x27;2020-01-01T00:14:16.000000000&#x27;,
+       &#x27;2020-01-01T00:19:17.000000000&#x27;, &#x27;2020-01-01T00:24:17.000000000&#x27;,
+       &#x27;2020-01-01T00:29:17.000000000&#x27;, &#x27;2020-01-01T00:34:17.000000000&#x27;,
+       &#x27;2020-01-01T00:39:17.000000000&#x27;, &#x27;2020-01-01T00:44:16.000000000&#x27;,
+       &#x27;2020-01-01T00:49:16.000000000&#x27;, &#x27;2020-01-01T00:54:16.000000000&#x27;,
+       &#x27;2020-01-01T00:59:16.000000000&#x27;, &#x27;2020-01-01T00:09:15.000000000&#x27;,
+       &#x27;2020-01-01T00:14:16.000000000&#x27;, &#x27;2020-01-01T00:19:17.000000000&#x27;,
+       &#x27;2020-01-01T00:24:17.000000000&#x27;, &#x27;2020-01-01T00:29:17.000000000&#x27;,
+       &#x27;2020-01-01T00:34:17.000000000&#x27;, &#x27;2020-01-01T00:39:17.000000000&#x27;,
+       &#x27;2020-01-01T00:44:16.000000000&#x27;, &#x27;2020-01-01T00:49:16.000000000&#x27;,
+       &#x27;2020-01-01T00:54:16.000000000&#x27;, &#x27;2020-01-01T00:59:16.000000000&#x27;],
+      dtype=&#x27;datetime64[ns]&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span>variable</span></div><div class='xr-var-dims'>()</div><div class='xr-var-dtype'>&lt;U3</div><div class='xr-var-preview xr-preview'>&#x27;HRV&#x27;</div><input id='attrs-5f3ac150-5ce2-4f1b-82e1-c67a97ae3cb3' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-5f3ac150-5ce2-4f1b-82e1-c67a97ae3cb3' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2ea412fa-2a77-4dcc-ac8d-9eff1dada237' class='xr-var-data-in' type='checkbox'><label for='data-2ea412fa-2a77-4dcc-ac8d-9eff1dada237' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array(&#x27;HRV&#x27;, dtype=&#x27;&lt;U3&#x27;)</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>x</span></div><div class='xr-var-dims'>(x)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>-3.088e+06 -3.084e+06 ... 4.388e+06</div><input id='attrs-55a6dc7e-c182-490d-8ae8-c609cc9de638' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-55a6dc7e-c182-490d-8ae8-c609cc9de638' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-811fce53-3c70-4e3a-8e65-6ac790588c9d' class='xr-var-data-in' type='checkbox'><label for='data-811fce53-3c70-4e3a-8e65-6ac790588c9d' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([-3088000., -3084000., -3080000., ...,  4380000.,  4384000.,  4388000.])</pre></div></li><li class='xr-var-item'><div class='xr-var-name'><span class='xr-has-index'>y</span></div><div class='xr-var-dims'>(y)</div><div class='xr-var-dtype'>float64</div><div class='xr-var-preview xr-preview'>9.012e+06 9.008e+06 ... 1.692e+06</div><input id='attrs-a50af94a-78fd-4939-9cef-b882ee38ab67' class='xr-var-attrs-in' type='checkbox' disabled><label for='attrs-a50af94a-78fd-4939-9cef-b882ee38ab67' title='Show/Hide attributes'><svg class='icon xr-icon-file-text2'><use xlink:href='#icon-file-text2'></use></svg></label><input id='data-2d326751-a705-40bf-af16-c44e2a97aeda' class='xr-var-data-in' type='checkbox'><label for='data-2d326751-a705-40bf-af16-c44e2a97aeda' title='Show/Hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-var-attrs'><dl class='xr-attrs'></dl></div><div class='xr-var-data'><pre>array([9012000., 9008000., 9004000., ..., 1700000., 1696000., 1692000.])</pre></div></li></ul></div></li><li class='xr-section-item'><input id='section-9995dc85-0224-48c3-b41c-c06341f4a719' class='xr-section-summary-in' type='checkbox'  checked><label for='section-9995dc85-0224-48c3-b41c-c06341f4a719' class='xr-section-summary' >Attributes: <span>(1)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>meta :</span></dt><dd>{&#x27;orbital_parameters&#x27;: {&#x27;projection_longitude&#x27;: 9.5, &#x27;projection_latitude&#x27;: 0.0, &#x27;projection_altitude&#x27;: 35785831.0}, &#x27;sun_earth_distance_correction_applied&#x27;: True, &#x27;sun_earth_distance_correction_factor&#x27;: 0.9680361623200268, &#x27;units&#x27;: &#x27;%&#x27;, &#x27;wavelength&#x27;: WavelengthRange(min=0.5, central=0.7, max=0.9, unit=&#x27;Âµm&#x27;), &#x27;standard_name&#x27;: &#x27;toa_bidirectional_reflectance&#x27;, &#x27;platform_name&#x27;: &#x27;Meteosat-10&#x27;, &#x27;sensor&#x27;: &#x27;seviri&#x27;, &#x27;start_time&#x27;: datetime.datetime(2020, 12, 16, 18, 35, 8, 985163), &#x27;end_time&#x27;: datetime.datetime(2020, 12, 16, 18, 40, 8, 829133), &#x27;area&#x27;: Area ID: geos_seviri_hrv
 Description: SEVIRI high resolution channel area
 Projection ID: seviri_hrv
 Projection: {&#x27;a&#x27;: &#x27;6378169&#x27;, &#x27;h&#x27;: &#x27;35785831&#x27;, &#x27;lon_0&#x27;: &#x27;9.5&#x27;, &#x27;no_defs&#x27;: &#x27;None&#x27;, &#x27;proj&#x27;: &#x27;geos&#x27;, &#x27;rf&#x27;: &#x27;295.488065897014&#x27;, &#x27;type&#x27;: &#x27;crs&#x27;, &#x27;units&#x27;: &#x27;m&#x27;, &#x27;x_0&#x27;: &#x27;0&#x27;, &#x27;y_0&#x27;: &#x27;0&#x27;}
@@ -1027,6 +1026,79 @@ Area extent: (2792875.1692, 5571248.3904, -2775872.8853, 1394687.3495), &#x27;na
 
 
 
+<br>
+
+The coordinates are for a Transverse Mercator projection, we'll create a helper function that converts latitude and longitude into this coordinate system
+
 ```python
-da_HRV_sample.interp(x=, y=)
+def convert_lon_lat_to_crs_coords(lon=0.1, lat=51.5):
+    new_coords_point = (gpd.GeoDataFrame(geometry=[shapely.geometry.Point(lon, lat)], crs='EPSG:4326')
+                        .to_crs('EPSG:3857')
+                        .loc[0, 'geometry'])
+    
+    new_coords = (new_coords_point.x, new_coords_point.y)
+    
+    return new_coords
+
+x, y = convert_lon_lat_to_crs_coords(lon=1, lat=50)
+
+x, y
 ```
+
+
+
+
+    (111319.49079327357, 6446275.841017158)
+
+
+
+<br>
+
+We'll now interpolate the data at this location and extract a time-series of the HRV intensity
+
+```python
+s_HRV = da_HRV_sample.interp(x=x, y=y).sortby('time').to_series()
+
+s_HRV.plot()
+```
+
+    C:\Users\Ayrto\anaconda3\envs\satip_dev\lib\site-packages\xarray\core\indexing.py:1369: PerformanceWarning: Slicing is producing a large chunk. To accept the large
+    chunk and silence this warning, set the option
+        >>> with dask.config.set(**{'array.slicing.split_large_chunks': False}):
+        ...     array[indexer]
+    
+    To avoid creating the large chunks, set the option
+        >>> with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+        ...     array[indexer]
+      return self.array[key]
+    
+
+
+
+
+    <AxesSubplot:xlabel='time'>
+
+
+
+
+![png](img/nbs/output_10_2.png)
+
+
+<br>
+
+We can also visualise the intensity distribution
+
+```python
+sns.histplot(s_HRV)
+```
+
+
+
+
+    <AxesSubplot:xlabel='stacked_eumetsat_data', ylabel='Count'>
+
+
+
+
+![png](img/nbs/output_12_1.png)
+

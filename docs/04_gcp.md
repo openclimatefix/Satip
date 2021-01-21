@@ -92,83 +92,20 @@ blobs_by_month
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>year</th>
-      <th>2019</th>
-    </tr>
-    <tr>
-      <th>month</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>January</th>
-      <td>276.0</td>
-    </tr>
-    <tr>
-      <th>February</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>March</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>April</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>May</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>June</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>July</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>August</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>September</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>October</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>November</th>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>December</th>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+| ('year', 'month')   |   ('2019', 'Unnamed: 1_level_1') |
+|:--------------------|---------------------------------:|
+| January             |                              276 |
+| February            |                              nan |
+| March               |                              nan |
+| April               |                              nan |
+| May                 |                              nan |
+| June                |                              nan |
+| July                |                              nan |
+| August              |                              nan |
+| September           |                              nan |
+| October             |                              nan |
+| November            |                              nan |
+| December            |                              nan |</div>
 
 
 

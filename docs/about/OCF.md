@@ -12,6 +12,6 @@ Our approach will be to search for ML (Machine Learning) problems where, if we s
 
 <br>
 
-[:envelope: Sign up to our newsletter](https://eepurl.com/guCjvH){: .md-button }
+[✉️ Sign up to our newsletter](https://eepurl.com/guCjvH){: .md-button }
 
 <br>

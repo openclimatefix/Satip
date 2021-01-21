@@ -4324,69 +4324,13 @@ df_proj_points.head()
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>x_reproj</th>
-      <th>y_reproj</th>
-      <th>x_orig</th>
-      <th>y_orig</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>4.366380e+06</td>
-      <td>1.812549e+06</td>
-      <td>2.848383e+06</td>
-      <td>1.395187e+06</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>4.292044e+06</td>
-      <td>1.798016e+06</td>
-      <td>2.798376e+06</td>
-      <td>1.395187e+06</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>4.218748e+06</td>
-      <td>1.783987e+06</td>
-      <td>2.748369e+06</td>
-      <td>1.395187e+06</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>4.146448e+06</td>
-      <td>1.770437e+06</td>
-      <td>2.698362e+06</td>
-      <td>1.395187e+06</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>4.075104e+06</td>
-      <td>1.757345e+06</td>
-      <td>2.648356e+06</td>
-      <td>1.395187e+06</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+|    |    x_reproj |    y_reproj |      x_orig |      y_orig |
+|---:|------------:|------------:|------------:|------------:|
+|  0 | 4.36638e+06 | 1.81255e+06 | 2.84838e+06 | 1.39519e+06 |
+|  1 | 4.29204e+06 | 1.79802e+06 | 2.79838e+06 | 1.39519e+06 |
+|  2 | 4.21875e+06 | 1.78399e+06 | 2.74837e+06 | 1.39519e+06 |
+|  3 | 4.14645e+06 | 1.77044e+06 | 2.69836e+06 | 1.39519e+06 |
+|  4 | 4.0751e+06  | 1.75734e+06 | 2.64836e+06 | 1.39519e+06 |</div>
 
 
 
@@ -5155,57 +5099,13 @@ df_new_coords.head()
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>x</th>
-      <th>y</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>inf</td>
-      <td>inf</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>inf</td>
-      <td>inf</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>inf</td>
-      <td>inf</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>inf</td>
-      <td>inf</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>inf</td>
-      <td>inf</td>
-    </tr>
-  </tbody>
-</table>
-</div>
+|    |   x |   y |
+|---:|----:|----:|
+|  0 | inf | inf |
+|  1 | inf | inf |
+|  2 | inf | inf |
+|  3 | inf | inf |
+|  4 | inf | inf |</div>
 
 
 
