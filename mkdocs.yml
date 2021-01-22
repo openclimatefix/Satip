@@ -45,6 +45,7 @@ nav:
     - Loading from Zarr: 103_loading.md
   - About:
     - OCF: about/OCF.md
+    - Solar Forecasting: about/Solar Forecasting.md
   - Development:
     - Utilities: 00_utils.md
     - Downloading: 01_eumetsat.md

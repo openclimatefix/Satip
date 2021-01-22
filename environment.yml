@@ -3,6 +3,7 @@ name: satip_dev
 channels:
   - conda-forge
   - coecms
+  - auto
   
 dependencies:
   - python>=3.7
@@ -23,6 +24,7 @@ dependencies:
   - rasterio
   - pillow  
   - gdal
+  - lxml
   - tabulate
   - python-dotenv
   - xmltodict

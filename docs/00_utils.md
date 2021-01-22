@@ -27,29 +27,64 @@ We can now easily construct markdown tables
 ```python
 notebook_info = {
     # development
-    'Repository Helpers': {
-        'Directory': 'notebooks',
+    'Utilities': {
+        'Directory': 'nbs',
         'Number': '00',
         'Description': 'Code for keeping the repository tidy',
         'Maintainer': 'Ayrton Bourn'
     },
-    'EUMETSAT API Wrapper': {
-        'Directory': 'notebooks',
+    'EUMETSAT': {
+        'Directory': 'nbs',
         'Number': '01',
         'Description': 'Development of the API wrapper for ems',
         'Maintainer': 'Ayrton Bourn'
     },
-    'Data Transformation': {
-        'Directory': 'notebooks',
+    'Reprojection': {
+        'Directory': 'nbs',
         'Number': '02',
-        'Description': 'Intial EDA and transformation comparisons',
+        'Description': 'Development of the reprojection operator',
         'Maintainer': 'Ayrton Bourn'
     },
-    # usage_examples
-    'EUMETSAT Download': {
-        'Directory': 'usage_examples',
-        'Number': '00',
+    'Zarr': {
+        'Directory': 'nbs',
+        'Number': '03',
+        'Description': 'Development of wrappers for loading/saving to Zarr',
+        'Maintainer': 'Ayrton Bourn'
+    },
+    'GCP': {
+        'Directory': 'nbs',
+        'Number': '04',
+        'Description': 'Development of GCP interface wrappers',
+        'Maintainer': 'Laurence Watson'
+    },
+    'Pipeline': {
+        'Directory': 'nbs',
+        'Number': '05',
+        'Description': 'Development of the pipeline processes',
+        'Maintainer': 'Ayrton Bourn'
+    },   
+    'Downloading': {
+        'Directory': 'nbs',
+        'Number': '101',
         'Description': 'Guidance for using the ems download manager',
+        'Maintainer': 'Ayrton Bourn'
+    },
+    'Reprojecting': {
+        'Directory': 'nbs',
+        'Number': '102',
+        'Description': 'Guidance for using the reprojection operator',
+        'Maintainer': 'Ayrton Bourn'
+    },
+    'Loading': {
+        'Directory': 'nbs',
+        'Number': '103',
+        'Description': 'Guidance for retrieving saved data from Zarr',
+        'Maintainer': 'Ayrton Bourn'
+    },
+    'Documentation': {
+        'Directory': 'docs',
+        'Number': '-',
+        'Description': 'Automated generation of docs from notebooks',
         'Maintainer': 'Ayrton Bourn'
     },
 }
@@ -59,12 +94,18 @@ nb_table_str = create_markdown_table(notebook_info)
 print(nb_table_str)
 ```
 
-    | Id                   | Directory      |   Number | Description                                 | Maintainer   |
-    |:---------------------|:---------------|---------:|:--------------------------------------------|:-------------|
-    | Repository Helpers   | notebooks      |       00 | Code for keeping the repository tidy        | Ayrton Bourn |
-    | EUMETSAT API Wrapper | notebooks      |       01 | Development of the API wrapper for ems      | Ayrton Bourn |
-    | Data Transformation  | notebooks      |       02 | Intial EDA and transformation comparisons   | Ayrton Bourn |
-    | EUMETSAT Download    | usage_examples |       00 | Guidance for using the ems download manager | Ayrton Bourn |
+    | Id            | Directory   | Number   | Description                                        | Maintainer      |
+    |:--------------|:------------|:---------|:---------------------------------------------------|:----------------|
+    | utils         | nbs         | 00       | Code for keeping the repository tidy               | Ayrton Bourn    |
+    | EUMETSAT      | nbs         | 01       | Development of the API wrapper for ems             | Ayrton Bourn    |
+    | Reprojection  | nbs         | 02       | Development of the reprojection operator           | Ayrton Bourn    |
+    | Zarr          | nbs         | 03       | Development of wrappers for loading/saving to Zarr | Ayrton Bourn    |
+    | GCP           | nbs         | 04       | Development of GCP interface wrappers              | Laurence Watson |
+    | Pipeline      | nbs         | 05       | Development of the pipeline processes              | Ayrton Bourn    |
+    | Downloading   | nbs         | 101      | Guidance for using the ems download manager        | Ayrton Bourn    |
+    | Reprojecting  | nbs         | 102      | Guidance for using the reprojection operator       | Ayrton Bourn    |
+    | Loading       | nbs         | 103      | Guidance for retrieving saved data from Zarr       | Ayrton Bourn    |
+    | Documentation | docs        | -        | Automated generation of docs from notebooks        | Ayrton Bourn    |
     
 
 <br>
