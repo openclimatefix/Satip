@@ -132,7 +132,10 @@ def compress_export_then_delete_raw(context, ds_combined_compressed, data_dir: s
             files = glob.glob(f'{dir_}/*')
 
             for f in files:
-                os.remove(f)
+                try:
+                    os.remove(f)
+                except:
+                    context.log.info(f'File path {f} was not removed.')
 
 # Cell
 @pipeline
