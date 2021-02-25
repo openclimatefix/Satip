@@ -503,7 +503,11 @@ class DownloadManager:
 
         return df_new_metadata
 
-    get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
+    # First run, we have no data
+    try:
+        get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
+    except:
+        get_df_metadata = None
 
 # Cell
 def get_dir_size(directory='.'):
@@ -603,6 +607,7 @@ def compress_downloaded_files(data_dir, compressed_dir, log=None):
                 log.debug(f'{new_dst_full_filename} already exists.  Deleting old file')
             os.remove(new_dst_full_filename)
         shutil.move(src=full_compressed_filename, dst=new_dst_path)
+    print('Moved and compressed {len(full_native_filenames)} files to {compressed_dir}')
 
 # Cell
 def upload_compressed_files(compressed_dir, BUCKET_NAME, PREFIX, log=None):
