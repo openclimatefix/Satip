@@ -175,14 +175,15 @@ def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucke
         start_date = ds_eumetsat.time.min().values
         end_date = ds_eumetsat.time.max().values
 
-    print(f'Earliest {start_date}, latest {end_date}')
+        # have to loop this by month for the API
+        month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="MS")
+    else:
+        month_split = pd.date_range(start_date, end_date, freq="MS")
 
-    # have to loop this by month for the API
-    month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="M")
     missing_datasets = []
 
-    for i in track(range(len(month_split) - 1)):
-
+    print(f'Earliest {start_date}, latest {end_date}')
+    for i in track(range(len(month_split)-1)):
         # Identifying all potential datasets over specified date range
         datasets = eumetsat.identify_available_datasets(month_split[i], month_split[i+1])
 
