@@ -135,7 +135,7 @@ def save_da_to_zarr(da, zarr_bucket, dim_order=['time', 'x', 'y', 'variable'], z
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
 
     ds.to_zarr(out_store, mode=zarr_mode, consolidated=True, **extra_kwargs)
-
+    print('Saved file to zarr bucket')
     return ds
 
 # Cell
@@ -179,6 +179,9 @@ def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucke
         month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="MS")
     else:
         month_split = pd.date_range(start_date, end_date, freq="MS")
+        # if date range is less than one month
+        if len(month_split) == 1:
+            month_split = [start_date, end_date]
 
     missing_datasets = []
 
@@ -189,12 +192,20 @@ def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucke
 
         # Extracting the datetime each dataset was finished
         end_dates = [dataset['properties']['date'].split('/')[-1] for dataset in datasets]
-        cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
+        try:
+            cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_localize('UTC').tz_convert(None)
+        except:
+            cleaned_end_dates = pd.to_datetime(end_dates).floor(freq='s').tz_convert(None)
 
         # Identifying missing datasets from the Zarr DB
         ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
         end_dates_to_datasets = dict(zip(cleaned_end_dates, datasets))
+#         print(list(set(cleaned_end_dates)))
+#         print(pd.to_datetime(ds_eumetsat.time.values))
         missing_dates = set(cleaned_end_dates) - set(pd.to_datetime(ds_eumetsat.time.values))
+#         print(missing_dates)
         missing_datasets.append([data for date, data in end_dates_to_datasets.items() if date in missing_dates])
 
-    return missing_datasets
+    flat_list = [item for sublist in missing_datasets for item in sublist]
+
+    return flat_list
