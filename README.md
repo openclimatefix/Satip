@@ -20,6 +20,12 @@ Or if you're working in the development environment you can run the following fr
 pip install -e .
 ```
 
+#### Other dependencies
+`pbzip2` is used to compress files and should be installed.  
+Windows: [http://gnuwin32.sourceforge.net/packages/bzip2.htm](http://gnuwin32.sourceforge.net/packages/bzip2.htm)  
+Mac:  `brew install bzip2`  
+Linux: ` sudo apt-get install -y pbzip2`    
+
 <br>
 
 ### Notebooks 
@@ -59,7 +65,15 @@ jupyter labextension install @jupyter-widgets/jupyterlab-manager
 jupyter labextension install jupyter-matplotlib
 ```
 
-<br>
+### Google Cloud Platform
+
+You will need to be authenticated with Google Cloud Platform (GCP) to use much of the library - currently it is fairly tightly coupled to storage and BigQuery for saving metadata.  
+Install the GCP SDK and run:  
+`gcloud auth login`  
+and to "generate credentials for client libraries"  
+https://googleapis.dev/python/google-api-core/latest/auth.html  
+`gcloud auth application-default login`  
+
 
 ### Publishing to PyPi
 

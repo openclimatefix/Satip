@@ -53,11 +53,9 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "save_metadata": "05_pipeline.ipynb",
          "compress_export_then_delete_raw": "05_pipeline.ipynb",
          "download_latest_data_pipeline": "05_pipeline.ipynb",
-         "download_missing_eumetsat_files": "05_pipeline.ipynb",
-         "app": "06-ci-cd.ipynb",
-         "get_current_package_version": "06-ci-cd.ipynb",
-         "increment_package_version": "06-ci-cd.ipynb",
-         "set_current_package_version": "06-ci-cd.ipynb"}
+         "download_missing_eumetsat_files": "05a_pipeline_batch.ipynb",
+         "download_missing_data_pipeline": "05a_pipeline_batch.ipynb",
+         "DataFrame": "05a_pipeline_batch.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
@@ -65,7 +63,7 @@ modules = ["utils.py",
            "io.py",
            "gcp_helpers.py",
            "mario.py",
-           "cicd.py"]
+           "backfill.py"]
 
 doc_url = "https://AyrtonB.github.io/satip/"
 

@@ -73,7 +73,7 @@ def query_data_products(
     end_date:str='2020-01-02',
     start_index:int=0,
     num_features:int=10_000,
-    product_id:str='EO:EUM:DAT:MSG:MSG15-RSS'
+    product_id:str='EO:EUM:DAT:MSG:MSG15-RSS',
 ) -> requests.models.Response:
     """
     Queries the EUMETSAT data API for the specified data
@@ -103,18 +103,18 @@ def query_data_products(
         'c': num_features,
         'sort': 'start,time,0',
         'dtstart': format_dt_str(start_date),
-        'dtend': format_dt_str(end_date)
+        'dtend': format_dt_str(end_date),
     }
 
     r = requests.get(search_url, params=params)
 
-    assert r.ok, f'Request was unsuccesful - Error code: {r.status_code}'
+    assert r.ok, f'Request was unsuccesful: {r.status_code} - {r.text}'
 
     return r
 
 # Cell
 def identify_available_datasets(start_date: str, end_date: str,
-                                product_id='EO:EUM:DAT:MSG:MSG15-RSS'):
+                                product_id='EO:EUM:DAT:MSG:MSG15-RSS', log=None):
     """
     Identifies available datasets from the EUMETSAT data
     API for the specified data product and date-range.
@@ -130,30 +130,41 @@ def identify_available_datasets(start_date: str, end_date: str,
         r: Response from the request
 
     """
+    r_json = query_data_products(start_date, end_date,
+                                 product_id='EO:EUM:DAT:MSG:MSG15-RSS').json()
 
-    num_features = 10000
-    start_index = 0
+    num_total_results = r_json['properties']['totalResults']
+    print(f'identify_available_datasets: found {num_total_results} results from API')
+    if log:
+        log.info(f'Found {len(num_total_results)} EUMETSAT dataset files')
 
-    datasets = []
-    all_results_returned = False
+    if num_total_results < 10_000:
+        return r_json['features']
 
-    while all_results_returned == False:
-        r_json = query_data_products(start_date, end_date,
-                                     start_index=start_index,
-                                     num_features=num_features,
-                                     product_id='EO:EUM:DAT:MSG:MSG15-RSS').json()
+    datasets = r_json['features']
 
-        datasets += r_json['features']
+    # need to loop in batches of 10_000 until all results are found
+    extra_loops_needed = num_total_results // 10_000
 
-        num_total_results = r_json['properties']['totalResults']
-        num_returned_results = start_index + len(r_json['features'])
+    new_end_date = datasets[-1]['properties']['date'].split('/')[1]
+    batch_r_json = []
+    num_features = 10_000
 
-        if num_returned_results < num_total_results:
-            start_index += num_features
+    for i in range(extra_loops_needed):
+
+        # ensure the last loop we only get the remaining assets
+        if i + 1 < extra_loops_needed:
+            num_features = 10_000
         else:
-            all_results_returned = True
+            num_features = num_total_results - len(datasets)
 
-        assert num_returned_results == len(datasets), 'Some features have not been appended'
+        batch_r_json = query_data_products(start_date, new_end_date,
+                                 num_features=num_features,
+                                 product_id='EO:EUM:DAT:MSG:MSG15-RSS').json()
+        new_end_date = batch_r_json['features'][-1]['properties']['date'].split('/')[1]
+        datasets = datasets + batch_r_json['features']
+
+    assert num_total_results == len(datasets), f'Some features have not been appended - {len(datasets)} / {num_total_results}'
 
     return datasets
 
@@ -503,7 +514,11 @@ class DownloadManager:
 
         return df_new_metadata
 
-    get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
+    # First run, we have no data
+    try:
+        get_df_metadata = lambda self: pd.DataFrame(self.metadata_table.all()).set_index('id')
+    except:
+        get_df_metadata = None
 
 # Cell
 def get_dir_size(directory='.'):
@@ -603,6 +618,7 @@ def compress_downloaded_files(data_dir, compressed_dir, log=None):
                 log.debug(f'{new_dst_full_filename} already exists.  Deleting old file')
             os.remove(new_dst_full_filename)
         shutil.move(src=full_compressed_filename, dst=new_dst_path)
+    print(f'Moved and compressed {len(full_native_filenames)} files to {compressed_dir}')
 
 # Cell
 def upload_compressed_files(compressed_dir, BUCKET_NAME, PREFIX, log=None):
@@ -628,16 +644,25 @@ def upload_compressed_files(compressed_dir, BUCKET_NAME, PREFIX, log=None):
         Returns:
             -
     """
+
     paths = Path(compressed_dir).rglob("*.nat.bz2")
     full_compressed_files = [x for x in paths if x.is_file()]
     if log:
         log.info(f"Found {len(full_compressed_files)} compressed files.")
+        log.info(f"Checking cloud storage bucket")
+
+    filenames = get_eumetsat_filenames(BUCKET_NAME, prefix=PREFIX)
+    bucket_filenames = [re.match("([A-Z\d.]+-){6}", filename)[0][:-1] + '.nat.bz2' for filename in filenames]
 
     for file in full_compressed_files:
-        rel_path = os.path.relpath(file.absolute(), compressed_dir)
-        upload_blob(
-            bucket_name=BUCKET_NAME,
-            source_file_name=file.absolute(),
-            destination_blob_name=rel_path,
-            prefix=PREFIX,
-        )
+        if file in bucket_filenames:
+            print(f'{file} in cloud bucket, skipping upload')
+            log.info(f'{file} in cloud bucket, skipping upload')
+        else:
+            rel_path = os.path.relpath(file.absolute(), compressed_dir)
+            upload_blob(
+                bucket_name=BUCKET_NAME,
+                source_file_name=file.absolute(),
+                destination_blob_name=rel_path,
+                prefix=PREFIX,
+            )
