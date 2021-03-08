@@ -473,7 +473,6 @@ class DownloadManager:
         """
 
         # Identifying dataset ids to download
-        print(datasets)
         dataset_ids = sorted([dataset['id'] for dataset in datasets])
 
         # Check which datasets to download
