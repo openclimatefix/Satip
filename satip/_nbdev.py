@@ -55,7 +55,11 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "download_latest_data_pipeline": "05_pipeline.ipynb",
          "download_missing_eumetsat_files": "05a_pipeline_batch.ipynb",
          "download_missing_data_pipeline": "05a_pipeline_batch.ipynb",
-         "DataFrame": "05a_pipeline_batch.ipynb"}
+         "DataFrame": "05a_pipeline_batch.ipynb",
+         "chunks": "05a_pipeline_batch.ipynb",
+         "reproject_compress_save_datasets_batch": "05a_pipeline_batch.ipynb",
+         "save_metadata_batch": "05a_pipeline_batch.ipynb",
+         "compress_export_then_delete_raw_batch": "05a_pipeline_batch.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
