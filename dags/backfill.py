@@ -50,7 +50,14 @@ Example run config:
             "compressed_dir":"../data/compressed_bfill"
          }
       }
-   }
+   },
+    "storage": {
+        "filesystem": {
+        "config": {
+            "base_dir": "/srv/airflow/data"
+            }
+        }
+    }
 }
 """
 import datetime
