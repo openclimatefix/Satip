@@ -10,59 +10,47 @@ add it using the Airflow UI.
 Example run config:
 
 {
-  "solids": {
-    "download_missing_eumetsat_files": {
-      "inputs": {
-        "env_vars_fp": "/srv/airflow/.env",
-        "data_dir": "/srv/airflow/data/raw_bfill",
-        "metadata_db_fp": "/srv/airflow/data/EUMETSAT_metadata.db",
-        "debug_fp": "/srv/airflow/logs/EUMETSAT_download.txt",
-        "table_id": "eumetsat.metadata",
-        "project_id": "solar-pv-nowcasting",
-        "start_date": "2019-02-01T00:00:00",
-        "end_date": "2019-02-01T00:05:00"
+  'solids': {
+      'download_missing_eumetsat_files': {
+          'inputs': {
+              'env_vars_fp': "../.env",
+              'data_dir': "../data/raw_bfill",
+              'metadata_db_fp': "../data/EUMETSAT_metadata.db",
+              'debug_fp': "../logs/EUMETSAT_download.txt",
+              'table_id': "eumetsat.metadata",
+              'project_id': "solar-pv-nowcasting",
+              'start_date': "2019-04-01T00:00:00",
+              'end_date': "2019-04-01T05:00:00"
+          },
+      },
+      'df_metadata_to_dt_to_fp_map': {
+          'inputs': {
+              'data_dir': "../data/raw_bfill"
+          }
+      },
+      'reproject_compress_save_datasets_batch': {
+          'inputs': {
+              'new_coords_fp': "../data/intermediate/reproj_coords_TM_4km.csv",
+              'new_grid_fp': "../data/intermediate/new_grid_4km_TM.json",
+              'zarr_bucket': "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
+              'var_name': "stacked_eumetsat_data"
+          }
+      },
+      'save_metadata_batch': {
+          'inputs': {
+              'table_id': "eumetsat.metadata",
+              'project_id': "solar-pv-nowcasting"
+          },
+      },
+      'compress_export_then_delete_raw_batch': {
+          'inputs': {
+              'BUCKET_NAME': "solar-pv-nowcasting-data",
+              'PREFIX': "satellite/EUMETSAT/SEVIRI_RSS/native/",
+              'data_dir': "../data/raw_bfill",
+              'compressed_dir': "../data/compressed_bfill",
+          },
       }
-    },
-    "df_metadata_to_dt_to_fp_map": {
-      "inputs": {
-        "data_dir": "/srv/airflow/data/raw_bfill"
-      }
-    },
-    "reproject_datasets": {
-      "inputs": {
-        "new_coords_fp": "/srv/airflow/data/intermediate/reproj_coords_TM_4km.csv",
-        "new_grid_fp": "/srv/airflow/data/intermediate/new_grid_4km_TM.json"
-      }
-    },
-    "compress_and_save_datasets": {
-      "inputs": {
-        "zarr_bucket": "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/full_extent_TM_int16",
-        "var_name": "stacked_eumetsat_data"
-      }
-    },
-    "save_metadata": {
-      "inputs": {
-        "table_id": "eumetsat.metadata",
-        "project_id": "solar-pv-nowcasting"
-      }
-    },
-    "compress_export_then_delete_raw": {
-      "inputs": {
-        "data_dir": "/srv/airflow/data/raw_bfill",
-        "compressed_dir": "/srv/airflow/data/compressed_bfill",
-        "BUCKET_NAME": "solar-pv-nowcasting-data",
-        "PREFIX": "satellite/EUMETSAT/SEVIRI_RSS/native/"
-      }
-    }
-  },
-  "storage": {
-    "filesystem": {
-      "config": {
-        "base_dir": "/srv/airflow/data"
-      }
-    }
   }
-}
 """
 import datetime
 from airflow.models import Variable
