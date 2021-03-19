@@ -28,25 +28,20 @@ Example run config:
         "data_dir": "/srv/airflow/data/raw_bfill"
       }
     },
-    "reproject_datasets": {
-      "inputs": {
-        "new_coords_fp": "/srv/airflow/data/intermediate/reproj_coords_TM_4km.csv",
-        "new_grid_fp": "/srv/airflow/data/intermediate/new_grid_4km_TM.json"
-      }
+      "reproject_compress_save_datasets_batch": {
+          "inputs": {
+              "new_coords_fp": "../data/intermediate/reproj_coords_TM_4km.csv",
+              "new_grid_fp": "../data/intermediate/new_grid_4km_TM.json",
+              "zarr_bucket": "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
+              "var_name": "stacked_eumetsat_data"
     },
-    "compress_and_save_datasets": {
-      "inputs": {
-        "zarr_bucket": "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
-        "var_name": "stacked_eumetsat_data"
-      }
-    },
-    "save_metadata": {
+    "save_metadata_batch": {
       "inputs": {
         "table_id": "eumetsat.metadata",
         "project_id": "solar-pv-nowcasting"
       }
     },
-    "compress_export_then_delete_raw": {
+    "compress_export_then_delete_raw_batch": {
       "inputs": {
         "data_dir": "/srv/airflow/data/raw_bfill",
         "compressed_dir": "/srv/airflow/data/compressed_bfill",
