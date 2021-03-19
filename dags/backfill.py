@@ -10,47 +10,48 @@ add it using the Airflow UI.
 Example run config:
 
 {
-  'solids': {
-      'download_missing_eumetsat_files': {
-          'inputs': {
-              'env_vars_fp': "../.env",
-              'data_dir': "../data/raw_bfill",
-              'metadata_db_fp': "../data/EUMETSAT_metadata.db",
-              'debug_fp': "../logs/EUMETSAT_download.txt",
-              'table_id': "eumetsat.metadata",
-              'project_id': "solar-pv-nowcasting",
-              'start_date': "2019-04-01T00:00:00",
-              'end_date': "2019-04-01T05:00:00"
-          },
+   "solids":{
+      "download_missing_eumetsat_files":{
+         "inputs":{
+            "env_vars_fp":"../.env",
+            "data_dir":"../data/raw_bfill",
+            "metadata_db_fp":"../data/EUMETSAT_metadata.db",
+            "debug_fp":"../logs/EUMETSAT_download.txt",
+            "table_id":"eumetsat.metadata",
+            "project_id":"solar-pv-nowcasting",
+            "start_date":"2019-04-01T00:00:00",
+            "end_date":"2019-04-01T05:00:00"
+         }
       },
-      'df_metadata_to_dt_to_fp_map': {
-          'inputs': {
-              'data_dir': "../data/raw_bfill"
-          }
+      "df_metadata_to_dt_to_fp_map":{
+         "inputs":{
+            "data_dir":"../data/raw_bfill"
+         }
       },
-      'reproject_compress_save_datasets_batch': {
-          'inputs': {
-              'new_coords_fp': "../data/intermediate/reproj_coords_TM_4km.csv",
-              'new_grid_fp': "../data/intermediate/new_grid_4km_TM.json",
-              'zarr_bucket': "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
-              'var_name': "stacked_eumetsat_data"
-          }
+      "reproject_compress_save_datasets_batch":{
+         "inputs":{
+            "new_coords_fp":"../data/intermediate/reproj_coords_TM_4km.csv",
+            "new_grid_fp":"../data/intermediate/new_grid_4km_TM.json",
+            "zarr_bucket":"solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
+            "var_name":"stacked_eumetsat_data"
+         }
       },
-      'save_metadata_batch': {
-          'inputs': {
-              'table_id': "eumetsat.metadata",
-              'project_id': "solar-pv-nowcasting"
-          },
+      "save_metadata_batch":{
+         "inputs":{
+            "table_id":"eumetsat.metadata",
+            "project_id":"solar-pv-nowcasting"
+         }
       },
-      'compress_export_then_delete_raw_batch': {
-          'inputs': {
-              'BUCKET_NAME': "solar-pv-nowcasting-data",
-              'PREFIX': "satellite/EUMETSAT/SEVIRI_RSS/native/",
-              'data_dir': "../data/raw_bfill",
-              'compressed_dir': "../data/compressed_bfill",
-          },
+      "compress_export_then_delete_raw_batch":{
+         "inputs":{
+            "BUCKET_NAME":"solar-pv-nowcasting-data",
+            "PREFIX":"satellite/EUMETSAT/SEVIRI_RSS/native/",
+            "data_dir":"../data/raw_bfill",
+            "compressed_dir":"../data/compressed_bfill"
+         }
       }
-  }
+   }
+}
 """
 import datetime
 from airflow.models import Variable
