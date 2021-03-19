@@ -30,8 +30,8 @@ Example run config:
     },
     "reproject_compress_save_datasets_batch": {
       "inputs": {
-        "new_coords_fp": "../data/intermediate/reproj_coords_TM_4km.csv",
-        "new_grid_fp": "../data/intermediate/new_grid_4km_TM.json",
+        "new_coords_fp": "/srv/airflow/data/intermediate/reproj_coords_TM_4km.csv",
+        "new_grid_fp": "/srv/airflow/data/intermediate/new_grid_4km_TM.json",
         "zarr_bucket": "solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16",
         "var_name": "stacked_eumetsat_data"
       }
