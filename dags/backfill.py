@@ -19,8 +19,8 @@ Example run config:
         "debug_fp": "/srv/airflow/logs/EUMETSAT_download.txt",
         "table_id": "eumetsat.metadata",
         "project_id": "solar-pv-nowcasting",
-        "start_date": "2019-02-01T00:00:00",
-        "end_date": "2019-02-01T00:05:00"
+        "start_date": "2020-01-01T00:00:00",
+        "end_date": "2020-01-02T00:00:00"
       }
     },
     "df_metadata_to_dt_to_fp_map": {
