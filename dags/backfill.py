@@ -79,5 +79,5 @@ dag, tasks = make_airflow_dag(
     module_name="satip.backfill",
     pipeline_name="download_missing_data_pipeline",
     run_config=backfill_config,
-    dag_kwargs={"default_args": DEFAULT_ARGS, "max_active_runs": 1, "catchup": "False"},
+    dag_kwargs={"default_args": DEFAULT_ARGS, "max_active_runs": 1, "catchup": "False", "schedule_interval": None},
 )
