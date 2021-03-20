@@ -168,20 +168,13 @@ def load_from_zarr_bucket(zarr_bucket):
     return ds
 
 # Cell
-def identifying_missing_datasets(start_date='', end_date='', eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16'):
-    # Identifying date range if not fully provided
-    if (start_date == '') or (end_date == ''):
-        ds_eumetsat = load_from_zarr_bucket(eumetsat_zarr_bucket)
-        start_date = ds_eumetsat.time.min().values
-        end_date = ds_eumetsat.time.max().values
+def identifying_missing_datasets(start_date, end_date, eumetsat_zarr_bucket='solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16'):
 
-        # have to loop this by month for the API
-        month_split = pd.date_range("2020-01-01T00:09:15.000000000", "2021-01-08T01:29:15.000000000", freq="MS")
-    else:
-        month_split = pd.date_range(start_date, end_date, freq="MS")
-        # if date range is less than one month
-        if len(month_split) == 1:
-            month_split = [start_date, end_date]
+    month_split = pd.date_range(start_date, end_date, freq="MS")
+
+    # if date range is less than one month
+    if len(month_split) == 1:
+        month_split = [start_date, end_date]
 
     missing_datasets = []
 
