@@ -59,7 +59,8 @@ index = {"create_markdown_table": "00_utils.ipynb",
          "chunks": "05a_pipeline_batch.ipynb",
          "reproject_compress_save_datasets_batch": "05a_pipeline_batch.ipynb",
          "save_metadata_batch": "05a_pipeline_batch.ipynb",
-         "compress_export_then_delete_raw_batch": "05a_pipeline_batch.ipynb"}
+         "compress_export_then_delete_raw_batch": "05a_pipeline_batch.ipynb",
+         "plot_zarr_data": "03_zarr.ipynb"}
 
 modules = ["utils.py",
            "eumetsat.py",
