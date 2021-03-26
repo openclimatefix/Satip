@@ -2,11 +2,14 @@
 
 
 
+    Downloading: 100%|â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆ| 1/1 [00:00<00:00,  4.31rows/s]
+    
+
 <br>
 
 ### User Input
 
-```python
+```
 data_dir = '../data/raw'
 compressed_dir = '../data/compressed'
 debug_fp = '../logs/EUMETSAT_download.txt'
@@ -22,7 +25,7 @@ download_data = True
 
 First we'll load the the environment variables
 
-```python
+```
 dotenv.load_dotenv(env_vars_fp)
 
 user_key = os.environ.get('USER_KEY')
@@ -35,7 +38,7 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 
 And test they were loaded successfully
 
-```python
+```
 def check_env_vars_have_loaded(env_vars):
     for name, value in env_vars.items():
         assert value is not None, f'{name}` should not be None'
@@ -60,7 +63,7 @@ We'll then use them to request an access token for the API
 
 We'll then use them to request an access token for the API
 
-```python
+```
 access_token = request_access_token(user_key, user_secret)
 ```
 
@@ -68,15 +71,18 @@ access_token = request_access_token(user_key, user_secret)
 
 ### Querying Available Data
 
-Before we can download any data we have to know where it's stored. To learn this we can query their search-products API, which returns a JSON containing a list of file metadata.
+Before we can download any data we have to know where it's stored. To learn this we can query their search-products API, which returns a JSON containing a list of file metadata.  
+
+Dcumentation for the Swagger API endpoint can be found here: https://eumetsatspace.atlassian.net/wiki/spaces/DSDS/pages/316080237/Swagger+UI+OpenSearch+API  
+
 
 <br>
 
 We'll quickly make a test request to this end-point
 
-```python
+```
 start_date = '2019-10-01'
-end_date = '2019-10-07'
+end_date = '2020-10-01'
 
 r = query_data_products(start_date, end_date)
 
@@ -84,20 +90,42 @@ r_json = r.json()
 JSON(r_json)
 ```
 
+
+
+
+    <IPython.core.display.JSON object>
+
+
+
 <br>
 
-However the search-api is capped (at 10,000) for the number of files it will return metadata for, so we'll create a while loop that waits until all the relevant data has been returned. We'll then extract just the list of features from the returned JSONs.
+However the search-api is capped (at 10,000) for the number of files it will return metadata for, so we'll create a while loop that waits until all the relevant data has been returned. We'll then extract just the list of features from the returned JSONs.  
+
+While the search-api returns max 10,000 results, using start-index etc doesn't seem to work for wide time searches, so we will need to do multiple queries.  
+Also key to note the results are returned most recent first, so we must proceed backwards in iterations of 10,000  
 
 <br>
 
 We'll check that the same number of available datasets are identified
 
-```python
+```
 %%time
 
+start_date = '2020-01-01'
+end_date = '2020-04-01'
 datasets = identify_available_datasets(start_date, end_date)
 
 print(f'{len(datasets)} datasets have been identified')
+```
+
+    identify_available_datasets: found 18142 results from API
+    18142 datasets have been identified
+    CPU times: user 940 ms, sys: 114 ms, total: 1.05 s
+    Wall time: 6.2 s
+    
+
+```
+# JSON(datasets)
 ```
 
 <br>
@@ -110,12 +138,19 @@ We'll now test this works.
 
 N.b. You cannot use the link returned here directly as it will not be OAuth'ed
 
-```python
+```
 dataset_ids = sorted([dataset['id'] for dataset in datasets])
 example_data_link = dataset_id_to_link(dataset_ids[0])
 
 example_data_link
 ```
+
+
+
+
+    'https://api.eumetsat.int/data/download/products/MSG2-SEVI-MSG15-0100-NA-20200303090418.826000000Z-NA'
+
+
 
 <br>
 
@@ -123,8 +158,8 @@ example_data_link
 
 Now that we know where our data is located we want to download it. First we'll check that the directory we wish to save the data in exists, if not we'll create it
 
-```python
-for folder in [data_dir, sorted_dir]:
+```
+for folder in [data_dir, compressed_dir]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 ```
@@ -141,7 +176,7 @@ We're now ready to create a download manager that will handle all of the queryin
 
 We'll now see what it looks like when we initialise the download manager
 
-```python
+```
 dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, 
                      slack_webhook_url=slack_webhook_url, slack_id=slack_id)
 
@@ -156,11 +191,26 @@ df_metadata = dm.get_df_metadata()
 df_metadata.head()
 ```
 
+    2021-03-08 09:48:44,953 - INFO - ********** Download Manager Initialised **************
+    2021-03-08 09:48:45,280 - INFO - 1 files queried, 0 found in ../data/raw, 1 to download.
+    
+
+    identify_available_datasets: found 1 results from API
+    
+
+
+<div><span class="Text-label" style="display:inline-block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-width:0; max-width:15ex; vertical-align:middle; text-align:right"></span>
+<progress style="width:60ex" max="1" value="0" class="Progress-main"/></progress>
+<span class="Progress-label"><strong>0%</strong></span>
+<span class="Iteration-label">0/1</span>
+<span class="Time-label">[0<0, 0.00s/it]</span></div>
+
+
 <br>
 
 The `get_size` function was adapted from <a href="https://stackoverflow.com/questions/1392413/calculating-a-directorys-size-using-python">this stackoverflow answer</a>
 
-```python
+```
 data_dir_size = get_dir_size(data_dir)
 
 print(f'The data directory is currently {round(data_dir_size/1_000_000_000, 2):,} Gb')
@@ -171,28 +221,28 @@ print(f'The data directory is currently {round(data_dir_size/1_000_000_000, 2):,
 If Google Cloud Platform (GCP) flags are passed (`bucket_name` and `bucket_prefix`), when downloading, then the `DownloadManager` should first check to see if the files already exist in the specified cloud storage bucket.  
 If the files already exist, then they will not be downloaded locally - if the storage bucket arguments are passed.  
 
-```python
+```
 BUCKET_NAME = "solar-pv-nowcasting-data"
 PREFIX = "satellite/EUMETSAT/SEVIRI_RSS/native/2020"
 ```
 
-```python
+```
 dm = DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, bucket_name=BUCKET_NAME, bucket_prefix=PREFIX)
 ```
 
-```python
+```
 # Bucket filenames can be accessed
 len(dm.bucket_filenames)
 ```
 
 Lets test this by examining some dates at the start of 2020
 
-```python
+```
 # Timings: around 2 hours to download 1 day.
 
 # DownloadManager should find these 2020 files on the VM
 start_date = '2020-01-01 00:00'
-end_date = '2020-01-02 00:00'
+end_date = '2020-01-01 00:02'
 dm.download_date_range(start_date, end_date)
 ```
 
@@ -212,7 +262,7 @@ SatProgram-Instrument-SatNumber-AlgoVersion-InstrumentMode(?)-ReceptionStartDate
 
 We can use regex to take the first part of the filename for comparisons
 
-```python
+```
 txt = "MSG3-SEVI-MSG15-0100-NA-20190101000417.314000000Z-20190101000435-1377854-1.nat"
 re.match("([A-Z\d.]+-){6}", txt)[0][:-1] # [:-1] to trim the trailing -
 ```
@@ -221,7 +271,7 @@ To ensure we are comparing the same filenames, this regex is added into Download
 
 Set up logging locally.
 
-```python
+```
 debug_fp = '../logs/EUMETSAT_download.txt'
 log = utils.set_up_logging('EUMETSAT Processing', debug_fp)
 ```
@@ -230,7 +280,7 @@ log = utils.set_up_logging('EUMETSAT Processing', debug_fp)
 
 For local testing, this command downloads some files from the Google Cloud bucket:
 
-```python
+```
 # get test files from GCP - these are compressed
 # !gsutil cp -r gs://solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/native/2019/10/01/00/04 ../data/raw
 ```
@@ -241,7 +291,7 @@ Once files have been downloaded from the EUMETSAT API in some location, they nee
 
 First, see which files have already been downloaded locally to test this functionality.  
 
-```python
+```
 full_native_filenames = glob.glob(os.path.join(data_dir, '*.nat'))
 full_native_filenames
 ```
@@ -250,7 +300,7 @@ We will compress locally downloaded files here using `pbzip2`
 On ubuntu: `sudo apt-get install -y pbzip2`  
 On mac: `brew install pbzip2`  
 
-```python
+```
 compress_downloaded_files(data_dir=data_dir, compressed_dir=compressed_dir)
 ```
 
@@ -260,7 +310,7 @@ Compressed native files should be stored in a Google Cloud Storage Bucket. The f
 
 `gs://solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/native/<year>/<month>/<day>/<hour>/<minute>/`
 
-```python
+```
 # sync downloaded files in compressed_dir to the bucket
 BUCKET_NAME = "solar-pv-nowcasting-data"
 PREFIX = "satellite/EUMETSAT/SEVIRI_RSS/native/"

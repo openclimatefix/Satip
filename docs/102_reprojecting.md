@@ -2,7 +2,7 @@
 
 
 
-```python
+```
 from satip import reproj
 
 import matplotlib.pyplot as plt
@@ -17,7 +17,7 @@ import os
 
 We have to specify the directory where the data native filepaths are located
 
-```python
+```
 data_dir = '../data/raw'
 ```
 
@@ -27,7 +27,7 @@ data_dir = '../data/raw'
 
 We'll then load the file using the reproj library
 
-```python
+```
 native_fps = sorted([f'{data_dir}/{f}' for f in os.listdir(data_dir) if '.nat' in f])
 native_fp = native_fps[0]
 
@@ -45,7 +45,7 @@ Next we'll visualise the data in the HRV layer.
 
 In this particular image it looks like we've caught a period where the satellite is slightly off-kilter. Fortunately the area definition we create accounts for periods when this occurs.
 
-```python
+```
 seviri = reproj.get_seviri_area_def(native_fp)
 seviri_crs = seviri.to_cartopy_crs()
 
@@ -80,7 +80,7 @@ ax.coastlines(resolution='50m', alpha=0.8, color='white')
 
 The main way to carry out a reprojection is with the `Reprojector` class
 
-```python
+```
 reprojector = reproj.Reprojector()
 
 reprojector
@@ -97,7 +97,7 @@ reprojector
 
 From which the `reproject` method can be called, the default method that will be used is through `pyresample`
 
-```python
+```
 %%capture --no-stdout
 %%time
 
@@ -107,7 +107,7 @@ ds_reproj = reprojector.reproject(native_fp)
     Wall time: 5.58 s
     
 
-```python
+```
 ds_reproj
 ```
 
@@ -567,7 +567,7 @@ Area extent: (3164925.147, 5571248.3904, -2403822.9075, 1394687.3495)</dd><dt><s
 
 It's also possible to use the functional api, e.g. for our task we could have used `full_scene_pyresample` to achieve the same results.
 
-```python
+```
 %%capture --no-stdout
 %%time
 
@@ -577,7 +577,7 @@ ds_reproj = reproj.full_scene_pyresample(native_fp)
     Wall time: 4.98 s
     
 
-```python
+```
 ds_reproj
 ```
 
@@ -1037,7 +1037,7 @@ Area extent: (3164925.147, 5571248.3904, -2403822.9075, 1394687.3495)</dd><dt><s
 
 Alongside `pyresample` its also possible to use `pyinterp` which can be faster when the dataset has fewer layers. When using `pyinterp` we have to provide the coordinates of the new grid as well as the coordinates that grid has in the original CRS.
 
-```python
+```
 %%capture --no-stdout
 %%time
 
@@ -1051,7 +1051,7 @@ ds_reproj = reprojector.reproject(native_fp, reproj_library='pyinterp')
     Wall time: 16.5 s
     
 
-```python
+```
 ds_reproj
 ```
 

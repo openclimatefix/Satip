@@ -2,7 +2,7 @@
 
 
 
-```python
+```
 from satip import eumetsat
 
 import matplotlib.pyplot as plt
@@ -23,7 +23,7 @@ import dotenv
 
 We have to specify the directory where the data native filepaths are located
 
-```python
+```
 data_dir = '../data/raw'
 debug_fp = '../logs/EUMETSAT_download.txt'
 env_vars_fp = '../.env'
@@ -36,7 +36,7 @@ metadata_db_fp = '../data/EUMETSAT_metadata.db'
 
 First we'll load the the environment variables
 
-```python
+```
 dotenv.load_dotenv(env_vars_fp)
 
 user_key = os.environ.get('USER_KEY')
@@ -49,7 +49,7 @@ slack_webhook_url = os.environ.get('SLACK_WEBHOOK_URL')
 
 Then we'll use the download manager to retrieve a single dataset
 
-```python
+```
 dm = eumetsat.DownloadManager(user_key, user_secret, data_dir, metadata_db_fp, debug_fp, 
                               slack_webhook_url=slack_webhook_url, slack_id=slack_id)
 
@@ -84,7 +84,7 @@ dm.download_date_range(start_date, end_date)
 
 Once the files have been downloaded they will be automatically detected and skipped if downloading is attempted again
 
-```python
+```
 _ = dm.download_date_range(start_date, end_date)
 ```
 
@@ -96,7 +96,7 @@ _ = dm.download_date_range(start_date, end_date)
 
 We can retrieve the metadata for all historical downloads by calling the `get_df_metadata` method
 
-```python
+```
 df_metadata = dm.get_df_metadata()
 
 df_metadata.head()

@@ -8,7 +8,7 @@
 
 First we'll load the the environment variables
 
-```python
+```
 env_vars_fp = '../.env'
 dotenv.load_dotenv(env_vars_fp)
 
@@ -24,7 +24,7 @@ slack_webhook_url = os.environ.get('slack_webhook_url')
 
 We can now easily construct markdown tables
 
-```python
+```
 notebook_info = {
     # development
     'Utilities': {
@@ -116,7 +116,7 @@ print(nb_table_str)
 
 We'll now initialise the logger and make a test log
 
-```python
+```
 logger = set_up_logging(__name__, 
                         '.', 
                         slack_id=slack_id,
@@ -132,7 +132,7 @@ logger.log(logging.INFO, 'This will output to file and Jupyter but not to Slack 
 
 We'll now shutdown the logger handlers and then delete the log file we just made
 
-```python
+```
 handlers = logger.handlers[:]
 
 for handler in handlers:

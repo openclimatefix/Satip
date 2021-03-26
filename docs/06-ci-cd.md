@@ -2,7 +2,7 @@
 
 
 
-```python
+```
 #exports
 import os
 import re
@@ -16,7 +16,7 @@ from configparser import ConfigParser
 
 ### Initialising CLI 
 
-```python
+```
 #exports
 app = typer.Typer()
 ```
@@ -27,7 +27,7 @@ app = typer.Typer()
 
 We'll start by retrieving the current package version specified in `settings.ini`
 
-```python
+```
 #exports
 @app.command()
 def get_current_package_version(settings_fp: str='settings.ini'):
@@ -38,7 +38,7 @@ def get_current_package_version(settings_fp: str='settings.ini'):
     return version
 ```
 
-```python
+```
 settings_fp = '../settings.ini'
 
 original_version = get_current_package_version(settings_fp)
@@ -57,7 +57,7 @@ original_version
 
 We'll now increment the package version
 
-```python
+```
 #exports
 @app.command()
 def increment_package_version(old_version: str, increment_level: str='micro'):
@@ -77,7 +77,7 @@ def increment_package_version(old_version: str, increment_level: str='micro'):
     return new_version
 ```
 
-```python
+```
 increment_package_version(original_version)
 ```
 
@@ -92,7 +92,7 @@ increment_package_version(original_version)
 
 But what about if we've made large changes to the code-base and wish to express the size of these revisions in the version? For that we can specify the `increment_level`.
 
-```python
+```
 increment_package_version(original_version, increment_level='major')
 ```
 
@@ -107,7 +107,7 @@ increment_package_version(original_version, increment_level='major')
 
 And finally we can set the version
 
-```python
+```
 #exports
 @app.command()
 def set_current_package_version(version: str, settings_fp: str='settings.ini'):
@@ -128,7 +128,7 @@ def set_current_package_version(version: str, settings_fp: str='settings.ini'):
     return 
 ```
 
-```python
+```
 set_current_package_version('9.9.9', settings_fp)
 get_current_package_version(settings_fp)
 ```
@@ -144,7 +144,7 @@ get_current_package_version(settings_fp)
 
 Before we move on we'll change the version on file back to the original
 
-```python
+```
 set_current_package_version(original_version, settings_fp)
 get_current_package_version(settings_fp)
 ```
@@ -162,7 +162,7 @@ Finally we need to ensure the CLI app is available when the module is loaded.
 
 N.b. we've included the condition `'__file__' in globals()` to make sure this isn't when inside the notebook
 
-```python
+```
 #exports
 if __name__ == '__main__' and '__file__' in globals():
     app()
