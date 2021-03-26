@@ -38,7 +38,6 @@ except:
 
 
 # Cell
-
 def calculate_x_offset(native_fp):
     handler = seviri_l1b_native.NativeMSGFileHandler(native_fp, {}, None)
     lower_east_column_planned = handler.header['15_DATA_HEADER']['ImageDescription']['PlannedCoverageHRV']['LowerEastColumnPlanned']
@@ -236,6 +235,7 @@ def full_scene_pyinterp(native_fp, new_x_coords, new_y_coords, new_grid_fp):
 
     return ds_reproj
 
+# Cell
 class Reprojector:
     def __init__(self, new_coords_fp=None, new_grid_fp=None):
         if new_coords_fp is None and new_grid_fp is None:
