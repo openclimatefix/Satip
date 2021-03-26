@@ -1,6 +1,6 @@
 site_name: Satip Documentation
-repo_url: https://github.com/Future-Energy-Associates/satip
-repo_name: Future-Energy-Associates/satip
+repo_url: https://github.com/openclimatefix/satip
+repo_name: openclimatefix/satip
 
 theme:
   name: material
@@ -43,6 +43,8 @@ nav:
     - Downloading from EUMETSAT: 101_downloading.md
     - Reprojecting: 102_reprojecting.md
     - Loading from Zarr: 103_loading.md
+    - Extracting Time-Series: 104_ts_analysis.md
+    - Database Summary: 105_summary.md
   - About:
     - OCF: about/OCF.md
     - Solar Forecasting: about/Solar Forecasting.md
