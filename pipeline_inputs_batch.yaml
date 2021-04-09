@@ -1,0 +1,35 @@
+solids:
+  download_missing_eumetsat_files:
+    inputs:
+      env_vars_fp: /opt/satip/.env
+      data_dir: /opt/satip/data/raw_bfill
+      metadata_db_fp: /opt/satip/data/EUMETSAT_metadata.db
+      debug_fp: /opt/satip/logs/EUMETSAT_download.txt
+      table_id: eumetsat.metadata
+      project_id: solar-pv-nowcasting
+      start_date: '2020-05-01T00:00:00'
+      end_date: '2020-06-01T00:00:00'
+  df_metadata_to_dt_to_fp_map:
+    inputs:
+      data_dir: /opt/satip/data/raw_bfill
+  reproject_compress_save_datasets_batch:
+    inputs:
+      new_coords_fp: /opt/satip/data/intermediate/reproj_coords_TM_4km.csv
+      new_grid_fp: /opt/satip/data/intermediate/new_grid_4km_TM.json
+      zarr_bucket: >-
+        solar-pv-nowcasting-data/satellite/EUMETSAT/SEVIRI_RSS/zarr_full_extent_TM_int16
+      var_name: stacked_eumetsat_data
+  save_metadata_batch:
+    inputs:
+      table_id: eumetsat.metadata
+      project_id: solar-pv-nowcasting
+  compress_export_then_delete_raw_batch:
+    inputs:
+      data_dir: /opt/satip/data/raw_bfill
+      compressed_dir: /opt/satip/data/compressed_bfill
+      BUCKET_NAME: solar-pv-nowcasting-data
+      PREFIX: satellite/EUMETSAT/SEVIRI_RSS/native/
+storage:
+  filesystem:
+    config:
+      base_dir: /opt/satip/data
