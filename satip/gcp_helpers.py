@@ -178,4 +178,4 @@ def query(sql_query, project_id):
 sql_query = 'select * from eumetsat.metadata where result_time = (select max(result_time) from eumetsat.metadata)'
 project_id = 'solar-pv-nowcasting'
 
-query(sql_query, project_id)['result_time'].iloc[0].strftime('%Y-%m-%d %H:%M')
+# query(sql_query, project_id)['result_time'].iloc[0].strftime('%Y-%m-%d %H:%M')

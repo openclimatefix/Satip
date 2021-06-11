@@ -131,7 +131,7 @@ def identify_available_datasets(start_date: str, end_date: str,
 
     """
     r_json = query_data_products(start_date, end_date,
-                                 product_id='EO:EUM:DAT:MSG:MSG15-RSS').json()
+                                 product_id=product_id).json()
 
     num_total_results = r_json['properties']['totalResults']
     print(f'identify_available_datasets: found {num_total_results} results from API')
@@ -160,7 +160,7 @@ def identify_available_datasets(start_date: str, end_date: str,
 
         batch_r_json = query_data_products(start_date, new_end_date,
                                  num_features=num_features,
-                                 product_id='EO:EUM:DAT:MSG:MSG15-RSS').json()
+                                 product_id=product_id).json()
         new_end_date = batch_r_json['features'][-1]['properties']['date'].split('/')[1]
         datasets = datasets + batch_r_json['features']
 
