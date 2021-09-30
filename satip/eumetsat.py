@@ -502,7 +502,6 @@ class DownloadManager:
             dataset_metadata = extract_metadata(self.data_dir, product_id=product_id)
             dataset_metadata.update({'downloaded': pd.Timestamp.now()})
             all_metadata += [dataset_metadata]
-            self.metadata_table.insert(dataset_metadata)
 
             # Delete old metadata files
             for xml_file in ['EOPMetadata.xml', 'manifest.xml']:
