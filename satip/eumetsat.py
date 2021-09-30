@@ -26,7 +26,7 @@ import math
 import shutil
 import subprocess
 from pathlib import Path
-
+import urllib
 
 from requests.auth import HTTPBasicAuth
 import requests
@@ -56,11 +56,12 @@ def request_access_token(user_key, user_secret):
 
     token_url = 'https://api.eumetsat.int/token'
 
-    data = {
-      'grant_type': 'client_credentials'
-    }
-
-    r = requests.post(token_url, data=data, auth=(user_key, user_secret))
+    r = requests.post(
+        token_url,
+        auth=requests.auth.HTTPBasicAuth(user_key, user_secret),
+        data = {'grant_type': 'client_credentials'},
+        headers = {"Content-Type" : "application/x-www-form-urlencoded"}
+    )
     access_token = r.json()['access_token']
 
     return access_token
@@ -169,8 +170,8 @@ def identify_available_datasets(start_date: str, end_date: str,
     return datasets
 
 # Cell
-def dataset_id_to_link(collection_id, data_id):
-    return f'https://api.eumetsat.int/data/download/collections/{collection_id}/products/{data_id}'
+def dataset_id_to_link(collection_id, data_id, access_token):
+    return f'https://api.eumetsat.int/data/download/collections/{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}' + '?access_token=' + access_token
 
 # Cell
 def json_extract(json_obj:Union[dict, list], locators:list):
@@ -478,7 +479,6 @@ class DownloadManager:
 
         # Check which datasets to download
         download_ids, local_ids = self.check_if_downloaded(dataset_ids)
-
         # Downloading specified datasets
         if not dataset_ids:
             self.logger.info('No files will be downloaded. Set DownloadManager bucket_name argument for local download')
@@ -487,8 +487,7 @@ class DownloadManager:
         all_metadata = []
 
         for dataset_id in track(dataset_ids):
-            dataset_link = dataset_id_to_link(dataset_id)
-
+            dataset_link = dataset_id_to_link(product_id, dataset_id, access_token=self.access_token)
             # Download the raw data
             if (dataset_id in download_ids) or (download_all == True):
                 try:
@@ -496,6 +495,7 @@ class DownloadManager:
                 except:
                     self.logger.info('The EUMETSAT access token has been refreshed')
                     self.request_access_token()
+                    dataset_link = dataset_id_to_link(product_id, dataset_id, access_token=self.access_token)
                     self.download_single_dataset(dataset_link)
 
             # Extract and save metadata
