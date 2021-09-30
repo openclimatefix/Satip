@@ -169,7 +169,8 @@ def identify_available_datasets(start_date: str, end_date: str,
     return datasets
 
 # Cell
-dataset_id_to_link = lambda data_id: f'https://api.eumetsat.int/data/download/products/{data_id}'
+def dataset_id_to_link(collection_id, data_id):
+    return f'https://api.eumetsat.int/data/download/collections/{collection_id}/products/{data_id}'
 
 # Cell
 def json_extract(json_obj:Union[dict, list], locators:list):
