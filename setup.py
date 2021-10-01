@@ -6,11 +6,10 @@ from pathlib import Path
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 install_requires = (this_directory / "requirements.txt").read_text().splitlines()
-exec(open("satip/__init__.py").read())
 
 setup(
     name="satip",
-    version=__version__,
+    version="2.0.0",
     license="MIT",
     description="Satip provides the functionality necessary for retrieving, and storing EUMETSAT data",
     author="Jacob Bieker, Ayrton Bourn",
