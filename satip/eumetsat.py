@@ -13,7 +13,6 @@ __all__ = [
 ]
 
 import pandas as pd
-import dataset
 
 from typing import Union, List
 import datetime
@@ -210,7 +209,6 @@ class DownloadManager:
         user_key: str,
         user_secret: str,
         data_dir: str,
-        metadata_db_fp: str,
         log_fp: str,
         logger_name="EUMETSAT Download",
     ):
@@ -219,14 +217,12 @@ class DownloadManager:
         * Setting up the logger
         * Requesting an API access token
         * Configuring the download directory
-        * Connecting to the metadata database
         * Adding satip helper functions
 
         Parameters:
             user_key: EUMETSAT API key
             user_secret: EUMETSAT API secret
             data_dir: Path to the directory where the satellite data will be saved
-            metadata_db_fp: Path to where the metadata database is stored/will be saved
             log_fp: Filepath where the logs will be stored
 
         Returns:
@@ -250,10 +246,6 @@ class DownloadManager:
 
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir)
-
-        # Initialising the metadata database
-        self.metadata_db = dataset.connect(f"sqlite:///{metadata_db_fp}")
-        self.metadata_table = self.metadata_db["metadata"]
 
         # Adding satip helper functions
         self.identify_available_datasets = identify_available_datasets
@@ -319,9 +311,7 @@ class DownloadManager:
         """
 
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
-        df_new_metadata = self.download_datasets(datasets, product_id=product_id)
-
-        return df_new_metadata
+        self.download_datasets(datasets, product_id=product_id)
 
     def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS", download_all=True):
         """
