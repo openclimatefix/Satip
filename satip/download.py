@@ -181,6 +181,7 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
                     f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
                 )
             except:
+                _LOG.exception(f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run.")
                 # Something is wrong with the file, redownload later
                 fs.rm(f)
     else:
