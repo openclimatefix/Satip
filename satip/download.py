@@ -1,0 +1,307 @@
+############
+# Pull raw satellite data from EUMetSat
+#
+# 2021-09-28
+# Jacob Bieker
+#
+############
+
+import fsspec
+import yaml
+from satip import eumetsat
+import pandas as pd
+import os
+import math
+from satpy import Scene
+
+from typing import Optional, List, Tuple
+
+from datetime import datetime, timedelta
+
+# SatPy gives a UserWarning about Proj, which isn't actually used here, so can be
+# safely ignored
+import warnings
+
+SAT_VARIABLE_NAMES = (
+    "HRV",
+    "IR_016",
+    "IR_039",
+    "IR_087",
+    "IR_097",
+    "IR_108",
+    "IR_120",
+    "IR_134",
+    "VIS006",
+    "VIS008",
+    "WV_062",
+    "WV_073",
+)
+
+NATIVE_FILESIZE_MB = 102.210123
+CLOUD_FILESIZE_MB = 3.445185
+RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
+CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
+
+format_dt_str = lambda dt: pd.to_datetime(dt).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def download_eumetsat_data(
+    download_directory,
+    start_date: str,
+    end_date: str,
+    backfill: bool = False,
+    bandwidth_limit: Optional[float] = None,
+    user_key: Optional[str] = None,
+    user_secret: Optional[str] = None,
+    auth_filename: Optional[str] = None,
+):
+    """
+    Downloads EUMETSAT RSS and Cloud Masks to the given directory,
+     checking first to see if the requested files are already downloaded
+
+    Args:
+        download_directory: Directory to download the files and store them
+        start_date: Start date, in a format accepted by pandas to_datetime()
+        end_date: End date, in a format accepted by pandas to_datetime()
+        backfill: Whether to backfill between the beginning of EUMETSAT data and now, overrides start and end date
+        bandwidth_limit: Bandwidth limit, currently unused
+        user_key: User key for the EUMETSAT API
+        user_secret: User secret for the EUMETSAT API
+        auth_filename: Path to a file containing the user_secret and user_key
+
+    """
+    # Get authentication
+    if auth_filename is not None:
+        if (user_key is not None) or (user_secret is not None):
+            raise RuntimeError("Please do not set BOTH auth_filename AND user_key or user_secret!")
+        user_key, user_secret = load_key_secret(auth_filename)
+
+    if backfill:
+        # Set to year before data started to ensure gets everything
+        # No downside to requesting an earlier time
+        start_date = format_dt_str("2009-01-01")
+        # Set to current date to get everything up until this script started
+        end_date = datetime.now(tz=None)
+
+    # Download the data
+    dm = eumetsat.DownloadManager(user_key, user_secret, download_directory, download_directory)
+
+    for product_id in [
+        RSS_ID,
+        CLOUD_ID,
+    ]:
+        # Do this to clear out any partially downloaded days
+        sanity_check_files_and_move_to_directory(
+            directory=download_directory, product_id=product_id
+        )
+
+        times_to_use = determine_datetimes_to_download_files(
+            download_directory, start_date, end_date, product_id=product_id
+        )
+        for start_time, end_time in times_to_use:
+            print(format_dt_str(start_time))
+            print(format_dt_str(end_time))
+            # pass
+            dm.download_date_range(
+                format_dt_str(start_time),
+                format_dt_str(end_time),
+                product_id=product_id,
+            )
+        # Sanity check, able to open/right size and move to correct directory
+        sanity_check_files_and_move_to_directory(
+            directory=download_directory, product_id=product_id
+        )
+    pass
+
+
+def load_key_secret(filename) -> Tuple[str, str]:
+    """
+    Load user secret and key stored in a yaml file
+
+    Args:
+        filename: Filename to read
+
+    Returns:
+        The user secret and key
+
+    """
+    with fsspec.open(filename, mode="r") as f:
+        keys = yaml.load(f, Loader=yaml.FullLoader)
+        return keys["key"], keys["secret"]
+
+
+def sanity_check_files_and_move_to_directory(directory, product_id):
+    """
+    Runs a sanity check for all the files of a given product_id in the directory
+    Deletes incomplete files, moves checked files to final location
+
+    This does a sanity check by:
+        Checking the filesize of RSS images
+        Attempting to open them in SatPy
+
+    While loading the file should be somewhat slow, it ensures the file can be opened
+
+    Args:
+        directory: Directory where the native files were downloaded
+        product_id: The product ID of the files to check
+
+    Returns:
+        The number of incomplete files deleted
+    """
+    pattern = "*.nat" if product_id == RSS_ID else "*.grb"
+    fs = fsspec.filesystem("file")  # TODO Update for other ones?
+    new_files = fs.glob(os.path.join(directory, pattern))
+
+    date_func = (
+        eumetsat_native_filename_to_datetime
+        if product_id == RSS_ID
+        else eumetsat_cloud_name_to_datetime
+    )
+    # Check all the right size
+    satpy_reader = "seviri_l1b_native" if product_id == RSS_ID else "seviri_l2_grib"
+
+    if product_id == RSS_ID:
+        for f in new_files:
+            try:
+                file_size = eumetsat.get_filesize_megabytes(f)
+                if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
+                    print("Wrong Size")
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", UserWarning)
+                    scene = Scene(filenames=[f], reader=satpy_reader)
+                    scene.load(SAT_VARIABLE_NAMES)
+                # Now that the file has been checked and can be open, move it to the final directory
+                base_name = get_basename(f)
+                file_date = date_func(base_name)
+                # Want to move it 1 minute in the future to correct the difference
+                file_date = file_date + timedelta(minutes=1)
+                if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
+                    fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
+                fs.move(
+                    f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
+                )
+            except:
+                # Something is wrong with the file, redownload later
+                fs.rm(f)
+    else:
+        for f in new_files:
+            base_name = get_basename(f)
+            file_date = date_func(base_name)
+            file_size = eumetsat.get_filesize_megabytes(f)
+            if not math.isclose(file_size, CLOUD_FILESIZE_MB, abs_tol=1):
+                # Removes if not the right size
+                fs.rm(f)
+            else:
+                if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
+                    fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
+                # Only move if the correct size
+                fs.move(
+                    f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
+                )
+
+    return
+
+
+def determine_datetimes_to_download_files(
+    directory,
+    start_date,
+    end_date,
+    product_id,
+) -> List[Tuple[datetime, datetime]]:
+    """
+    Check the given directory, and sub-directories, for all downloaded files.
+
+    Args:
+        directory: The top-level directory to check in
+        start_date:
+        end_date:
+        product_id:
+
+    Returns:
+        List of tuples of datetimes giving the ranges of time to download
+
+    """
+
+    pattern = "*.nat" if product_id == RSS_ID else "*.grb"
+    # Get all days from start_date to end_date
+    day_split = pd.date_range(start_date, end_date, freq="D")
+
+    # Go through files and get all examples in each
+    fs = fsspec.filesystem("file")  # TODO Update for other ones?
+
+    # Go through each directory, and for each day, list any missing data
+    missing_rss_timesteps = []
+    for day in day_split:
+        day_string = day.strftime(format="%Y/%m/%d")
+        rss_images = fs.glob(os.path.join(directory, day_string, pattern))
+        if len(rss_images) > 0:
+            missing_rss_timesteps = (
+                missing_rss_timesteps + get_missing_datetimes_from_list_of_files(rss_images)
+            )
+        else:
+            # No files, so whole day should be included
+            # Each one is at the start of the day, this then needs 1 minute before for the RSS image
+            # End 2 minutes before the end of the day, as that image would be for midnight, the next day
+            missing_day = (
+                day - timedelta(minutes=1),
+                day + timedelta(hours=23, minutes=58),
+            )
+            missing_rss_timesteps.append(missing_day)
+
+    return missing_rss_timesteps
+
+
+def eumetsat_native_filename_to_datetime(filename: str) -> datetime:
+    """Takes a file from the EUMETSAT API and returns
+    the date and time part of the filename"""
+    return eumetsat.eumetsat_filename_to_datetime(filename).replace(second=0)
+
+
+def eumetsat_cloud_name_to_datetime(filename: str) -> datetime:
+    return eumetsat.eumetsat_cloud_name_to_datetime(filename).replace(second=0)
+
+
+def get_basename(filename: str) -> str:
+    return filename.split("/")[-1]
+
+
+def get_missing_datetimes_from_list_of_files(
+    filenames: List[str],
+) -> List[Tuple[datetime, datetime]]:
+    """
+    Get a list of all datetimes not covered by the set of images
+    Args:
+        filenames: Filenames of the EUMETSAT Native files or Cloud Masks
+
+    Returns:
+        List of datetime ranges that are missing from the filename range
+    """
+    # Sort in order from earliest to latest
+    filenames = sorted(filenames)
+    is_rss = ".nat" in filenames[0]  # Which type of file it is
+    func = eumetsat_native_filename_to_datetime if is_rss else eumetsat_cloud_name_to_datetime
+    current_time = func(get_basename(filenames[0]))
+    # Want it to be from the beginning to the end of the day, so set current time to start of day
+    current_time = current_time.replace(hour=0, minute=0, second=0)
+    # Start from first one and go through, adding date range between each one, as long as difference is
+    # greater than or equal to 5min
+    missing_date_ranges = []
+    five_minutes = timedelta(minutes=5)
+    for i in range(len(filenames)):
+        next_time = func(get_basename(filenames[i]))
+        time_difference = next_time - current_time
+        if time_difference > five_minutes:
+            # Add breaks to list, only want the ones between, so add 5 minutes to the start
+            # In the case its missing only a single timestep, start and end would be the same time
+            missing_date_ranges.append((current_time, next_time))
+        current_time = next_time
+
+    # Check the end of the day too, 2 minutes from midnight because of the RSS image at 23:59 is for the next day
+    end_day = current_time.replace(hour=23, minute=58)
+    if end_day - current_time > five_minutes:
+        missing_date_ranges.append((current_time, end_day))
+    return missing_date_ranges
+
+
+if __name__ == "__main__":
+    download_eumetsat_data()
