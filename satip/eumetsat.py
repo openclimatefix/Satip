@@ -376,3 +376,9 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
+
+
+def eumetsat_cloud_name_to_datetime(filename: str):
+    """Takes a file from the EUMETSAT API and returns the date and time part of the file for Cloud mask files"""
+    date_str = filename.split("0100-0100-")[-1].split(".")[0]
+    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
