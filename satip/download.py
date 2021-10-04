@@ -13,6 +13,7 @@ import pandas as pd
 import os
 import math
 from satpy import Scene
+import logging
 
 from typing import Optional, List, Tuple
 
@@ -21,6 +22,9 @@ from datetime import datetime, timedelta
 # SatPy gives a UserWarning about Proj, which isn't actually used here, so can be
 # safely ignored
 import warnings
+
+_LOG = logging.getLogger("satip.download")
+_LOG.setLevel(logging.WARN)
 
 SAT_VARIABLE_NAMES = (
     "HRV",
@@ -79,7 +83,7 @@ def download_eumetsat_data(
     if backfill:
         # Set to year before data started to ensure gets everything
         # No downside to requesting an earlier time
-        start_date = format_dt_str("2009-01-01")
+        start_date = format_dt_str("2008-01-01")
         # Set to current date to get everything up until this script started
         end_date = datetime.now(tz=None)
 
@@ -99,8 +103,8 @@ def download_eumetsat_data(
             download_directory, start_date, end_date, product_id=product_id
         )
         for start_time, end_time in times_to_use:
-            print(format_dt_str(start_time))
-            print(format_dt_str(end_time))
+            _LOG.info(format_dt_str(start_time))
+            _LOG.info(format_dt_str(end_time))
             # pass
             dm.download_date_range(
                 format_dt_str(start_time),
@@ -111,10 +115,9 @@ def download_eumetsat_data(
         sanity_check_files_and_move_to_directory(
             directory=download_directory, product_id=product_id
         )
-    pass
 
 
-def load_key_secret(filename) -> Tuple[str, str]:
+def load_key_secret(filename: str) -> Tuple[str, str]:
     """
     Load user secret and key stored in a yaml file
 
@@ -130,7 +133,7 @@ def load_key_secret(filename) -> Tuple[str, str]:
         return keys["key"], keys["secret"]
 
 
-def sanity_check_files_and_move_to_directory(directory, product_id):
+def sanity_check_files_and_move_to_directory(directory: str, product_id: str) -> None:
     """
     Runs a sanity check for all the files of a given product_id in the directory
     Deletes incomplete files, moves checked files to final location
@@ -149,7 +152,7 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
         The number of incomplete files deleted
     """
     pattern = "*.nat" if product_id == RSS_ID else "*.grb"
-    fs = fsspec.filesystem("file")  # TODO Update for other ones?
+    fs = fsspec.open(directory).fs
     new_files = fs.glob(os.path.join(directory, pattern))
 
     date_func = (
@@ -165,7 +168,7 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
             try:
                 file_size = eumetsat.get_filesize_megabytes(f)
                 if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
-                    print("Wrong Size")
+                    _LOG.info("RSS Image has the wrong size")
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", UserWarning)
                     scene = Scene(filenames=[f], reader=satpy_reader)
@@ -181,7 +184,9 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
                     f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
                 )
             except:
-                _LOG.exception(f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run.")
+                _LOG.exception(
+                    f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
+                )
                 # Something is wrong with the file, redownload later
                 fs.rm(f)
     else:
@@ -191,6 +196,9 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
             file_size = eumetsat.get_filesize_megabytes(f)
             if not math.isclose(file_size, CLOUD_FILESIZE_MB, abs_tol=1):
                 # Removes if not the right size
+                _LOG.exception(
+                    f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
+                )
                 fs.rm(f)
             else:
                 if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
@@ -200,23 +208,21 @@ def sanity_check_files_and_move_to_directory(directory, product_id):
                     f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
                 )
 
-    return
-
 
 def determine_datetimes_to_download_files(
-    directory,
-    start_date,
-    end_date,
-    product_id,
+    directory: str,
+    start_date: datetime,
+    end_date: datetime,
+    product_id: str,
 ) -> List[Tuple[datetime, datetime]]:
     """
     Check the given directory, and sub-directories, for all downloaded files.
 
     Args:
         directory: The top-level directory to check in
-        start_date:
-        end_date:
-        product_id:
+        start_date: Start date as a datetime object
+        end_date: End date as a datetime object
+        product_id: String of the EUMETSAT product ID
 
     Returns:
         List of tuples of datetimes giving the ranges of time to download
@@ -228,7 +234,7 @@ def determine_datetimes_to_download_files(
     day_split = pd.date_range(start_date, end_date, freq="D")
 
     # Go through files and get all examples in each
-    fs = fsspec.filesystem("file")  # TODO Update for other ones?
+    fs = fsspec.open(directory).fs
 
     # Go through each directory, and for each day, list any missing data
     missing_rss_timesteps = []
