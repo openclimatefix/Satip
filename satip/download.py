@@ -301,7 +301,3 @@ def get_missing_datetimes_from_list_of_files(
     if end_day - current_time > five_minutes:
         missing_date_ranges.append((current_time, end_day))
     return missing_date_ranges
-
-
-if __name__ == "__main__":
-    download_eumetsat_data()
