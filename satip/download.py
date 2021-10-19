@@ -173,7 +173,6 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                     _LOG.info("RSS Image has the wrong size")
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", UserWarning)
-                    print(f)
                     scene = Scene(filenames=[f], reader=satpy_reader)
                     scene.load(SAT_VARIABLE_NAMES)
                 # Now that the file has been checked and can be open, compress it and move it to the final directory
@@ -184,7 +183,7 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                     _LOG.exception("Compression failed!")
                     raise
                 full_compressed_filename = f + ".bz2"
-                base_name = get_basename(f)
+                base_name = get_basename(full_compressed_filename)
                 file_date = date_func(base_name)
                 # Want to move it 1 minute in the future to correct the difference
                 file_date = file_date + timedelta(minutes=1)
