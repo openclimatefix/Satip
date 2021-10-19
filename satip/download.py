@@ -173,6 +173,7 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                     _LOG.info("RSS Image has the wrong size")
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", UserWarning)
+                    print(f)
                     scene = Scene(filenames=[f], reader=satpy_reader)
                     scene.load(SAT_VARIABLE_NAMES)
                 # Now that the file has been checked and can be open, compress it and move it to the final directory
