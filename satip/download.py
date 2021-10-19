@@ -14,6 +14,7 @@ import os
 import math
 from satpy import Scene
 import logging
+import subprocess
 
 from typing import Optional, List, Tuple
 
@@ -173,16 +174,27 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                     warnings.simplefilter("ignore", UserWarning)
                     scene = Scene(filenames=[f], reader=satpy_reader)
                     scene.load(SAT_VARIABLE_NAMES)
-                # Now that the file has been checked and can be open, move it to the final directory
+                # Now that the file has been checked and can be open, compress it and move it to the final directory
+                completed_process = subprocess.run(["pbzip2", "-5", f])
+                try:
+                    completed_process.check_returncode()
+                except:
+                    _LOG.exception("Compression failed!")
+                    raise
+                full_compressed_filename = f + ".bz2"
                 base_name = get_basename(f)
                 file_date = date_func(base_name)
                 # Want to move it 1 minute in the future to correct the difference
                 file_date = file_date + timedelta(minutes=1)
                 if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
                     fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
+                # Move the compressed file
                 fs.move(
-                    f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
+                    full_compressed_filename,
+                    os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name),
                 )
+                # Remove the uncompressed file
+                fs.rm(f)
             except:
                 _LOG.exception(
                     f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
@@ -228,8 +240,8 @@ def determine_datetimes_to_download_files(
         List of tuples of datetimes giving the ranges of time to download
 
     """
-
-    pattern = "*.nat" if product_id == RSS_ID else "*.grb"
+    # This is .bz2 as they should all be compressed files
+    pattern = "*.nat.bz2" if product_id == RSS_ID else "*.grb"
     # Get all days from start_date to end_date
     day_split = pd.date_range(start_date, end_date, freq="D")
 
