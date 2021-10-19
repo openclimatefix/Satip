@@ -196,9 +196,9 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                 )
                 # Remove the uncompressed file
                 fs.rm(f)
-            except:
+            except Exception as e:
                 _LOG.exception(
-                    f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
+                    f"Error {e} when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
                 )
                 # Something is wrong with the file, redownload later
                 fs.rm(f)
