@@ -113,10 +113,10 @@ def download_eumetsat_data(
                 format_dt_str(end_time),
                 product_id=product_id,
             )
-        # Sanity check, able to open/right size and move to correct directory
-        sanity_check_files_and_move_to_directory(
-            directory=download_directory, product_id=product_id
-        )
+            # Sanity check, able to open/right size and move to correct directory
+            sanity_check_files_and_move_to_directory(
+                directory=download_directory, product_id=product_id
+            )
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
