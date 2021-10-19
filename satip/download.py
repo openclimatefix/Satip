@@ -103,7 +103,8 @@ def download_eumetsat_data(
         times_to_use = determine_datetimes_to_download_files(
             download_directory, start_date, end_date, product_id=product_id
         )
-        for start_time, end_time in times_to_use:
+        # Want to go from most recent into the past
+        for start_time, end_time in reversed(times_to_use):
             _LOG.info(format_dt_str(start_time))
             _LOG.info(format_dt_str(end_time))
             # pass
