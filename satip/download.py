@@ -12,20 +12,17 @@ from satip import eumetsat
 import pandas as pd
 import os
 import math
-from satpy import Scene
 import logging
 import subprocess
+import multiprocessing
+from itertools import repeat
 
 from typing import Optional, List, Tuple
 
 from datetime import datetime, timedelta
 
-# SatPy gives a UserWarning about Proj, which isn't actually used here, so can be
-# safely ignored
-import warnings
-
 _LOG = logging.getLogger("satip.download")
-_LOG.setLevel(logging.WARN)
+_LOG.setLevel(logging.INFO)
 
 SAT_VARIABLE_NAMES = (
     "HRV",
@@ -59,6 +56,7 @@ def download_eumetsat_data(
     user_key: Optional[str] = None,
     user_secret: Optional[str] = None,
     auth_filename: Optional[str] = None,
+    number_of_processes: int = 0,
 ):
     """
     Downloads EUMETSAT RSS and Cloud Masks to the given directory,
@@ -86,7 +84,7 @@ def download_eumetsat_data(
         # No downside to requesting an earlier time
         start_date = format_dt_str("2008-01-01")
         # Set to current date to get everything up until this script started
-        end_date = datetime.now(tz=None)
+        end_date = datetime.now()
 
     # Download the data
     dm = eumetsat.DownloadManager(user_key, user_secret, download_directory, download_directory)
@@ -103,20 +101,38 @@ def download_eumetsat_data(
         times_to_use = determine_datetimes_to_download_files(
             download_directory, start_date, end_date, product_id=product_id
         )
-        # Want to go from most recent into the past
-        for start_time, end_time in reversed(times_to_use):
-            _LOG.info(format_dt_str(start_time))
-            _LOG.info(format_dt_str(end_time))
-            # pass
-            dm.download_date_range(
-                format_dt_str(start_time),
-                format_dt_str(end_time),
-                product_id=product_id,
+        _LOG.info(times_to_use)
+
+        if number_of_processes > 0:
+            pool = multiprocessing.Pool(processes=number_of_processes)
+            pool.starmap(
+                download_time_range,
+                zip(
+                    reversed(times_to_use),
+                    repeat(product_id),
+                    repeat(download_directory),
+                    repeat(dm),
+                ),
             )
-            # Sanity check, able to open/right size and move to correct directory
-            sanity_check_files_and_move_to_directory(
-                directory=download_directory, product_id=product_id
-            )
+        else:
+            # Want to go from most recent into the past
+            for time_range in reversed(times_to_use):
+                download_time_range(time_range, product_id, download_directory, download_manager=dm)
+
+
+def download_time_range(
+    time_range: Tuple[datetime, datetime], product_id, download_directory, download_manager
+) -> None:
+    start_time, end_time = time_range
+    _LOG.info(format_dt_str(start_time))
+    _LOG.info(format_dt_str(end_time))
+    download_manager.download_date_range(
+        format_dt_str(start_time),
+        format_dt_str(end_time),
+        product_id=product_id,
+    )
+    # Sanity check, able to open/right size and move to correct directory
+    sanity_check_files_and_move_to_directory(directory=download_directory, product_id=product_id)
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
@@ -163,18 +179,14 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
         else eumetsat_cloud_name_to_datetime
     )
     # Check all the right size
-    satpy_reader = "seviri_l1b_native" if product_id == RSS_ID else "seviri_l2_grib"
 
     if product_id == RSS_ID:
         for f in new_files:
             try:
                 file_size = eumetsat.get_filesize_megabytes(f)
                 if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
-                    _LOG.info("RSS Image has the wrong size")
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", UserWarning)
-                    scene = Scene(filenames=[f], reader=satpy_reader)
-                    scene.load(SAT_VARIABLE_NAMES)
+                    _LOG.info("RSS Image has the wrong size, skipping")
+                    continue
                 # Now that the file has been checked and can be open, compress it and move it to the final directory
                 completed_process = subprocess.run(["pbzip2", "-5", f])
                 try:
@@ -216,12 +228,9 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
             if not math.isclose(file_size, CLOUD_FILESIZE_MB, abs_tol=1):
                 # Removes if not the right size
                 _LOG.exception(
-                    f"Error when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
+                    f"Error when sanity-checking {f}.  Skipping this file.  Will be downloaded next time this script is run."
                 )
-                try:
-                    fs.rm(f)
-                except:
-                    continue
+                continue
             else:
                 if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
                     fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
@@ -251,7 +260,7 @@ def determine_datetimes_to_download_files(
 
     """
     # This is .bz2 as they should all be compressed files
-    pattern = "*.nat.bz2" if product_id == RSS_ID else "*.grb"
+    pattern = "*.bz2" if product_id == RSS_ID else "*.grb"
     # Get all days from start_date to end_date
     day_split = pd.date_range(start_date, end_date, freq="D")
 
