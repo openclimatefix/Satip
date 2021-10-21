@@ -193,7 +193,7 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                     completed_process.check_returncode()
                 except:
                     _LOG.exception("Compression failed!")
-                    raise
+                    continue
                 full_compressed_filename = f + ".bz2"
                 base_name = get_basename(full_compressed_filename)
                 file_date = date_func(base_name)
