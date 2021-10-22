@@ -17,7 +17,7 @@ import subprocess
 import multiprocessing
 from itertools import repeat
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Callable
 
 from datetime import datetime, timedelta
 
@@ -105,24 +105,33 @@ def download_eumetsat_data(
 
         if number_of_processes > 0:
             pool = multiprocessing.Pool(processes=number_of_processes)
-            pool.starmap(
+            results = pool.imap_unordered(
                 download_time_range,
                 zip(
                     reversed(times_to_use),
                     repeat(product_id),
-                    repeat(download_directory),
                     repeat(dm),
                 ),
+                chunksize=5,
             )
+            for _ in results:
+                # As soon as a day is done, start doing sanity checks and moving it along
+                sanity_check_files_and_move_to_directory(
+                    directory=download_directory, product_id=product_id
+                )
         else:
             # Want to go from most recent into the past
             for time_range in reversed(times_to_use):
-                download_time_range(time_range, product_id, download_directory, download_manager=dm)
+                inputs = [time_range, product_id, dm]
+                download_time_range(inputs)
+                # Sanity check, able to open/right size and move to correct directory
+                sanity_check_files_and_move_to_directory(
+                    directory=download_directory, product_id=product_id
+                )
 
 
-def download_time_range(
-    time_range: Tuple[datetime, datetime], product_id, download_directory, download_manager
-) -> None:
+def download_time_range(x: Tuple[Tuple[datetime, datetime], str, eumetsat.DownloadManager]) -> None:
+    time_range, product_id, download_manager = x
     start_time, end_time = time_range
     _LOG.info(format_dt_str(start_time))
     _LOG.info(format_dt_str(end_time))
@@ -131,8 +140,6 @@ def download_time_range(
         format_dt_str(end_time),
         product_id=product_id,
     )
-    # Sanity check, able to open/right size and move to correct directory
-    sanity_check_files_and_move_to_directory(directory=download_directory, product_id=product_id)
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
@@ -170,7 +177,7 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
         The number of incomplete files deleted
     """
     pattern = "*.nat" if product_id == RSS_ID else "*.grb"
-    fs = fsspec.open(directory).fs
+    fs: fsspec.AbstractFileSystem = fsspec.open(directory).fs
     new_files = fs.glob(os.path.join(directory, pattern))
 
     date_func = (
@@ -178,48 +185,12 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
         if product_id == RSS_ID
         else eumetsat_cloud_name_to_datetime
     )
-    # Check all the right size
-
     if product_id == RSS_ID:
-        for f in new_files:
-            try:
-                file_size = eumetsat.get_filesize_megabytes(f)
-                if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
-                    _LOG.info("RSS Image has the wrong size, skipping")
-                    continue
-                # Now that the file has been checked and can be open, compress it and move it to the final directory
-                completed_process = subprocess.run(["pbzip2", "-5", f])
-                try:
-                    completed_process.check_returncode()
-                except:
-                    _LOG.exception("Compression failed!")
-                    continue
-                full_compressed_filename = f + ".bz2"
-                base_name = get_basename(full_compressed_filename)
-                file_date = date_func(base_name)
-                # Want to move it 1 minute in the future to correct the difference
-                file_date = file_date + timedelta(minutes=1)
-                if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
-                    fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
-                # Move the compressed file
-                fs.move(
-                    full_compressed_filename,
-                    os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name),
-                )
-                # Remove the uncompressed file
-                try:
-                    fs.rm(f)
-                except:
-                    continue
-            except Exception as e:
-                _LOG.exception(
-                    f"Error {e} when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
-                )
-                # Something is wrong with the file, redownload later
-                try:
-                    fs.rm(f)
-                except:
-                    continue
+        pool = multiprocessing.Pool()  # Use as many CPU cores as possible
+        results = pool.starmap_async(
+            process_rss_images, zip(new_files, repeat(directory), repeat(fs), repeat(date_func))
+        )
+        results.wait()
     else:
         for f in new_files:
             base_name = get_basename(f)
@@ -238,6 +209,49 @@ def sanity_check_files_and_move_to_directory(directory: str, product_id: str) ->
                 fs.move(
                     f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
                 )
+
+
+def process_rss_images(
+    f: str, directory: str, fs: fsspec.AbstractFileSystem, date_func: Callable
+) -> None:
+    try:
+        file_size = eumetsat.get_filesize_megabytes(f)
+        if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
+            _LOG.info("RSS Image has the wrong size, skipping")
+            return
+        # Now that the file has been checked and can be open, compress it and move it to the final directory
+        completed_process = subprocess.run(["pbzip2", "-5", f])
+        try:
+            completed_process.check_returncode()
+        except:
+            _LOG.exception("Compression failed!")
+            return
+        full_compressed_filename = f + ".bz2"
+        base_name = get_basename(full_compressed_filename)
+        file_date = date_func(base_name)
+        # Want to move it 1 minute in the future to correct the difference
+        file_date = file_date + timedelta(minutes=1)
+        if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
+            fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
+        # Move the compressed file
+        fs.move(
+            full_compressed_filename,
+            os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name),
+        )
+        # Remove the uncompressed file
+        try:
+            fs.rm(f)
+        except:
+            return
+    except Exception as e:
+        _LOG.exception(
+            f"Error {e} when sanity-checking {f}.  Deleting this file.  Will be downloaded next time this script is run."
+        )
+        # Something is wrong with the file, redownload later
+        try:
+            fs.rm(f)
+        except:
+            return
 
 
 def determine_datetimes_to_download_files(
