@@ -16,7 +16,8 @@ import logging
 import subprocess
 import multiprocessing
 from itertools import repeat
-
+import time
+import numpy as np
 from typing import Optional, List, Tuple, Callable
 
 from datetime import datetime, timedelta
@@ -135,6 +136,8 @@ def download_time_range(x: Tuple[Tuple[datetime, datetime], str, eumetsat.Downlo
     start_time, end_time = time_range
     _LOG.info(format_dt_str(start_time))
     _LOG.info(format_dt_str(end_time))
+    # To help stop with rate limiting
+    time.sleep(np.random.randint(0, 30))
     download_manager.download_date_range(
         format_dt_str(start_time),
         format_dt_str(end_time),
