@@ -2,7 +2,7 @@ name: Bump version and auto-release
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
