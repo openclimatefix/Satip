@@ -106,16 +106,14 @@ def download_eumetsat_data(
 
         if number_of_processes > 0:
             pool = multiprocessing.Pool(processes=number_of_processes)
-            results = pool.imap_unordered(
+            for _ in pool.imap_unordered(
                 download_time_range,
                 zip(
                     reversed(times_to_use),
                     repeat(product_id),
                     repeat(dm),
                 ),
-                chunksize=5,
-            )
-            for _ in results:
+            ):
                 # As soon as a day is done, start doing sanity checks and moving it along
                 sanity_check_files_and_move_to_directory(
                     directory=download_directory, product_id=product_id
