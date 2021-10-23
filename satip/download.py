@@ -7,6 +7,7 @@
 ############
 
 import fsspec
+import requests.exceptions
 import yaml
 from satip import eumetsat
 import pandas as pd
@@ -136,11 +137,20 @@ def download_time_range(x: Tuple[Tuple[datetime, datetime], str, eumetsat.Downlo
     _LOG.info(format_dt_str(end_time))
     # To help stop with rate limiting
     time.sleep(np.random.randint(0, 30))
-    download_manager.download_date_range(
-        format_dt_str(start_time),
-        format_dt_str(end_time),
-        product_id=product_id,
-    )
+    try:
+        download_manager.download_date_range(
+            format_dt_str(start_time),
+            format_dt_str(end_time),
+            product_id=product_id,
+        )
+    except requests.exceptions.ConnectionError:
+        # Retry again after 10 minutes, should then continue working if intermittent
+        time.sleep(600)
+        download_manager.download_date_range(
+            format_dt_str(start_time),
+            format_dt_str(end_time),
+            product_id=product_id,
+        )
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
