@@ -151,6 +151,15 @@ def download_time_range(x: Tuple[Tuple[datetime, datetime], str, eumetsat.Downlo
             format_dt_str(end_time),
             product_id=product_id,
         )
+    except Exception as e:
+        _LOG.warning(f"An Error was thrown, waiting and trying again: {e}")
+        # Wait between 10 and 20 minutes and try again
+        time.sleep(np.random.randint(600, 1200))
+        download_manager.download_date_range(
+            format_dt_str(start_time),
+            format_dt_str(end_time),
+            product_id=product_id,
+        )
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
