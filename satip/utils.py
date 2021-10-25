@@ -1,5 +1,6 @@
 __all__ = ["create_markdown_table", "set_up_logging"]
 
+import numpy as np
 import pandas as pd
 
 import logging
@@ -10,7 +11,7 @@ import zarr
 import xarray as xr
 from satpy import Scene
 import datetime
-import re
+from satip.geospatial import lat_lon_to_osgb
 
 
 def decompress(full_bzip_filename: str, temp_pth: str) -> str:
@@ -69,15 +70,23 @@ def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
     )
     # While we wnat to avoid resampling as much as possible,
     # HRV is the only one different than the others, so to make it simpler, make all the same
-    dataset = scene.resample().to_xarray_dataset()
-
+    scene = scene.resample()
+    # Lat and Lon are the same for all the channels now
+    # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
+    # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
+    scene = scene.crop(ll_bbox=(-16, 45, 10, 62.5))
+    lon, lat = scene["HRV"].attrs["area"].get_lonlats()
+    osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
+    dataset: xr.Dataset = scene.to_xarray_dataset()
+    # Add coordinate arrays, since x and y changes for each pixel, cannot replace dataset x,y coords with these directly
+    dataset.attrs["osgb_x_coords"] = osgb_x
+    dataset.attrs["osgb_y_coords"] = osgb_y
     # Round to the nearest 5 minutes
     dataset.attrs["start_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["start_time"])
     dataset.attrs["end_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["end_time"])
 
     # Assign the end time as the time coordinate
     dataset = dataset.assign_coords(time=dataset.attrs["end_time"])
-
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
     dataset = dataset.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
