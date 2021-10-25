@@ -109,6 +109,6 @@ class Compressor:
 
         dataset = dataset.round().astype(np.int16)
 
-        dataset.attrs = {"meta": str(da_meta)}  # Must be serialisable
+        dataset.attrs = {"meta": str(da_meta)}  # Must be serializable
 
         return dataset
