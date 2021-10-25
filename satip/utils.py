@@ -6,9 +6,24 @@ import logging
 
 import os
 import subprocess
+import zarr
+import xarray as xr
+from satpy import Scene
+import datetime
+import re
 
 
 def decompress(full_bzip_filename: str, temp_pth: str) -> str:
+    """
+    Decompresses .bz2 file and returns the non-compressed filename
+
+    Args:
+        full_bzip_filename:
+        temp_pth:
+
+    Returns:
+
+    """
     base_bzip_filename = os.path.basename(full_bzip_filename)
     base_nat_filename = os.path.splitext(base_bzip_filename)[0]
     full_nat_filename = os.path.join(temp_pth, base_nat_filename)
@@ -21,6 +36,110 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
         )
     process.check_returncode()
     return full_nat_filename
+
+
+def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
+    """
+    Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
+     and replacing small chunks of NaNs with interpolated values
+    Args:
+        filename:
+
+    Returns:
+
+    """
+
+    decompressed_filename: str = decompress(filename, temp_directory)
+    scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
+    scene.load(
+        [
+            "HRV",
+            "IR_016",
+            "IR_039",
+            "IR_087",
+            "IR_097",
+            "IR_108",
+            "IR_120",
+            "IR_134",
+            "VIS006",
+            "VIS008",
+            "WV_062",
+            "WV_073",
+        ]
+    )
+    # While we wnat to avoid resampling as much as possible,
+    # HRV is the only one different than the others, so to make it simpler, make all the same
+    dataset = scene.resample().to_xarray_dataset()
+    dataset.attrs["start_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["start_time"])
+    dataset.attrs["end_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["end_time"])
+    # Fill NaN's but only if its a short amount of NaNs
+    # NaN's for off-disk would not be filled
+    dataset = dataset.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
+        dim="y", max_gap=2
+    )
+    return dataset
+
+
+def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datetime:
+    """
+    Rounds a datetime to the nearest 5 minutes
+
+    Args:
+        tm: Datetime to round
+
+    Returns:
+        The rounded datetime
+    """
+    tm = tm.replace(second=0, microsecond=0)
+    discard = datetime.timedelta(minutes=tm.minute % 5)
+    tm -= discard
+    if discard >= datetime.timedelta(minutes=2, seconds=30):
+        tm += datetime.timedelta(minutes=5)
+    return tm
+
+
+# xr.concat(reprojected_dss, "time", coords="all", data_vars="all")
+
+
+def save_dataset_to_zarr(
+    dataset: xr.Dataset,
+    zarr_filename: str,
+    dim_order: list = ["time", "x", "y", "variable"],
+    zarr_mode: str = "a",
+    timesteps_per_chunk: int = 3,
+    y_size_per_chunk: int = 256,
+    x_size_per_chunk: int = 256,
+) -> xr.Dataset:
+    dataset = dataset.transpose(*dim_order)
+
+    # Number of timesteps, x and y size per chunk, and channels (all 12)
+    chunks = {
+        "time": timesteps_per_chunk,
+        "y": y_size_per_chunk,
+        "x": x_size_per_chunk,
+        "variable": 12,
+    }
+
+    dataset = xr.Dataset({"stacked_eumetsat_data": dataset.chunk(chunks)})
+
+    zarr_mode_to_extra_kwargs = {
+        "a": {"append_dim": "time"},
+        "w": {
+            "encoding": {
+                "stacked_eumetsat_data": {
+                    "compressor": zarr.Blosc(cname="zstd", clevel=5),
+                    "chunks": chunks,
+                }
+            }
+        },
+    }
+
+    assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
+    extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
+
+    dataset.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
+
+    return dataset
 
 
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:

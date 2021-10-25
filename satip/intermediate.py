@@ -1,83 +1,37 @@
-from satpy import Scene
-import xarray as xr
-import zarr
-from satip.utils import decompress
+from satip.utils import load_native_to_dataset, save_dataset_to_zarr
+import os
+import fsspec
+from pathlib import Path
+import multiprocessing
+import dask.array
 
-compressor_values = zarr.Blosc(cname="zstd", clevel=5)
 
-
-def load_native_to_dataarry(filename: str, temp_directory: str) -> xr.Dataset:
+def create_or_update_zarr_with_native_files(directory: str, zarr_path: str) -> None:
     """
+    Creates or updates a zarr file with satellite native files
 
     Args:
-        filename:
+        directory: Top-level directory containing the compressed native files
+        zarr_path: Path of the final Zarr file
 
     Returns:
 
     """
 
-    decompressed_filename: str = decompress(filename, temp_directory)
-
-    scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
-    scene.load(
-        [
-            "HRV",
-            "IR_016",
-            "IR_039",
-            "IR_087",
-            "IR_097",
-            "IR_108",
-            "IR_120",
-            "IR_134",
-            "VIS006",
-            "VIS008",
-            "WV_062",
-            "WV_073",
-        ]
+    # Satpy Scene doesn't do well with fsspec
+    compressed_native_files = list(Path(directory).rglob("*.bz2"))
+    number_of_timesteps = len(compressed_native_files)
+    print(number_of_timesteps)
+    dataset = load_native_to_dataset(
+        compressed_native_files[0], temp_directory="/home/jacob/Development/Satip/tests/"
     )
-    # While we wnat to avoid resampling as much as possible,
-    # HRV is the only one different than the others, so to make it simpler, make all the same
-    dataset = scene.resample().to_xarray_dataset()
     print(dataset)
-    return dataset
+    # The number of bz2 files is the number of timesteps that exist for this dataset, just make that the dummy one
+    # cloud_mask_files = Path(directory).rglob("*.grb")
+
+    # TODO To insert in the middle, could take current Zarr, make new larger one, the isel into the middle
+    # If appending then just need to append to end, but for the middle, also allows for
+    # dummy_x = dask.array.zeros(, chunk=256)
 
 
-# xr.concat(reprojected_dss, "time", coords="all", data_vars="all")
-
-
-def save_dataset_to_zarr(
-    dataset: xr.Dataset,
-    zarr_filename: str,
-    dim_order: list = ["time", "x", "y", "variable"],
-    zarr_mode: str = "a",
-    timesteps_per_chunk: int = 3,
-    y_size_per_chunk: int = 256,
-    x_size_per_chunk: int = 256,
-) -> xr.Dataset:
-    dataset = dataset.transpose(*dim_order)
-
-    # Number of timesteps, x and y size per chunk, and channels (all 12)
-    chunks = {
-        "time": timesteps_per_chunk,
-        "y": y_size_per_chunk,
-        "x": x_size_per_chunk,
-        "variable": 12,
-    }
-
-    dataset = xr.Dataset({"stacked_eumetsat_data": dataset.chunk(chunks)})
-
-    zarr_mode_to_extra_kwargs = {
-        "a": {"append_dim": "time"},
-        "w": {
-            "encoding": {
-                "stacked_eumetsat_data": {"compressor": compressor_values, "chunks": chunks}
-            }
-        },
-    }
-
-    assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
-    extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
-
-    dataset.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
-
-    return dataset
+create_or_update_zarr_with_native_files("/home/jacob/Development/Satip", "zarr_test.zarr")

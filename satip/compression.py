@@ -104,9 +104,6 @@ class Compressor:
         dataset /= new_max
         dataset *= upper_bound
 
-        # Fill NaN's but only if its a short amount of NaNs
-        dataset = dataset.interpolate_na(dim="x", max_gap=2).interpolate_na(dim="y", max_gap=2)
-
         dataset = dataset.round().astype(np.int16)
 
         dataset.attrs = {"meta": str(da_meta)}  # Must be serializable
