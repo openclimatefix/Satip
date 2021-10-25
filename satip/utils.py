@@ -5,6 +5,22 @@ import pandas as pd
 import logging
 
 import os
+import subprocess
+
+
+def decompress(full_bzip_filename: str, temp_pth: str) -> str:
+    base_bzip_filename = os.path.basename(full_bzip_filename)
+    base_nat_filename = os.path.splitext(base_bzip_filename)[0]
+    full_nat_filename = os.path.join(temp_pth, base_nat_filename)
+    if os.path.exists(full_nat_filename):
+        os.remove(full_nat_filename)
+    with open(full_nat_filename, "wb") as nat_file_handler:
+        process = subprocess.run(
+            ["pbzip2", "--decompress", "--keep", "--stdout", full_bzip_filename],
+            stdout=nat_file_handler,
+        )
+    process.check_returncode()
+    return full_nat_filename
 
 
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
