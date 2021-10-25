@@ -41,7 +41,7 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
 def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
-     and replacing small chunks of NaNs with interpolated values
+     and replacing small chunks of NaNs with interpolated values, and add a time coordinate
     Args:
         filename:
 
@@ -70,8 +70,14 @@ def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
     # While we wnat to avoid resampling as much as possible,
     # HRV is the only one different than the others, so to make it simpler, make all the same
     dataset = scene.resample().to_xarray_dataset()
+
+    # Round to the nearest 5 minutes
     dataset.attrs["start_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["start_time"])
     dataset.attrs["end_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["end_time"])
+
+    # Assign the end time as the time coordinate
+    dataset = dataset.assign_coords(time=dataset.attrs["end_time"])
+
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
     dataset = dataset.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(

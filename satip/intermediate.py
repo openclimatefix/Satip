@@ -6,7 +6,9 @@ import multiprocessing
 import dask.array
 
 
-def create_or_update_zarr_with_native_files(directory: str, zarr_path: str) -> None:
+def create_or_update_zarr_with_native_files(
+    directory: str, zarr_path: str, spatial_chunk_size: int = 256, temporal_chunk_size: int = 3
+) -> None:
     """
     Creates or updates a zarr file with satellite native files
 
@@ -31,7 +33,9 @@ def create_or_update_zarr_with_native_files(directory: str, zarr_path: str) -> N
 
     # TODO To insert in the middle, could take current Zarr, make new larger one, the isel into the middle
     # If appending then just need to append to end, but for the middle, also allows for
-    # dummy_x = dask.array.zeros(, chunk=256)
+    # dummy_x = dask.array.zeros(3712, chunk=256)
+    # dummy_y = dask.array.zeros(1392, chunk=256)
+    # dummy_time = dask.array.
 
 
 create_or_update_zarr_with_native_files("/home/jacob/Development/Satip", "zarr_test.zarr")

@@ -5,3 +5,4 @@ fsspec
 satpy>=0.30.1
 zarr
 xarray
+bottleneck
