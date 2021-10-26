@@ -76,7 +76,7 @@ class Compressor:
         print(f"The maxs are: {self.maxs}")
         print(f"The variable order is: {self.variable_order}")
 
-    def compress(self, dataset: xr.Dataset) -> xr.Dataset:
+    def compress(self, dataset: xr.DataArray) -> xr.DataArray:
         """
         Compress Xarray Dataset to use 10-bit integers
 

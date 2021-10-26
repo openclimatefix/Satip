@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import logging
-from typing import Union, Tuple
+from typing import Union, Tuple, Any
 
 import os
 import subprocess
@@ -13,6 +13,17 @@ import xarray as xr
 from satpy import Scene
 import datetime
 from satip.geospatial import lat_lon_to_osgb
+from satip.compression import Compressor
+import warnings
+
+# Cell
+warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
+warnings.filterwarnings("ignore", message="invalid value encountered in sin")
+warnings.filterwarnings("ignore", message="invalid value encountered in cos")
+warnings.filterwarnings(
+    "ignore",
+    message="You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems",
+)
 
 
 def decompress(full_bzip_filename: str, temp_pth: str) -> str:
@@ -40,7 +51,7 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename: str, temp_directory: str) -> Union[xr.Dataset, None]:
+def load_native_to_dataset(filename_and_temp: Tuple[str, str]) -> Union[xr.DataArray, None]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
@@ -50,7 +61,8 @@ def load_native_to_dataset(filename: str, temp_directory: str) -> Union[xr.Datas
     Returns:
 
     """
-
+    compressor = Compressor()
+    filename, temp_directory = filename_and_temp
     decompressed_filename: str = decompress(filename, temp_directory)
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     scene.load(
@@ -83,26 +95,45 @@ def load_native_to_dataset(filename: str, temp_directory: str) -> Union[xr.Datas
     dataset.attrs["osgb_x_coords"] = osgb_x
     dataset.attrs["osgb_y_coords"] = osgb_y
     # Round to the nearest 5 minutes
-    dataset.attrs["start_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["start_time"])
     dataset.attrs["end_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["end_time"])
 
-    # Assign the end time as the time coordinate
-    dataset = dataset.assign_coords(time=dataset.attrs["end_time"])
+    # Stack DataArrays in the Dataset into a single DataArray
+    dataarray = dataset.to_array()
+    if "time" not in dataarray.dims:
+        time = pd.to_datetime(dataset.attrs["end_time"])
+        dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
+
+    del dataarray["crs"]
+
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
-    dataset = dataset.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
+    dataarray = dataarray.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
         dim="y", max_gap=2
     )
 
+    # Delete file off disk
+    os.remove(decompressed_filename)
+
     # If any NaNs still exist, then don't return it
-    if is_dataset_clean(dataset):
-        return dataset
+    if is_dataset_clean(dataarray):
+        # Compress and return
+        dataarray = compressor.compress(dataarray)
+        return dataarray
     else:
         return None
 
 
-def is_dataset_clean(dataset: xr.Dataset) -> bool:
-    return all((v != np.NAN).all() for v in dataset.data_vars.values())
+def is_dataset_clean(dataarray: xr.DataArray) -> bool:
+    """
+    Checks if all the data values in a Dataset are not NaNs
+
+    Args:
+        dataarray: Xarray dataset containing the data to check
+
+    Returns:
+        Bool of whether the dataset is clean or not
+    """
+    return bool((dataarray != np.NAN).all())
 
 
 def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datetime:
@@ -127,23 +158,29 @@ def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datet
 
 
 def save_dataset_to_zarr(
-    dataset: xr.Dataset,
+    dataset: xr.DataArray,
     zarr_filename: str,
     dim_order: list = ["time", "x", "y", "variable"],
     zarr_mode: str = "a",
-    timesteps_per_chunk: int = 3,
+    timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
 ) -> xr.Dataset:
     dataset = dataset.transpose(*dim_order)
+    _, x_size, y_size, _ = dataset.shape
+    # If less than 2 chunks worth, just save the whole spatial extant
+    if y_size_per_chunk < y_size // 2:
+        y_size_per_chunk = y_size
+    if x_size_per_chunk < x_size // 2:
+        x_size_per_chunk = x_size
 
     # Number of timesteps, x and y size per chunk, and channels (all 12)
-    chunks = {
-        "time": timesteps_per_chunk,
-        "y": y_size_per_chunk,
-        "x": x_size_per_chunk,
-        "variable": 12,
-    }
+    chunks = (
+        timesteps_per_chunk,
+        y_size_per_chunk,
+        x_size_per_chunk,
+        12,
+    )
 
     dataset = xr.Dataset({"stacked_eumetsat_data": dataset.chunk(chunks)})
 
@@ -165,6 +202,31 @@ def save_dataset_to_zarr(
     dataset.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
     return dataset
+
+
+def add_constant_coord_to_dataarray(
+    dataarray: xr.DataArray, coord_name: str, coord_val: Any
+) -> xr.DataArray:
+    """
+    Adds a new coordinate with a
+    constant value to the DataArray
+    Parameters
+    ----------
+    dataarray : xr.DataArray
+        DataArrray which will have the new coords added to it
+    coord_name : str
+        Name for the new coordinate dimensions
+    coord_val
+        Value that will be assigned to the new coordinates
+    Returns
+    -------
+    da : xr.DataArray
+        DataArrray with the new coords added to it
+    """
+
+    dataarray = dataarray.assign_coords({coord_name: coord_val}).expand_dims(coord_name)
+
+    return dataarray
 
 
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
