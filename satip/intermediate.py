@@ -22,8 +22,8 @@ def create_or_update_zarr_with_native_files(
     Args:
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
-
-    Returns:
+        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
 
     """
 
@@ -60,15 +60,17 @@ def create_or_update_zarr_with_native_files(
         zip(
             compressed_native_files[1:] if not zarr_exists else compressed_native_files,
             repeat("/home/jacob/Development/Satip/tests"),
+            repeat("UK"),
         ),
     ):
-        save_dataset_to_zarr(
-            dataset,
-            zarr_filename=zarr_path,
-            x_size_per_chunk=spatial_chunk_size,
-            y_size_per_chunk=spatial_chunk_size,
-            timesteps_per_chunk=temporal_chunk_size,
-        )
+        if dataset is not None:
+            save_dataset_to_zarr(
+                dataset,
+                zarr_filename=zarr_path,
+                x_size_per_chunk=spatial_chunk_size,
+                y_size_per_chunk=spatial_chunk_size,
+                timesteps_per_chunk=temporal_chunk_size,
+            )
         del dataset
 
 

@@ -29,11 +29,11 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
     Decompresses .bz2 file and returns the non-compressed filename
 
     Args:
-        full_bzip_filename:
-        temp_pth:
+        full_bzip_filename: Full compressed filename
+        temp_pth: Temporary path to save the native file
 
     Returns:
-
+        The full native filename to the decompressed file
     """
     base_bzip_filename = os.path.basename(full_bzip_filename)
     base_nat_filename = os.path.splitext(base_bzip_filename)[0]
@@ -56,14 +56,19 @@ def load_native_to_dataset(
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
     Args:
-        filename:
+        filename_temp_and_area: Tuple containing the filename of the compressed native file, the temporaru directory,
+            and the name of teh geographic area, such as 'UK'
 
     Returns:
-
+        Returns Xarray DataArray if script worked, else returns None
     """
     compressor = Compressor()
     filename, temp_directory, geographic_area = filename_temp_and_area
-    decompressed_filename: str = decompress(filename, temp_directory)
+    try:
+        # IF decompression fails, pass
+        decompressed_filename: str = decompress(filename, temp_directory)
+    except:
+        return None
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     scene.load(
         [
@@ -128,7 +133,7 @@ def is_dataset_clean(dataarray: xr.DataArray) -> bool:
     Checks if all the data values in a Dataset are not NaNs
 
     Args:
-        dataarray: Xarray dataset containing the data to check
+        dataarray: Xarray DataArray containing the data to check
 
     Returns:
         Bool of whether the dataset is clean or not
@@ -170,7 +175,19 @@ def save_dataset_to_zarr(
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
-) -> xr.Dataset:
+) -> None:
+    """
+    Save an Xarray DataArray into a Zarr file
+
+    Args:
+        dataarray: DataArray to save
+        zarr_filename: Filename of the Zarr dataset
+        zarr_mode: Mode to write to the filename, either 'w' for write, or 'a' to append
+        timesteps_per_chunk: Timesteps per Zarr chunk
+        y_size_per_chunk: Y pixels per Zarr chunk
+        x_size_per_chunk: X pixels per Zarr chunk
+
+    """
     dataarray = dataarray.transpose(*["time", "x", "y", "variable"])
     dataarray["time"] = get_time_as_unix(dataarray)
 
@@ -208,35 +225,37 @@ def save_dataset_to_zarr(
 
     dataarray.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
-    return dataarray
-
 
 def add_constant_coord_to_dataarray(
     dataarray: xr.DataArray, coord_name: str, coord_val: Any
 ) -> xr.DataArray:
     """
-    Adds a new coordinate with a
-    constant value to the DataArray
-    Parameters
-    ----------
-    dataarray : xr.DataArray
-        DataArrray which will have the new coords added to it
-    coord_name : str
-        Name for the new coordinate dimensions
-    coord_val
-        Value that will be assigned to the new coordinates
-    Returns
-    -------
-    da : xr.DataArray
+    Adds a new coordinate with a constant value to the DataArray
+
+    Args:
+        dataarray: DataArrray which will have the new coords added to it
+        coord_name: Name for the new coordinate dimensions
+        coord_val: Value that will be assigned to the new coordinates
+
+    Returns:
         DataArrray with the new coords added to it
     """
-
     dataarray = dataarray.assign_coords({coord_name: coord_val}).expand_dims(coord_name)
 
     return dataarray
 
 
 def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) -> bool:
+    """
+    Check if a timestep exists within the Xarray dataset
+
+    Args:
+        dt: Datetime of the file to check
+        zarr_dataset: Zarr dataset ofthe EUMETSAT data
+
+    Returns:
+        Bool whether the timestep is in the Xarray 'time' coordinate or not
+    """
     dt = int((dt - pd.Timestamp("1970-01-01")).total_seconds())
     if dt in zarr_dataset.coords["time"].values:
         return True

@@ -76,36 +76,36 @@ class Compressor:
         print(f"The maxs are: {self.maxs}")
         print(f"The variable order is: {self.variable_order}")
 
-    def compress(self, dataset: xr.DataArray) -> xr.DataArray:
+    def compress(self, dataarray: xr.DataArray) -> xr.DataArray:
         """
-        Compress Xarray Dataset to use 10-bit integers
+        Compress Xarray DataArray to use 10-bit integers
 
         Args:
-            dataset:
+            dataarray: DataArray to compress
 
         Returns:
-
+            The compressed DataArray
         """
-        da_meta = dataset.attrs
+        da_meta = dataarray.attrs
 
         for attr in ["mins", "maxs"]:
             assert (
                 getattr(self, attr) is not None
             ), f"{attr} must be set in initialisation or through `fit`"
 
-        dataset = dataset.reindex({"variable": self.variable_order}).transpose(
+        dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
             "time", "y", "x", "variable"
         )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
         new_max = self.maxs - self.mins
 
-        dataset -= self.mins
-        dataset /= new_max
-        dataset *= upper_bound
+        dataarray -= self.mins
+        dataarray /= new_max
+        dataarray *= upper_bound
 
-        dataset = dataset.round().astype(np.int16)
+        dataarray = dataarray.round().astype(np.int16)
 
-        dataset.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
-        return dataset
+        return dataarray
