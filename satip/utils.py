@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import logging
+from typing import Union, Tuple
 
 import os
 import subprocess
@@ -39,7 +40,7 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
+def load_native_to_dataset(filename: str, temp_directory: str) -> Union[xr.Dataset, None]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
@@ -92,7 +93,16 @@ def load_native_to_dataset(filename: str, temp_directory: str) -> xr.Dataset:
     dataset = dataset.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
         dim="y", max_gap=2
     )
-    return dataset
+
+    # If any NaNs still exist, then don't return it
+    if is_dataset_clean(dataset):
+        return dataset
+    else:
+        return None
+
+
+def is_dataset_clean(dataset: xr.Dataset) -> bool:
+    return all((v != np.NAN).all() for v in dataset.data_vars.values())
 
 
 def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datetime:
