@@ -1,0 +1,6 @@
+name: Python package
+
+on: [push]
+jobs:
+  call-run-python-tests:
+    uses: openclimatefix/.github/.github/workflows/python-test.yml@main
