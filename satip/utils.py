@@ -1,5 +1,3 @@
-__all__ = ["create_markdown_table", "set_up_logging"]
-
 import numpy as np
 import pandas as pd
 
@@ -12,7 +10,7 @@ import zarr
 import xarray as xr
 from satpy import Scene
 import datetime
-from satip.geospatial import lat_lon_to_osgb
+from satip.geospatial import lat_lon_to_osgb, GEOGRAPHIC_BOUNDS
 from satip.compression import Compressor
 import warnings
 
@@ -51,7 +49,9 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename_and_temp: Tuple[str, str]) -> Union[xr.DataArray, None]:
+def load_native_to_dataset(
+    filename_temp_and_area: Tuple[str, str, str]
+) -> Union[xr.DataArray, None]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
@@ -62,7 +62,7 @@ def load_native_to_dataset(filename_and_temp: Tuple[str, str]) -> Union[xr.DataA
 
     """
     compressor = Compressor()
-    filename, temp_directory = filename_and_temp
+    filename, temp_directory, geographic_area = filename_temp_and_area
     decompressed_filename: str = decompress(filename, temp_directory)
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     scene.load(
@@ -87,7 +87,7 @@ def load_native_to_dataset(filename_and_temp: Tuple[str, str]) -> Union[xr.DataA
     # Lat and Lon are the same for all the channels now
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    scene = scene.crop(ll_bbox=(-16, 45, 10, 62.5))
+    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[geographic_area])
     lon, lat = scene["HRV"].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
