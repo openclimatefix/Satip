@@ -9,6 +9,7 @@ import subprocess
 import zarr
 import xarray as xr
 from satpy import Scene
+from pathlib import Path
 import datetime
 from satip.geospatial import lat_lon_to_osgb, GEOGRAPHIC_BOUNDS
 from satip.compression import Compressor
@@ -24,7 +25,7 @@ warnings.filterwarnings(
 )
 
 
-def decompress(full_bzip_filename: str, temp_pth: str) -> str:
+def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
     """
     Decompresses .bz2 file and returns the non-compressed filename
 
@@ -49,9 +50,7 @@ def decompress(full_bzip_filename: str, temp_pth: str) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(
-    filename_temp_and_area: Tuple[str, str, str]
-) -> Union[xr.DataArray, None]:
+def load_native_to_dataset(filename_temp_and_area: Tuple[Path, str]) -> Union[xr.DataArray, None]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
@@ -63,7 +62,8 @@ def load_native_to_dataset(
         Returns Xarray DataArray if script worked, else returns None
     """
     compressor = Compressor()
-    filename, temp_directory, geographic_area = filename_temp_and_area
+    filename, geographic_area = filename_temp_and_area
+    temp_directory = filename.parent
     try:
         # IF decompression fails, pass
         decompressed_filename: str = decompress(filename, temp_directory)
