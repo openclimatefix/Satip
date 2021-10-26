@@ -34,11 +34,11 @@ def create_or_update_zarr_with_native_files(
     print(number_of_timesteps)
     if os.path.exists(zarr_path):
         zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
+        print(zarr_dataset)
         new_compressed_files = []
         for f in compressed_native_files:
             base_filename = f.name
             file_timestep = eumetsat_filename_to_datetime(str(base_filename))
-            print(file_timestep)
             exists = check_if_timestep_exists(
                 round_datetime_to_nearest_5_minutes(file_timestep), zarr_dataset
             )

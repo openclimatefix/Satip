@@ -237,13 +237,8 @@ def add_constant_coord_to_dataarray(
 
 
 def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) -> bool:
-    try:
-        print(zarr_dataset.coords["time"])
-        print(dt)
-        time_check: xr.Dataset = zarr_dataset.sel(time=dt)
-        # Only a single element should be there for the shape, and time dimension is the first one
-        print(time_check)
-        return 1 == time_check.data_vars["stacked_eumetsat_data"].shape[0]
-    except KeyError:
-        # Doesn't exist, so need this timestep
+    dt = int((dt - pd.Timestamp("1970-01-01")).total_seconds())
+    if dt in zarr_dataset.coords["time"].values:
+        return True
+    else:
         return False
