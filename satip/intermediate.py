@@ -1,4 +1,10 @@
-from satip.utils import load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import (
+    load_native_to_dataset,
+    save_dataset_to_zarr,
+    check_if_timestep_exists,
+    round_datetime_to_nearest_5_minutes,
+)
+from satip.eumetsat import eumetsat_filename_to_datetime, eumetsat_cloud_name_to_datetime
 import os
 import fsspec
 from pathlib import Path
@@ -26,7 +32,21 @@ def create_or_update_zarr_with_native_files(
     compressed_native_files = list(Path(directory).rglob("*.bz2"))
     number_of_timesteps = len(compressed_native_files)
     print(number_of_timesteps)
-    pool = multiprocessing.Pool(processes=8)
+    if os.path.exists(zarr_path):
+        zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
+        new_compressed_files = []
+        for f in compressed_native_files:
+            base_filename = f.name
+            file_timestep = eumetsat_filename_to_datetime(str(base_filename))
+            print(file_timestep)
+            exists = check_if_timestep_exists(
+                round_datetime_to_nearest_5_minutes(file_timestep), zarr_dataset
+            )
+            if not exists:
+                new_compressed_files.append(f)
+        compressed_native_files = new_compressed_files
+        print(len(new_compressed_files))
+    pool = multiprocessing.Pool(processes=4)
     # Check if zarr already exists
     if not os.path.exists(zarr_path):
         # Inital zarr path before then appending
@@ -34,7 +54,7 @@ def create_or_update_zarr_with_native_files(
             [compressed_native_files[0], "/home/jacob/Development/Satip/tests"]
         )
 
-        save_dataset_to_zarr(dataset, "/run/timeshift/backup/zarr_test.zarr", zarr_mode="w")
+        save_dataset_to_zarr(dataset, zarr_filename=zarr_path, zarr_mode="w")
     for dataset in pool.imap_unordered(
         load_native_to_dataset,
         zip(
@@ -44,11 +64,12 @@ def create_or_update_zarr_with_native_files(
     ):
         save_dataset_to_zarr(
             dataset,
-            "/run/timeshift/backup/zarr_test.zarr",
+            zarr_filename=zarr_path,
             x_size_per_chunk=spatial_chunk_size,
             y_size_per_chunk=spatial_chunk_size,
             timesteps_per_chunk=temporal_chunk_size,
         )
+        del dataset
     # The number of bz2 files is the number of timesteps that exist for this dataset, just make that the dummy one
     # cloud_mask_files = Path(directory).rglob("*.grb")
 

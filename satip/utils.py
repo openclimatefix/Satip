@@ -154,20 +154,27 @@ def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datet
     return tm
 
 
-# xr.concat(reprojected_dss, "time", coords="all", data_vars="all")
+get_time_as_unix = (
+    lambda da: pd.Series(
+        (pd.to_datetime(da.time.values) - pd.Timestamp("1970-01-01")).total_seconds()
+    )
+    .astype(int)
+    .values
+)
 
 
 def save_dataset_to_zarr(
-    dataset: xr.DataArray,
+    dataarray: xr.DataArray,
     zarr_filename: str,
-    dim_order: list = ["time", "x", "y", "variable"],
     zarr_mode: str = "a",
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
 ) -> xr.Dataset:
-    dataset = dataset.transpose(*dim_order)
-    _, x_size, y_size, _ = dataset.shape
+    dataarray = dataarray.transpose(*["time", "x", "y", "variable"])
+    dataarray["time"] = get_time_as_unix(dataarray)
+
+    _, x_size, y_size, _ = dataarray.shape
     # If less than 2 chunks worth, just save the whole spatial extant
     if y_size_per_chunk < y_size // 2:
         y_size_per_chunk = y_size
@@ -182,7 +189,7 @@ def save_dataset_to_zarr(
         12,
     )
 
-    dataset = xr.Dataset({"stacked_eumetsat_data": dataset.chunk(chunks)})
+    dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray.chunk(chunks)})
 
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},
@@ -199,9 +206,9 @@ def save_dataset_to_zarr(
     assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
 
-    dataset.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
+    dataarray.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
-    return dataset
+    return dataarray
 
 
 def add_constant_coord_to_dataarray(
@@ -229,133 +236,14 @@ def add_constant_coord_to_dataarray(
     return dataarray
 
 
-def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
-    """
-    Returns a string for a markdown table, formatted
-    according to the dictionary passed as `table_info`
-
-    Parameters:
-        table_info: Mapping from index to values
-        index_name: Name to use for the index column
-
-    Returns:
-        md_str: Markdown formatted table string
-
-    Example:
-        >>> table_info = {
-                'Apples': {
-                    'Cost': '40p',
-                    'Colour': 'Red/green',
-                },
-                'Oranges': {
-                    'Cost': '50p',
-                    'Colour': 'Orange',
-                },
-            }
-        >>> md_str = create_markdown_table(table_info, index_name='Fruit')
-        >>> print(md_str)
-        | Fruit   | Cost   | Colour    |
-        |:--------|:-------|:----------|
-        | Apples  | 40p    | Red/green |
-        | Oranges | 50p    | Orange    |
-
-    """
-
-    df_info = pd.DataFrame(table_info).T
-    df_info.index.name = index_name
-
-    md_str = df_info.to_markdown()
-
-    return md_str
-
-
-# Cell
-def set_up_logging(
-    name: str,
-    log_dir: str,
-    main_logging_level: str = "DEBUG",
-) -> logging.Logger:
-    """
-    `set_up_logging` initialises and configures a custom
-    logger for `satip`. The logging level of the file and
-    Jupyter outputs are specified by `main_logging_level`
-    whilst the Slack handler uses `slack_logging_level`.
-
-    There are three core ways that logs are broadcasted:
-
-    - Logging to a specified file
-    - Logging to Jupyter cell outputs
-    - Logging to Slack
-
-    Note that the value passed for `main_logging_level`
-    and `slack_logging_level` must be one of:
-
-    - 'CRITICAL'
-    - 'FATAL'
-    - 'ERROR'
-    - 'WARNING'
-    - 'WARN'
-    - 'INFO'
-    - 'DEBUG'
-    - 'NOTSET'
-
-    Parameters:
-        name: Name of the logger, if a logging.Logger object
-              is passed then that will be used instead.
-        log_dir: directory where the logs will be stored
-        main_logging_level: Logging level for file and Jupyter
-
-    Returns:
-        logger: Custom satip logger
-
-    Example:
-        Here we'll create a custom logger that saves data
-        to the file 'test_log.txt' and also sends Slack
-        messages to the specified user and channel.
-
-        >>> from satip.utils import set_up_logging
-        >>> import logging
-        >>> logger = set_up_logging('test_log',
-                                    'test_log.txt',
-                                    slack_id=slack_id,
-                                    slack_webhook_url=slack_webhook_url)
-        >>> logger.log(logging.INFO, 'This will output to file and Jupyter but not to Slack as it is not critical')
-        '2020-10-20 10:24:35,367 - INFO - This will output to file and Jupyter but not to Slack as it is not critical'
-
-    """
-
-    # Initialising logger
-    if isinstance(name, str):
-        logger = logging.getLogger(name)
-    else:
-        # instance where a logger object is passed
-        logger = name
-
-    # Configuring log level
-    logging_levels = ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG", "NOTSET"]
-
-    assert (
-        main_logging_level in logging_levels
-    ), f"main_logging_level must be one of {', '.join(logging_levels)}"
-
-    logger.setLevel(getattr(logging, main_logging_level))
-
-    # Defining global formatter
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-
-    # Configuring Jupyter output handler
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    # Configuring file output handler
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    log_fp = f"{log_dir}/{name}.txt"
-    file_handler = logging.FileHandler(log_fp, mode="a")
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(getattr(logging, main_logging_level))
-    logger.addHandler(file_handler)
-
-    return logger
+def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) -> bool:
+    try:
+        print(zarr_dataset.coords["time"])
+        print(dt)
+        time_check: xr.Dataset = zarr_dataset.sel(time=dt)
+        # Only a single element should be there for the shape, and time dimension is the first one
+        print(time_check)
+        return 1 == time_check.data_vars["stacked_eumetsat_data"].shape[0]
+    except KeyError:
+        # Doesn't exist, so need this timestep
+        return False
