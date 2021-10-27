@@ -15,7 +15,6 @@ from satip.geospatial import lat_lon_to_osgb, GEOGRAPHIC_BOUNDS
 from satip.compression import Compressor
 import warnings
 
-# Cell
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
 warnings.filterwarnings("ignore", message="invalid value encountered in cos")
@@ -50,24 +49,23 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename_temp_and_area: Tuple[Path, str]) -> Union[xr.DataArray, None]:
+def load_native_to_dataset(filename: Path, area: str) -> Union[xr.DataArray, None]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
     Args:
-        filename_temp_and_area: Tuple containing the filename of the compressed native file, the temporaru directory,
-            and the name of teh geographic area, such as 'UK'
+        filename: The filename of the compressed native file to load
+        area: Name of the geographic area to use, such as 'UK'
 
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
     compressor = Compressor()
-    filename, geographic_area = filename_temp_and_area
     temp_directory = filename.parent
     try:
         # IF decompression fails, pass
         decompressed_filename: str = decompress(filename, temp_directory)
-    except:
+    except subprocess.CalledProcessError:
         return None
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     scene.load(
@@ -86,13 +84,14 @@ def load_native_to_dataset(filename_temp_and_area: Tuple[Path, str]) -> Union[xr
             "WV_073",
         ]
     )
-    # While we wnat to avoid resampling as much as possible,
-    # HRV is the only one different than the others, so to make it simpler, make all the same
-    scene = scene.resample()
-    # Lat and Lon are the same for all the channels now
+
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[geographic_area])
+    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
+    # While we wnat to avoid resampling as much as possible,
+    # HRV is the only one different than the others, so to make it simpler, resample all to HRV resolution (3x the resolution)
+    scene = scene.resample(resampler="native")
+    # Lat and Lon are the same for all the channels now
     lon, lat = scene["HRV"].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
@@ -205,7 +204,6 @@ def save_dataset_to_zarr(
         x_size_per_chunk,
         12,
     )
-
     dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray.chunk(chunks)})
 
     zarr_mode_to_extra_kwargs = {

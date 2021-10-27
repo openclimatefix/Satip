@@ -47,13 +47,14 @@ def create_or_update_zarr_with_native_files(
             if not exists:
                 new_compressed_files.append(f)
         compressed_native_files = new_compressed_files
-    pool = multiprocessing.Pool(processes=4)
     # Check if zarr already exists
     if not zarr_exists:
         # Inital zarr path before then appending
         dataset = load_native_to_dataset((compressed_native_files[0], region))
 
         save_dataset_to_zarr(dataset, zarr_filename=zarr_path, zarr_mode="w")
+
+    pool = multiprocessing.Pool(processes=4)
     for dataset in pool.imap_unordered(
         load_native_to_dataset,
         zip(
