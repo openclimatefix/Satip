@@ -2,11 +2,10 @@ from satip.utils import (
     load_native_to_dataset,
     save_dataset_to_zarr,
     check_if_timestep_exists,
-    round_datetime_to_nearest_5_minutes,
 )
 from satip.eumetsat import eumetsat_filename_to_datetime, eumetsat_cloud_name_to_datetime
 import os
-import fsspec
+import pandas as pd
 from pathlib import Path
 import multiprocessing
 from itertools import repeat
@@ -42,7 +41,7 @@ def create_or_update_zarr_with_native_files(
             base_filename = f.name
             file_timestep = eumetsat_filename_to_datetime(str(base_filename))
             exists = check_if_timestep_exists(
-                round_datetime_to_nearest_5_minutes(file_timestep), zarr_dataset
+                pd.Timestamp(file_timestep).round("5 min"), zarr_dataset
             )
             if not exists:
                 new_compressed_files.append(f)
@@ -50,13 +49,12 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     if not zarr_exists:
         # Inital zarr path before then appending
-        dataset = load_native_to_dataset((compressed_native_files[0], region))
-
-        save_dataset_to_zarr(dataset, zarr_filename=zarr_path, zarr_mode="w")
+        dataset = native_wrapper((compressed_native_files[0], region))
+        save_dataset_to_zarr(dataset, zarr_path=zarr_path, zarr_mode="w")
 
     pool = multiprocessing.Pool(processes=4)
     for dataset in pool.imap_unordered(
-        load_native_to_dataset,
+        native_wrapper,
         zip(
             compressed_native_files[1:] if not zarr_exists else compressed_native_files,
             repeat(region),
@@ -65,9 +63,19 @@ def create_or_update_zarr_with_native_files(
         if dataset is not None:
             save_dataset_to_zarr(
                 dataset,
-                zarr_filename=zarr_path,
+                zarr_path=zarr_path,
                 x_size_per_chunk=spatial_chunk_size,
                 y_size_per_chunk=spatial_chunk_size,
                 timesteps_per_chunk=temporal_chunk_size,
             )
         del dataset
+
+
+def native_wrapper(filename_and_area):
+    filename, area = filename_and_area
+    return load_native_to_dataset(filename, area)
+
+
+create_or_update_zarr_with_native_files(
+    "/home/jacob/Development/Satip", zarr_path="zarr_test.zarr", region="UK"
+)

@@ -85,12 +85,14 @@ def load_native_to_dataset(filename: Path, area: str) -> Union[xr.DataArray, Non
         ]
     )
 
+    # While we wnat to avoid resampling as much as possible,
+    # HRV is the only one different than the others, so to make it simpler, resample all to HRV resolution (3x the resolution)
+    scene = scene.resample()
+
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
     scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-    # While we wnat to avoid resampling as much as possible,
-    # HRV is the only one different than the others, so to make it simpler, resample all to HRV resolution (3x the resolution)
-    scene = scene.resample(resampler="native")
+
     # Lat and Lon are the same for all the channels now
     lon, lat = scene["HRV"].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
@@ -99,7 +101,7 @@ def load_native_to_dataset(filename: Path, area: str) -> Union[xr.DataArray, Non
     dataset.attrs["osgb_x_coords"] = osgb_x
     dataset.attrs["osgb_y_coords"] = osgb_y
     # Round to the nearest 5 minutes
-    dataset.attrs["end_time"] = round_datetime_to_nearest_5_minutes(dataset.attrs["end_time"])
+    dataset.attrs["end_time"] = pd.Timestamp(dataset.attrs["end_time"]).round("5 min")
 
     # Stack DataArrays in the Dataset into a single DataArray
     dataarray = dataset.to_array()
@@ -137,25 +139,9 @@ def is_dataset_clean(dataarray: xr.DataArray) -> bool:
     Returns:
         Bool of whether the dataset is clean or not
     """
-    return bool((dataarray != np.NAN).all())
-
-
-def round_datetime_to_nearest_5_minutes(tm: datetime.datetime) -> datetime.datetime:
-    """
-    Rounds a datetime to the nearest 5 minutes
-
-    Args:
-        tm: Datetime to round
-
-    Returns:
-        The rounded datetime
-    """
-    tm = tm.replace(second=0, microsecond=0)
-    discard = datetime.timedelta(minutes=tm.minute % 5)
-    tm -= discard
-    if discard >= datetime.timedelta(minutes=2, seconds=30):
-        tm += datetime.timedelta(minutes=5)
-    return tm
+    return (
+        dataarray.notnull().compute().all().values and np.isfinite(dataarray).compute().all().values
+    )
 
 
 get_time_as_unix = (
@@ -169,7 +155,7 @@ get_time_as_unix = (
 
 def save_dataset_to_zarr(
     dataarray: xr.DataArray,
-    zarr_filename: str,
+    zarr_path: str,
     zarr_mode: str = "a",
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
@@ -180,7 +166,7 @@ def save_dataset_to_zarr(
 
     Args:
         dataarray: DataArray to save
-        zarr_filename: Filename of the Zarr dataset
+        zarr_path: Filename of the Zarr dataset
         zarr_mode: Mode to write to the filename, either 'w' for write, or 'a' to append
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
@@ -221,7 +207,7 @@ def save_dataset_to_zarr(
     assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
 
-    dataarray.to_zarr(zarr_filename, mode=zarr_mode, consolidated=True, **extra_kwargs)
+    dataarray.to_zarr(zarr_path, mode=zarr_mode, consolidated=True, **extra_kwargs)
 
 
 def add_constant_coord_to_dataarray(

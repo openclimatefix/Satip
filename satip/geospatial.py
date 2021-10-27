@@ -18,7 +18,7 @@ WGS84 = 4326
 WGS84_CRS = f"EPSG:{WGS84}"
 
 # Geographic bounds for various regions of interest, in order of min_lon, max_lon, min_lat, max_lat
-GEOGRAPHIC_BOUNDS = {"UK": (-16, 45, 10, 62.5)}
+GEOGRAPHIC_BOUNDS = {"UK": (-16, 45, 10, 62)}
 
 
 class Transformers:
