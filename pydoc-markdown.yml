@@ -1,0 +1,26 @@
+loaders:
+  - type: python
+    search_path: [satip/]
+processors:
+  - type: filter
+  - type: smart
+renderer:
+  type: mkdocs
+  pages:
+    - title: Home
+      name: index
+      source: README.md
+    - title: API Documentation
+      children:
+        - title: EUMETSAT
+          contents: [eumetsat]
+        - title: Downloading Data
+          contents: [download]
+        - title: Intermediate Representations
+          contents: [intermediate]
+        - title: Utils
+          contents: [utils]
+  mkdocs_config:
+    site_name: Satip
+    theme: readthedocs
+    repo_url: https://github.com/openclimatefix/Satip
