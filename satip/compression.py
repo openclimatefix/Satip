@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+from typing import Union
 
 
 class Compressor:
@@ -76,7 +77,7 @@ class Compressor:
         print(f"The maxs are: {self.maxs}")
         print(f"The variable order is: {self.variable_order}")
 
-    def compress(self, dataarray: xr.DataArray) -> xr.DataArray:
+    def compress(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
         """
         Compress Xarray DataArray to use 10-bit integers
 
@@ -103,9 +104,26 @@ class Compressor:
         dataarray -= self.mins
         dataarray /= new_max
         dataarray *= upper_bound
+        if is_dataset_clean(dataarray):
+            dataarray = dataarray.round().astype(np.int16)
 
-        dataarray = dataarray.round().astype(np.int16)
+            dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
-        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+            return dataarray
+        else:
+            return None
 
-        return dataarray
+
+def is_dataset_clean(dataarray: xr.DataArray) -> bool:
+    """
+    Checks if all the data values in a Dataset are not NaNs
+
+    Args:
+        dataarray: Xarray DataArray containing the data to check
+
+    Returns:
+        Bool of whether the dataset is clean or not
+    """
+    return (
+        dataarray.notnull().compute().all().values and np.isfinite(dataarray).compute().all().values
+    )

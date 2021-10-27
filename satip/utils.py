@@ -1,8 +1,6 @@
-import numpy as np
 import pandas as pd
 
-import logging
-from typing import Union, Tuple, Any
+from typing import Union, Any
 
 import os
 import subprocess
@@ -12,7 +10,7 @@ from satpy import Scene
 from pathlib import Path
 import datetime
 from satip.geospatial import lat_lon_to_osgb, GEOGRAPHIC_BOUNDS
-from satip.compression import Compressor
+from satip.compression import Compressor, is_dataset_clean
 import warnings
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
@@ -127,21 +125,6 @@ def load_native_to_dataset(filename: Path, area: str) -> Union[xr.DataArray, Non
         return dataarray
     else:
         return None
-
-
-def is_dataset_clean(dataarray: xr.DataArray) -> bool:
-    """
-    Checks if all the data values in a Dataset are not NaNs
-
-    Args:
-        dataarray: Xarray DataArray containing the data to check
-
-    Returns:
-        Bool of whether the dataset is clean or not
-    """
-    return (
-        dataarray.notnull().compute().all().values and np.isfinite(dataarray).compute().all().values
-    )
 
 
 get_time_as_unix = (
