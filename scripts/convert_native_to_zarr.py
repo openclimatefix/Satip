@@ -13,7 +13,13 @@ import click
     "--zarr_path",
     "-zarr",
     default="eumetsat_zarr.zarr",
-    prompt="The location for the Zarr file",
+    prompt="The location for the non-HRV Zarr file",
+)
+@click.option(
+    "--hrv_zarr_path",
+    "-hrv_zarr",
+    default="hrv_eumetsat_zarr.zarr",
+    prompt="The location for the HRV Zarr file",
 )
 @click.option(
     "--region",

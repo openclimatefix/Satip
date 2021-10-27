@@ -15,6 +15,7 @@ import xarray as xr
 def create_or_update_zarr_with_native_files(
     directory: str,
     zarr_path: str,
+    hrv_zarr_path: str,
     region: str,
     spatial_chunk_size: int = 256,
     temporal_chunk_size: int = 1,
@@ -49,11 +50,12 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     if not zarr_exists:
         # Inital zarr path before then appending
-        dataset = native_wrapper((compressed_native_files[0], region))
+        dataset, hrv_dataset = native_wrapper((compressed_native_files[0], region))
         save_dataset_to_zarr(dataset, zarr_path=zarr_path, zarr_mode="w")
+        save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_zarr_path, zarr_mode="w")
 
     pool = multiprocessing.Pool(processes=4)
-    for dataset in pool.imap_unordered(
+    for dataset, hrv_dataset in pool.imap_unordered(
         native_wrapper,
         zip(
             compressed_native_files[1:] if not zarr_exists else compressed_native_files,
@@ -67,6 +69,15 @@ def create_or_update_zarr_with_native_files(
                 x_size_per_chunk=spatial_chunk_size,
                 y_size_per_chunk=spatial_chunk_size,
                 timesteps_per_chunk=temporal_chunk_size,
+                channel_chunk_size=11
+            )
+            save_dataset_to_zarr(
+                hrv_dataset,
+                zarr_path=hrv_zarr_path,
+                x_size_per_chunk=spatial_chunk_size,
+                y_size_per_chunk=spatial_chunk_size,
+                timesteps_per_chunk=temporal_chunk_size,
+                channel_chunk_size=1
             )
         del dataset
 
@@ -74,4 +85,3 @@ def create_or_update_zarr_with_native_files(
 def native_wrapper(filename_and_area):
     filename, area = filename_and_area
     return load_native_to_dataset(filename, area)
-
