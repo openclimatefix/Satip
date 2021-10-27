@@ -75,7 +75,3 @@ def native_wrapper(filename_and_area):
     filename, area = filename_and_area
     return load_native_to_dataset(filename, area)
 
-
-create_or_update_zarr_with_native_files(
-    "/home/jacob/Development/Satip", zarr_path="zarr_test.zarr", region="UK"
-)
