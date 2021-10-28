@@ -134,8 +134,6 @@ def load_native_to_dataset(filename: Path, area: str) -> Union[Tuple[xr.DataArra
     )
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-    hrv_scene = hrv_scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="IR_016", area=area)
     hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(hrv_scene, band="HRV", area=area)
     # Delete file off disk
