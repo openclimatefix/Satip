@@ -80,6 +80,7 @@ def create_or_update_zarr_with_native_files(
                 channel_chunk_size=1
             )
         del dataset
+        del hrv_dataset
 
 
 def native_wrapper(filename_and_area):
