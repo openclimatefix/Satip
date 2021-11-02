@@ -18,6 +18,8 @@ import warnings
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
 warnings.filterwarnings("ignore", message="invalid value encountered in cos")
+warnings.filterwarnings("ignore", message="invalid value encountered in double_scalars")
+warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
 warnings.filterwarnings(
     "ignore",
     message="You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems",
