@@ -54,33 +54,35 @@ def create_or_update_zarr_with_native_files(
         save_dataset_to_zarr(dataset, zarr_path=zarr_path, zarr_mode="w")
         save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_zarr_path, zarr_mode="w")
 
-    pool = multiprocessing.Pool(processes=4)
-    for dataset, hrv_dataset in pool.imap_unordered(
-        native_wrapper,
-        zip(
-            compressed_native_files[1:] if not zarr_exists else compressed_native_files,
-            repeat(region),
-        ),
-    ):
-        if dataset is not None:
-            save_dataset_to_zarr(
-                dataset,
-                zarr_path=zarr_path,
-                x_size_per_chunk=spatial_chunk_size,
-                y_size_per_chunk=spatial_chunk_size,
-                timesteps_per_chunk=temporal_chunk_size,
-                channel_chunk_size=11
-            )
-            save_dataset_to_zarr(
-                hrv_dataset,
-                zarr_path=hrv_zarr_path,
-                x_size_per_chunk=spatial_chunk_size,
-                y_size_per_chunk=spatial_chunk_size,
-                timesteps_per_chunk=temporal_chunk_size,
-                channel_chunk_size=1
-            )
-        del dataset
-        del hrv_dataset
+    pool = multiprocessing.Pool(processes=6)
+    remaining_days = compressed_native_files[1:] if not zarr_exists else compressed_native_files
+    for chunked_names in [remaining_days[x:x+60] for x in range(0, len(remaining_days), 60)]:
+        for dataset, hrv_dataset in pool.imap_unordered(
+            native_wrapper,
+            zip(
+                chunked_names,
+                repeat(region),
+            ),
+        ):
+            if dataset is not None and hrv_dataset is not None:
+                save_dataset_to_zarr(
+                    dataset,
+                    zarr_path=zarr_path,
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=11
+                )
+                save_dataset_to_zarr(
+                    hrv_dataset,
+                    zarr_path=hrv_zarr_path,
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=1
+                )
+            del dataset
+            del hrv_dataset
 
 
 def native_wrapper(filename_and_area):
