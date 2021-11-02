@@ -64,8 +64,9 @@ def create_or_update_zarr_with_native_files(
             repeat(region),
             ):
         tasks.append(pool.apply_async(native_wrapper, args=(entry,)))
-    for t in tasks:
-        dataset, hrv_dataset = t.get()
+    num_tasks = len(remaining_days)
+    while num_tasks > 0:
+        dataset, hrv_dataset = processed_queue.get(block=True)
         if dataset is not None and hrv_dataset is not None:
             save_dataset_to_zarr(
                 dataset,
@@ -85,6 +86,7 @@ def create_or_update_zarr_with_native_files(
             )
         del dataset
         del hrv_dataset
+        num_tasks -= 1
 
 
 def pool_init(q):
