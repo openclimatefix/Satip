@@ -10,7 +10,6 @@ from pathlib import Path
 import multiprocessing
 from itertools import repeat
 import xarray as xr
-from glob import glob
 from tqdm import tqdm
 
 processed_queue = multiprocessing.Queue(maxsize = 64)
@@ -43,17 +42,11 @@ def split_per_3_months(directory: str,
     zarrs = []
     hrv_zarrs = []
     for year in year_directories:
-        print(year)
-        print(os.path.join(directory, year))
-        print(os.path.isdir(os.path.join(directory, year)))
         if not os.path.isdir(os.path.join(directory, year)):
             continue
         if year in ["2020", "2021"]:
             month_directories = os.listdir(os.path.join(directory, year))
             for month in month_directories:
-                print(year)
-                print(os.path.join(directory, year, month))
-                print(os.path.isdir(os.path.join(directory, year, month)))
                 if not os.path.isdir(os.path.join(directory, year, month)):
                     continue
                 month_directory = os.path.join(directory, year.split('/')[0], month.split('/')[0])
@@ -132,22 +125,25 @@ def create_or_update_zarr_with_native_files(
     for entry in tqdm(compressed_native_files):
         dataset, hrv_dataset = load_native_to_dataset(entry, region)
         if dataset is not None and hrv_dataset is not None:
-            save_dataset_to_zarr(
-                dataset,
-                zarr_path=zarr_path,
-                x_size_per_chunk=spatial_chunk_size,
-                y_size_per_chunk=spatial_chunk_size,
-                timesteps_per_chunk=temporal_chunk_size,
-                channel_chunk_size=11
-            )
-            save_dataset_to_zarr(
-                hrv_dataset,
-                zarr_path=hrv_zarr_path,
-                x_size_per_chunk=spatial_chunk_size,
-                y_size_per_chunk=spatial_chunk_size,
-                timesteps_per_chunk=temporal_chunk_size,
-                channel_chunk_size=1
-            )
+            try:
+                save_dataset_to_zarr(
+                    dataset,
+                    zarr_path=zarr_path,
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=11
+                )
+                save_dataset_to_zarr(
+                    hrv_dataset,
+                    zarr_path=hrv_zarr_path,
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=1
+                )
+            except Exception as e:
+                print(f"Failed with: {e}")
         del dataset
         del hrv_dataset
 
