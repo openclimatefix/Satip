@@ -105,6 +105,7 @@ class Compressor:
         dataarray /= new_max
         dataarray *= upper_bound
         dataarray = dataarray.round().astype(np.int16)
+        print(is_dataset_clean(dataarray))
         if is_dataset_clean(dataarray):
             dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
