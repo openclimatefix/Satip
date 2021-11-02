@@ -11,6 +11,7 @@ import multiprocessing
 from itertools import repeat
 import xarray as xr
 
+processed_queue = multiprocessing.Queue(maxsize = 64)
 
 def create_or_update_zarr_with_native_files(
     directory: str,
@@ -50,41 +51,46 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     if not zarr_exists:
         # Inital zarr path before then appending
-        dataset, hrv_dataset = native_wrapper((compressed_native_files[0], region))
+        dataset, hrv_dataset = load_native_to_dataset(compressed_native_files[0], region)
         save_dataset_to_zarr(dataset, zarr_path=zarr_path, zarr_mode="w")
         save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_zarr_path, zarr_mode="w")
 
-    pool = multiprocessing.Pool(processes=6)
+    pool = multiprocessing.Pool(processes=16, initializer = pool_init, initargs = (
+        processed_queue,))
     remaining_days = compressed_native_files[1:] if not zarr_exists else compressed_native_files
-    for chunked_names in [remaining_days[x:x+60] for x in range(0, len(remaining_days), 60)]:
-        for dataset, hrv_dataset in pool.imap_unordered(
-            native_wrapper,
-            zip(
-                chunked_names,
-                repeat(region),
-            ),
-        ):
-            if dataset is not None and hrv_dataset is not None:
-                save_dataset_to_zarr(
-                    dataset,
-                    zarr_path=zarr_path,
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
-                    timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=11
-                )
-                save_dataset_to_zarr(
-                    hrv_dataset,
-                    zarr_path=hrv_zarr_path,
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
-                    timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1
-                )
-            del dataset
-            del hrv_dataset
+    tasks = []
+    for entry in zip(
+            remaining_days,
+            repeat(region),
+            ):
+        tasks.append(pool.apply_async(native_wrapper, args=(entry,)))
+    for t in tasks:
+        dataset, hrv_dataset = t.get()
+        if dataset is not None and hrv_dataset is not None:
+            save_dataset_to_zarr(
+                dataset,
+                zarr_path=zarr_path,
+                x_size_per_chunk=spatial_chunk_size,
+                y_size_per_chunk=spatial_chunk_size,
+                timesteps_per_chunk=temporal_chunk_size,
+                channel_chunk_size=11
+            )
+            save_dataset_to_zarr(
+                hrv_dataset,
+                zarr_path=hrv_zarr_path,
+                x_size_per_chunk=spatial_chunk_size,
+                y_size_per_chunk=spatial_chunk_size,
+                timesteps_per_chunk=temporal_chunk_size,
+                channel_chunk_size=1
+            )
+        del dataset
+        del hrv_dataset
 
+
+def pool_init(q):
+    global processed_queue # make queue global in workers
+    processed_queue = q
 
 def native_wrapper(filename_and_area):
     filename, area = filename_and_area
-    return load_native_to_dataset(filename, area)
+    processed_queue.put(load_native_to_dataset(filename, area))
