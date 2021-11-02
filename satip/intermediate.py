@@ -44,12 +44,17 @@ def split_per_3_months(directory: str,
     hrv_zarrs = []
     for year in year_directories:
         print(year)
+        print(os.path.join(directory, year))
+        print(os.path.isdir(os.path.join(directory, year)))
         if not os.path.isdir(os.path.join(directory, year)):
             continue
         if year in ["2020", "2021"]:
             month_directories = os.listdir(os.path.join(directory, year))
             for month in month_directories:
-                if not os.path.isdir(os.path.join(directory, month, year)):
+                print(year)
+                print(os.path.join(directory, year, month))
+                print(os.path.isdir(os.path.join(directory, year, month)))
+                if not os.path.isdir(os.path.join(directory, year, month)):
                     continue
                 month_directory = os.path.join(directory, year.split('/')[0], month.split('/')[0])
                 month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
