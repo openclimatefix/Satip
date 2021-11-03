@@ -82,8 +82,11 @@ def split_per_3_months(directory: str,
 
 def wrapper(args):
     dirs, zarrs, hrv_zarrs, region, spatial_chunk_size, temporal_chunk_size = args
-    create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, region, spatial_chunk_size,
-                                            temporal_chunk_size)
+    try:
+        create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, region, spatial_chunk_size,
+                                                temporal_chunk_size)
+    except Exception as e:
+        print(f"Failed Because of {e}")
 
 
 def create_or_update_zarr_with_native_files(
