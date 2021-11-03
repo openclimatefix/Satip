@@ -82,11 +82,8 @@ def split_per_3_months(directory: str,
 
 def wrapper(args):
     dirs, zarrs, hrv_zarrs, region, spatial_chunk_size, temporal_chunk_size = args
-    try:
-        create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, region, spatial_chunk_size,
+    create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, region, spatial_chunk_size,
                                                 temporal_chunk_size)
-    except Exception as e:
-        print(f"Failed Because of {e}")
 
 
 def create_or_update_zarr_with_native_files(
@@ -126,29 +123,32 @@ def create_or_update_zarr_with_native_files(
         compressed_native_files = new_compressed_files
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
-        dataset, hrv_dataset = load_native_to_dataset(entry, region)
-        if dataset is not None and hrv_dataset is not None:
-            try:
-                save_dataset_to_zarr(
-                    dataset,
-                    zarr_path=zarr_path,
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
-                    timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=11
-                )
-                save_dataset_to_zarr(
-                    hrv_dataset,
-                    zarr_path=hrv_zarr_path,
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
-                    timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1
-                )
-            except Exception as e:
-                print(f"Failed with: {e}")
-        del dataset
-        del hrv_dataset
+        try:
+            dataset, hrv_dataset = load_native_to_dataset(entry, region)
+            if dataset is not None and hrv_dataset is not None:
+                try:
+                    save_dataset_to_zarr(
+                        dataset,
+                        zarr_path=zarr_path,
+                        x_size_per_chunk=spatial_chunk_size,
+                        y_size_per_chunk=spatial_chunk_size,
+                        timesteps_per_chunk=temporal_chunk_size,
+                        channel_chunk_size=11
+                    )
+                    save_dataset_to_zarr(
+                        hrv_dataset,
+                        zarr_path=hrv_zarr_path,
+                        x_size_per_chunk=spatial_chunk_size,
+                        y_size_per_chunk=spatial_chunk_size,
+                        timesteps_per_chunk=temporal_chunk_size,
+                        channel_chunk_size=1
+                    )
+                except Exception as e:
+                    print(f"Failed with: {e}")
+            del dataset
+            del hrv_dataset
+        except Exception as e:
+            print(f"Failed with Exception with {e}")
 
 
 def pool_init(q):
