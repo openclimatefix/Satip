@@ -226,8 +226,8 @@ def save_dataset_to_zarr(
     # Number of timesteps, x and y size per chunk, and channels (all 12)
     chunks = (
         timesteps_per_chunk,
-        y_size_per_chunk,
         x_size_per_chunk,
+        y_size_per_chunk,
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
@@ -235,6 +235,7 @@ def save_dataset_to_zarr(
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
+    dataarray = dataarray.fillna(-1) # Fill NaN with -1, even if none should exist
     dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray})
 
     zarr_mode_to_extra_kwargs = {
