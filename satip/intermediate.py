@@ -17,6 +17,7 @@ def split_per_month(directory: str,
                     zarr_path: str,
                     hrv_zarr_path: str,
                     region: str,
+                    temp_directory: str = "/mnt/ramdisk/",
                     spatial_chunk_size: int = 256,
                     temporal_chunk_size: int = 1, ):
     """
@@ -32,6 +33,7 @@ def split_per_month(directory: str,
     """
 
     # Get year
+    temp_directory = Path(temp_directory)
     year_directories = os.listdir(directory)
     print(year_directories)
     dirs = []
@@ -57,8 +59,7 @@ def split_per_month(directory: str,
                     # Inital zarr path before then appending
                     compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
                     dataset, hrv_dataset = load_native_to_dataset(compressed_native_files[0],
-                                                                  compressed_native_files[
-                                                                      0].parent,
+                                                                  temp_directory,
                                                                   region)
                     save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
                     save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
@@ -71,6 +72,7 @@ def split_per_month(directory: str,
                 dirs,
                 zarrs,
                 hrv_zarrs,
+                repeat(temp_directory),
                 repeat(region),
                 repeat(spatial_chunk_size),
                 repeat(temporal_chunk_size)
@@ -80,8 +82,9 @@ def split_per_month(directory: str,
 
 
 def wrapper(args):
-    dirs, zarrs, hrv_zarrs, region, spatial_chunk_size, temporal_chunk_size = args
-    create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, region, spatial_chunk_size,
+    dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size = args
+    create_or_update_zarr_with_native_files(dirs, zarrs, hrv_zarrs, temp_directory, region,
+                                            spatial_chunk_size,
                                                 temporal_chunk_size)
 
 
@@ -89,6 +92,7 @@ def create_or_update_zarr_with_native_files(
     directory: str,
     zarr_path: str,
     hrv_zarr_path: str,
+        temp_directory: Path,
     region: str,
     spatial_chunk_size: int = 256,
     temporal_chunk_size: int = 1,
@@ -123,7 +127,7 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
         try:
-            dataset, hrv_dataset = load_native_to_dataset(entry, entry.parent, region)
+            dataset, hrv_dataset = load_native_to_dataset(entry, temp_directory, region)
             if dataset is not None and hrv_dataset is not None:
                 try:
                     save_dataset_to_zarr(

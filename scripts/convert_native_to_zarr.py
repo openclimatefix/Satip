@@ -22,6 +22,12 @@ import click
     prompt="The location for the HRV Zarr file",
 )
 @click.option(
+    "--temp_directory",
+    "-temp",
+    default="/mnt/ramdisk/",
+    prompt="Where to store temp directory",
+    )
+@click.option(
     "--region",
     default="UK",
     prompt="The name of the geographic region to use, default 'UK' ",

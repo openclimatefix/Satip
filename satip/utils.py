@@ -51,12 +51,14 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename: Path, area: str) -> Union[Tuple[xr.DataArray, xr.DataArray], Tuple[None, None]]:
+def load_native_to_dataset(filename: Path, temp_directory: Path, area: str) -> Union[Tuple[
+                                                                                     xr.DataArray, xr.DataArray], Tuple[None, None]]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
     Args:
         filename: The filename of the compressed native file to load
+        temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
 
     Returns:
@@ -107,7 +109,6 @@ def load_native_to_dataset(filename: Path, area: str) -> Union[Tuple[xr.DataArra
             "WV_073",
         ],
     )
-    temp_directory = filename.parent
     try:
         # IF decompression fails, pass
         decompressed_filename: str = decompress(filename, temp_directory)
@@ -409,3 +410,6 @@ def set_up_logging(
     logger.addHandler(file_handler)
 
     return logger
+
+# Test it
+dataset = load_native_to_dataset(Path("/run/timeshift/backup/04/MSG3-SEVI-MSG15-0100-NA-20211004002415.751000000Z-NA.nat.bz2"), area = 'UK')
