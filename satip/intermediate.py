@@ -12,26 +12,22 @@ from itertools import repeat
 import xarray as xr
 from tqdm import tqdm
 
-processed_queue = multiprocessing.Queue(maxsize = 64)
 
-def split_per_3_months(directory: str,
-                       zarr_path: str,
-                       hrv_zarr_path: str,
-                       region: str,
-                       spatial_chunk_size: int = 256,
-                       temporal_chunk_size: int = 1,):
+def split_per_month(directory: str,
+                    zarr_path: str,
+                    hrv_zarr_path: str,
+                    region: str,
+                    spatial_chunk_size: int = 256,
+                    temporal_chunk_size: int = 1, ):
     """
-    Split per 3 months of these
+    Splits the Zarr creation into multiple, month-long Zarr files for parallel writing
 
     Args:
-        directory:
-        zarr_path:
-        hrv_zarr_path:
-        region:
-        spatial_chunk_size:
-        temporal_chunk_size:
-
-    Returns:
+        directory: Top-level directory containing the compressed native files
+        zarr_path: Path of the final Zarr file
+        region: Name of the region to keep for the datastore
+        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
 
     """
 
@@ -60,7 +56,10 @@ def split_per_3_months(directory: str,
                 if not zarr_exists:
                     # Inital zarr path before then appending
                     compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
-                    dataset, hrv_dataset = load_native_to_dataset(compressed_native_files[0], region)
+                    dataset, hrv_dataset = load_native_to_dataset(compressed_native_files[0],
+                                                                  compressed_native_files[
+                                                                      0].parent,
+                                                                  region)
                     save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
                     save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
     print(dirs)
@@ -124,7 +123,7 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
         try:
-            dataset, hrv_dataset = load_native_to_dataset(entry, region)
+            dataset, hrv_dataset = load_native_to_dataset(entry, entry.parent, region)
             if dataset is not None and hrv_dataset is not None:
                 try:
                     save_dataset_to_zarr(

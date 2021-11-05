@@ -1,4 +1,4 @@
-from satip.intermediate import create_or_update_zarr_with_native_files, split_per_3_months
+from satip.intermediate import create_or_update_zarr_with_native_files, split_per_month
 import click
 
 
@@ -27,7 +27,7 @@ import click
     prompt="The name of the geographic region to use, default 'UK' ",
 )
 def create_eumetsat_zarr(*args, **kwargs):
-    split_per_3_months(*args, **kwargs)
+    split_per_month(*args, **kwargs)
 
 
 if __name__ == "__main__":
