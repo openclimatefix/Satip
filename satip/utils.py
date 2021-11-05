@@ -410,6 +410,3 @@ def set_up_logging(
     logger.addHandler(file_handler)
 
     return logger
-
-# Test it
-dataset = load_native_to_dataset(Path("/run/timeshift/backup/04/MSG3-SEVI-MSG15-0100-NA-20211004002415.751000000Z-NA.nat.bz2"), area = 'UK')
