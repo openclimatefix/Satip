@@ -162,6 +162,9 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     # Add coordinate arrays, since x and y changes for each pixel, cannot replace dataset x,y coords with these directly
     dataset.attrs["osgb_x_coords"] = osgb_x
     dataset.attrs["osgb_y_coords"] = osgb_y
+    osgb_y = osgb_y[:,0]
+    osgb_x = osgb_x[0,:]
+    dataset = dataset.assign_coords(x=osgb_x,y=osgb_y)
     # Round to the nearest 5 minutes
     dataset.attrs["end_time"] = pd.Timestamp(dataset.attrs["end_time"]).round("5 min")
 
