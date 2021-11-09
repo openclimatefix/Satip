@@ -160,8 +160,6 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
     # Add coordinate arrays, since x and y changes for each pixel, cannot replace dataset x,y coords with these directly
-    dataset.attrs["osgb_x_coords"] = osgb_x
-    dataset.attrs["osgb_y_coords"] = osgb_y
     osgb_y = osgb_y[:,0]
     osgb_x = osgb_x[0,:]
     dataset = dataset.assign_coords(x=osgb_x,y=osgb_y)
