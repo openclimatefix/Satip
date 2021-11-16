@@ -92,7 +92,7 @@ def create_or_update_zarr_with_native_files(
     directory: str,
     zarr_path: str,
     hrv_zarr_path: str,
-        temp_directory: Path,
+    temp_directory: Path,
     region: str,
     spatial_chunk_size: int = 256,
     temporal_chunk_size: int = 1,

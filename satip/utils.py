@@ -159,7 +159,6 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
-    # Add coordinate arrays, since x and y changes for each pixel, cannot replace dataset x,y coords with these directly
     osgb_y = osgb_y[:,0]
     osgb_x = osgb_x[0,:]
     dataset = dataset.assign_coords(x=osgb_x,y=osgb_y)
@@ -185,9 +184,8 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
 get_time_as_unix = (
     lambda da: pd.Series(
-        (pd.to_datetime(da.time.values) - pd.Timestamp("1970-01-01")).total_seconds()
+        pd.to_datetime(da.time.values)
     )
-    .astype(int)
     .values
 )
 
@@ -199,7 +197,7 @@ def save_dataset_to_zarr(
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
-        channel_chunk_size: int = 12
+    channel_chunk_size: int = 12
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -247,7 +245,8 @@ def save_dataset_to_zarr(
                 "stacked_eumetsat_data": {
                     "compressor": zarr.Blosc(cname="zstd", clevel=5),
                     "chunks": chunks,
-                }
+                },
+                "time": {"units": "nanoseconds since 1970-01-01"},
             }
         },
     }
