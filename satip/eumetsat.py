@@ -1,16 +1,15 @@
-import pandas as pd
-
-from typing import Union, List
-import datetime
-import zipfile
 import copy
+import datetime
 import os
-from io import BytesIO
 import re
 import urllib
+import zipfile
+from io import BytesIO
+from typing import List, Union
 
-from requests.auth import HTTPBasicAuth
+import pandas as pd
 import requests
+from requests.auth import HTTPBasicAuth
 
 from satip import utils
 
