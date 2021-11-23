@@ -6,22 +6,23 @@
 #
 ############
 
+import logging
+import math
+import multiprocessing
+import os
+import subprocess
+import time
+from datetime import datetime, timedelta
+from itertools import repeat
+from typing import Callable, List, Optional, Tuple
+
 import fsspec
+import numpy as np
+import pandas as pd
 import requests.exceptions
 import yaml
-from satip import eumetsat
-import pandas as pd
-import os
-import math
-import logging
-import subprocess
-import multiprocessing
-from itertools import repeat
-import time
-import numpy as np
-from typing import Optional, List, Tuple, Callable
 
-from datetime import datetime, timedelta
+from satip import eumetsat
 
 _LOG = logging.getLogger("satip.download")
 _LOG.setLevel(logging.INFO)

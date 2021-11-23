@@ -1,19 +1,19 @@
-import pandas as pd
-
-from typing import Union, Any, Tuple
-
-import os
-import subprocess
-import zarr
-import xarray as xr
-import numpy as np
-from satpy import Scene
-from pathlib import Path
 import datetime
 import logging
-from satip.geospatial import lat_lon_to_osgb, GEOGRAPHIC_BOUNDS
-from satip.compression import Compressor, is_dataset_clean
+import os
+import subprocess
 import warnings
+from pathlib import Path
+from typing import Any, Tuple, Union
+
+import numpy as np
+import pandas as pd
+import xarray as xr
+import zarr
+from satpy import Scene
+
+from satip.compression import Compressor, is_dataset_clean
+from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
@@ -51,8 +51,9 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(filename: Path, temp_directory: Path, area: str) -> Union[Tuple[
-                                                                                     xr.DataArray, xr.DataArray], Tuple[None, None]]:
+def load_native_to_dataset(
+    filename: Path, temp_directory: Path, area: str
+) -> Union[Tuple[xr.DataArray, xr.DataArray], Tuple[None, None]]:
     """
     Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
@@ -64,22 +65,25 @@ def load_native_to_dataset(filename: Path, temp_directory: Path, area: str) -> U
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    hrv_compressor = Compressor(variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595]))
-    compressor = Compressor(mins=np.array(
-        [
-            -2.5118103,
-            -64.83977,
-            63.404694,
-            2.844452,
-            199.10002,
-            -17.254883,
-            -26.29155,
-            -1.1009827,
-            -2.4184198,
-            199.57048,
-            198.95093,
-        ]
-    ),
+    hrv_compressor = Compressor(
+        variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
+    )
+    compressor = Compressor(
+        mins=np.array(
+            [
+                -2.5118103,
+                -64.83977,
+                63.404694,
+                2.844452,
+                199.10002,
+                -17.254883,
+                -26.29155,
+                -1.1009827,
+                -2.4184198,
+                199.57048,
+                198.95093,
+            ]
+        ),
         maxs=np.array(
             [
                 69.60857,
@@ -159,9 +163,9 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
-    osgb_y = osgb_y[:,0]
-    osgb_x = osgb_x[0,:]
-    dataset = dataset.assign_coords(x=osgb_x,y=osgb_y)
+    osgb_y = osgb_y[:, 0]
+    osgb_x = osgb_x[0, :]
+    dataset = dataset.assign_coords(x=osgb_x, y=osgb_y)
     # Round to the nearest 5 minutes
     dataset.attrs["end_time"] = pd.Timestamp(dataset.attrs["end_time"]).round("5 min")
 
@@ -182,12 +186,7 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     return dataarray
 
 
-get_time_as_unix = (
-    lambda da: pd.Series(
-        pd.to_datetime(da.time.values)
-    )
-    .values
-)
+get_time_as_unix = lambda da: pd.Series(pd.to_datetime(da.time.values)).values
 
 
 def save_dataset_to_zarr(
@@ -197,7 +196,7 @@ def save_dataset_to_zarr(
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
-    channel_chunk_size: int = 12
+    channel_chunk_size: int = 12,
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -235,7 +234,7 @@ def save_dataset_to_zarr(
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = dataarray.fillna(-1) # Fill NaN with -1, even if none should exist
+    dataarray = dataarray.fillna(-1)  # Fill NaN with -1, even if none should exist
     dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray})
 
     zarr_mode_to_extra_kwargs = {
@@ -293,6 +292,7 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
     else:
         return False
 
+
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     """
     Returns a string for a markdown table, formatted
@@ -331,10 +331,10 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 
 # Cell
 def set_up_logging(
-        name: str,
-        log_dir: str,
-        main_logging_level: str = "DEBUG",
-        ) -> logging.Logger:
+    name: str,
+    log_dir: str,
+    main_logging_level: str = "DEBUG",
+) -> logging.Logger:
     """
     `set_up_logging` initialises and configures a custom
     logger for `satip`. The logging level of the file and
@@ -386,7 +386,7 @@ def set_up_logging(
     logging_levels = ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG", "NOTSET"]
 
     assert (
-            main_logging_level in logging_levels
+        main_logging_level in logging_levels
     ), f"main_logging_level must be one of {', '.join(logging_levels)}"
 
     logger.setLevel(getattr(logging, main_logging_level))

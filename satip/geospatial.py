@@ -1,6 +1,6 @@
 import datetime
 from numbers import Number
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
 import pyproj
