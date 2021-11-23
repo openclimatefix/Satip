@@ -9,6 +9,7 @@ from datetime import datetime
 
 import click
 import pandas as pd
+
 import satip.download
 
 NATIVE_FILESIZE_MB = 102.210123

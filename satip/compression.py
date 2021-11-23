@@ -1,6 +1,7 @@
-import xarray as xr
-import numpy as np
 from typing import Union
+
+import numpy as np
+import xarray as xr
 
 
 class Compressor:

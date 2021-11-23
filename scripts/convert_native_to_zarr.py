@@ -1,5 +1,6 @@
-from satip.intermediate import create_or_update_zarr_with_native_files, split_per_month
 import click
+
+from satip.intermediate import create_or_update_zarr_with_native_files, split_per_month
 
 
 @click.command()
@@ -26,7 +27,7 @@ import click
     "-temp",
     default="/mnt/ramdisk/",
     prompt="Where to store temp directory",
-    )
+)
 @click.option(
     "--region",
     default="UK",
