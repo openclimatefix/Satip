@@ -30,7 +30,7 @@ class Transformers:
     """
 
     def __init__(self):
-        """ Init """
+        """Init"""
         self._lat_lon_to_osgb = None
         self.make_transformers()
 
@@ -44,7 +44,7 @@ class Transformers:
 
     @property
     def lat_lon_to_osgb(self):
-        """ lat-lon to OSGB property """
+        """lat-lon to OSGB property"""
         return self._lat_lon_to_osgb
 
 
@@ -53,7 +53,7 @@ transformers = Transformers()
 
 
 def download_grids():
-    """ The transformer grid sometimes need updating """
+    """The transformer grid sometimes need updating"""
     pyproj.transformer.TransformerGroup(crs_from=WGS84, crs_to=OSGB).download_grids(verbose=True)
 
     transformers.make_transformers()
