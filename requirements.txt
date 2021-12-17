@@ -2,7 +2,7 @@ numpy>=1.19.4
 pandas>=1.1.4
 requests
 fsspec
-satpy>=0.30.1
+satpy[seviri_l2_grib]>=0.30.1
 zarr
 xarray
 bottleneck
