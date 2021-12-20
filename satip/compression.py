@@ -105,7 +105,7 @@ class Compressor:
         dataarray -= self.mins
         dataarray /= new_max
         dataarray *= upper_bound
-        dataarray = dataarray.round().astype(np.int16)
+        dataarray = dataarray.round().clip(min=0,max=upper_bound).astype(np.int16)
         if is_dataset_clean(dataarray):
             dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
