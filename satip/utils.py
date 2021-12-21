@@ -180,14 +180,11 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
-    dataarray = dataarray.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
-        dim="y", max_gap=2
+    dataarray = dataarray.interpolate_na(dim="x_osgb", max_gap=2, use_coordinate=False).interpolate_na(
+        dim="y_osgb", max_gap=2
     )
 
     return dataarray
-
-
-get_time_as_unix = lambda da: pd.Series(pd.to_datetime(da.time.values)).values
 
 
 def save_dataset_to_zarr(
@@ -211,10 +208,7 @@ def save_dataset_to_zarr(
         x_size_per_chunk: X pixels per Zarr chunk
 
     """
-    dataarray = dataarray.transpose(*["time", "x", "y", "variable"])
-    # We convert the datetime to seconds since the Unix epoch as otherwise appending to the Zarr store results in the
-    # first timestep being duplicated, and the actual timestep being thrown away.
-    dataarray["time"] = get_time_as_unix(dataarray)
+    dataarray = dataarray.transpose(*["time", "x_osgb", "y_osgb", "variable"])
 
     _, x_size, y_size, _ = dataarray.shape
     # If less than 2 chunks worth, just save the whole spatial extant
@@ -287,6 +281,7 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
     Returns:
         Bool whether the timestep is in the Xarray 'time' coordinate or not
     """
+    # TODO Change this to use the actual datetimes instead
     dt = int((dt - pd.Timestamp("1970-01-01")).total_seconds())
     if dt in zarr_dataset.coords["time"].values:
         return True
