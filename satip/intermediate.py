@@ -89,6 +89,51 @@ def wrapper(args):
         dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
     )
 
+def create_or_update_zarr_with_cloud_mask_files(directory: str, zarr_path: str, temp_directory: Path, region: str, spatial_chunk_size: int = 256, temporal_chunk_size: int = 1) -> None:
+    """
+    Creates or updates a zarr file with the cloud mask files
+    
+    Args:
+        directory: Top-level directory containing the compressed native files
+        zarr_path: Path of the final Zarr file
+        region: Name of the region to keep for the datastore
+        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
+    """
+    # Satpy Scene doesn't do well with fsspec
+    grib_files = list(Path(directory).rglob("*.grb"))
+    zarr_exists = os.path.exists(zarr_path)
+    if zarr_exists:
+        zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
+        new_compressed_files = []
+        for f in grib_files:
+            base_filename = f.name
+            file_timestep = eumetsat_cloud_name_to_datetime(str(base_filename))
+            exists = check_if_timestep_exists(
+                pd.Timestamp(file_timestep).round("5 min"), zarr_dataset
+            )
+            if not exists:
+                new_compressed_files.append(f)
+        grib_files = new_compressed_files
+    # Check if zarr already exists
+    for entry in tqdm(grib_files):
+        try:
+            dataset = load_cloudmask_to_dataset(entry, temp_directory, region)
+            if dataset is not None:
+                try:
+                    save_dataset_to_zarr(
+                        dataset,
+                        zarr_path=zarr_path,
+                        x_size_per_chunk=spatial_chunk_size,
+                        y_size_per_chunk=spatial_chunk_size,
+                        timesteps_per_chunk=temporal_chunk_size,
+                        channel_chunk_size=11,
+                    )
+                except Exception as e:
+                    print(f"Failed with: {e}")
+            del dataset
+        except Exception as e:
+            print(f"Failed with Exception with {e}")
 
 def create_or_update_zarr_with_native_files(
     directory: str,
