@@ -171,6 +171,7 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
     # Stack DataArrays in the Dataset into a single DataArray
     dataarray = dataset.to_array()
+    dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
