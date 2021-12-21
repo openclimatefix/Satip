@@ -156,6 +156,39 @@ def load_native_to_dataset(
     else:
         return None, None
 
+def load_cloudmask_to_dataset(
+    filename: Path, temp_directory: Path, area: str
+) -> Union[xr.DataArray, None]:
+    """
+    Load cloud mask files into an Xarray dataset,
+     and replacing small chunks of NaNs with interpolated values, and add a time coordinate
+    Args:
+        filename: The filename of the compressed native file to load
+        temp_directory: Temporary directory to store the decompressed files
+        area: Name of the geographic area to use, such as 'UK'
+
+    Returns:
+        Returns Xarray DataArray if script worked, else returns None
+    """
+    compressor = Compressor(
+        variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0])
+    )
+    scene = Scene(filenames={"seviri_l1b_grib": [decompressed_filename]})
+    scene.load(
+        [
+            "cloud_mask",
+        ]
+    )
+    # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
+    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area)
+
+    # If any NaNs still exist, then don't return it
+    if is_dataset_clean(dataarray):
+        # Compress and return
+        dataarray = compressor.compress(dataarray)
+        return dataarray
+    else:
+        return None
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
     scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
