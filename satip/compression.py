@@ -61,7 +61,7 @@ class Compressor:
         self.maxs = maxs
         self.variable_order = variable_order
 
-    def fit(self, dataset: xr.Dataset, dims: list = ["time", "y", "x"]) -> None:
+    def fit(self, dataset: xr.Dataset, dims: list = ["time", "y_osgb", "x_osgb"]) -> None:
         """
         Calculate new min and max values for the compression
 
@@ -96,7 +96,7 @@ class Compressor:
             ), f"{attr} must be set in initialisation or through `fit`"
 
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y", "x", "variable"
+            "time", "y_osgb", "x_osgb", "variable"
         )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
@@ -126,7 +126,7 @@ class Compressor:
         da_meta = dataarray.attrs
 
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y", "x", "variable"
+            "time", "y_osgb", "x_osgb", "variable"
         )
         dataarray = dataarray.round().clip(min=0,max=3).astype(np.int16)
         if is_dataset_clean(dataarray):
