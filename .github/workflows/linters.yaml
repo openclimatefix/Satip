@@ -7,5 +7,3 @@ jobs:
     uses: openclimatefix/.github/.github/workflows/python-lint.yml@main
     with:
       folder: "satip"
-      # pytest-cov looks at this folder
-      pytest_cov_dir: "satip"
