@@ -8,7 +8,7 @@ import xarray as xr
 from tqdm import tqdm
 
 from satip.eumetsat import eumetsat_cloud_name_to_datetime, eumetsat_filename_to_datetime
-from satip.utils import check_if_timestep_exists, load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import check_if_timestep_exists, load_native_to_dataset, save_dataset_to_zarr, load_cloudmask_to_dataset
 
 
 def split_per_month(
