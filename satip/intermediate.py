@@ -42,28 +42,27 @@ def split_per_month(
     for year in year_directories:
         if not os.path.isdir(os.path.join(directory, year)):
             continue
-        if year in ["2020", "2021"]:
-            month_directories = os.listdir(os.path.join(directory, year))
-            for month in month_directories:
-                if not os.path.isdir(os.path.join(directory, year, month)):
-                    continue
-                month_directory = os.path.join(directory, year.split("/")[0], month.split("/")[0])
-                month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
-                hrv_month_zarr_path = (
-                    hrv_zarr_path + f"_{year.split('/')[0]}" f"_{month.split('/')[0]}.zarr"
+        month_directories = os.listdir(os.path.join(directory, year))
+        for month in month_directories:
+            if not os.path.isdir(os.path.join(directory, year, month)):
+                continue
+            month_directory = os.path.join(directory, year.split("/")[0], month.split("/")[0])
+            month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
+            hrv_month_zarr_path = (
+                hrv_zarr_path + f"_{year.split('/')[0]}" f"_{month.split('/')[0]}.zarr"
+            )
+            dirs.append(month_directory)
+            zarrs.append(month_zarr_path)
+            hrv_zarrs.append(hrv_month_zarr_path)
+            zarr_exists = os.path.exists(month_zarr_path)
+            if not zarr_exists:
+                # Inital zarr path before then appending
+                compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
+                dataset, hrv_dataset = load_native_to_dataset(
+                    compressed_native_files[0], temp_directory, region
                 )
-                dirs.append(month_directory)
-                zarrs.append(month_zarr_path)
-                hrv_zarrs.append(hrv_month_zarr_path)
-                zarr_exists = os.path.exists(month_zarr_path)
-                if not zarr_exists:
-                    # Inital zarr path before then appending
-                    compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
-                    dataset, hrv_dataset = load_native_to_dataset(
-                        compressed_native_files[0], temp_directory, region
-                    )
-                    save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
-                    save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=16)
