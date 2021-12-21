@@ -185,7 +185,7 @@ def load_cloudmask_to_dataset(
     # If any NaNs still exist, then don't return it
     if is_dataset_clean(dataarray):
         # Compress and return
-        dataarray = compressor.compress(dataarray)
+        dataarray = compressor.compress_mask(dataarray)
         return dataarray
     else:
         return None
