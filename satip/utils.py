@@ -173,7 +173,7 @@ def load_cloudmask_to_dataset(
     compressor = Compressor(
         variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0])
     )
-    scene = Scene(filenames={"seviri_l1b_grib": [decompressed_filename]})
+    scene = Scene(filenames={"seviri_l2_grib": [decompressed_filename]})
     scene.load(
         [
             "cloud_mask",
