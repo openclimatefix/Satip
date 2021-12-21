@@ -112,7 +112,29 @@ class Compressor:
             return dataarray
         else:
             return None
+    
+    def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
+        """
+        Compresses Cloud masks DataArrays
+        
+        Args:
+            dataarray: DataArray to compress
 
+        Returns:
+            The compressed DataArray
+        """
+        da_meta = dataarray.attrs
+
+        dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
+            "time", "y", "x", "variable"
+        )
+        dataarray = dataarray.round().clip(min=0,max=3).astype(np.int16)
+        if is_dataset_clean(dataarray):
+            dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+
+            return dataarray
+        else:
+            return None
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:
     """
