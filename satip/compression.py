@@ -105,18 +105,18 @@ class Compressor:
         dataarray -= self.mins
         dataarray /= new_max
         dataarray *= upper_bound
-        dataarray = dataarray.round().clip(min=0,max=upper_bound).astype(np.int16)
+        dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
         if is_dataset_clean(dataarray):
             dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
             return dataarray
         else:
             return None
-    
+
     def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
         """
         Compresses Cloud masks DataArrays
-        
+
         Args:
             dataarray: DataArray to compress
 
@@ -128,13 +128,14 @@ class Compressor:
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
             "time", "y_osgb", "x_osgb", "variable"
         )
-        dataarray = dataarray.round().clip(min=0,max=3).astype(np.int16)
+        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
         if is_dataset_clean(dataarray):
             dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
             return dataarray
         else:
             return None
+
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:
     """

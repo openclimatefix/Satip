@@ -8,7 +8,12 @@ import xarray as xr
 from tqdm import tqdm
 
 from satip.eumetsat import eumetsat_cloud_name_to_datetime, eumetsat_filename_to_datetime
-from satip.utils import check_if_timestep_exists, load_native_to_dataset, save_dataset_to_zarr, load_cloudmask_to_dataset
+from satip.utils import (
+    check_if_timestep_exists,
+    load_cloudmask_to_dataset,
+    load_native_to_dataset,
+    save_dataset_to_zarr,
+)
 
 
 def split_per_month(
@@ -89,10 +94,18 @@ def wrapper(args):
         dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
     )
 
-def create_or_update_zarr_with_cloud_mask_files(directory: str, zarr_path: str, temp_directory: Path, region: str, spatial_chunk_size: int = 256, temporal_chunk_size: int = 1) -> None:
+
+def create_or_update_zarr_with_cloud_mask_files(
+    directory: str,
+    zarr_path: str,
+    temp_directory: Path,
+    region: str,
+    spatial_chunk_size: int = 256,
+    temporal_chunk_size: int = 1,
+) -> None:
     """
     Creates or updates a zarr file with the cloud mask files
-    
+
     Args:
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
@@ -134,6 +147,7 @@ def create_or_update_zarr_with_cloud_mask_files(directory: str, zarr_path: str, 
             del dataset
         except Exception as e:
             print(f"Failed with Exception with {e}")
+
 
 def create_or_update_zarr_with_native_files(
     directory: str,

@@ -156,6 +156,7 @@ def load_native_to_dataset(
     else:
         return None, None
 
+
 def load_cloudmask_to_dataset(
     filename: Path, temp_directory: Path, area: str
 ) -> Union[xr.DataArray, None]:
@@ -170,9 +171,7 @@ def load_cloudmask_to_dataset(
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    compressor = Compressor(
-        variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0])
-    )
+    compressor = Compressor(variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0]))
     scene = Scene(filenames={"seviri_l2_grib": [decompressed_filename]})
     scene.load(
         [
@@ -189,6 +188,7 @@ def load_cloudmask_to_dataset(
         return dataarray
     else:
         return None
+
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
     scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
@@ -213,9 +213,9 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
-    dataarray = dataarray.interpolate_na(dim="x_osgb", max_gap=2, use_coordinate=False).interpolate_na(
-        dim="y_osgb", max_gap=2
-    )
+    dataarray = dataarray.interpolate_na(
+        dim="x_osgb", max_gap=2, use_coordinate=False
+    ).interpolate_na(dim="y_osgb", max_gap=2)
 
     return dataarray
 
