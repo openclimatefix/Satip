@@ -60,7 +60,7 @@ def download_eumetsat_data(
     user_secret: Optional[str] = None,
     auth_filename: Optional[str] = None,
     number_of_processes: int = 0,
-    product: Union[str, List[str]] = ["rss", "cloud"]
+    product: Union[str, List[str]] = ["rss", "cloud"],
 ):
     """
     Downloads EUMETSAT RSS and Cloud Masks to the given directory,
