@@ -14,7 +14,7 @@ import subprocess
 import time
 from datetime import datetime, timedelta
 from itertools import repeat
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 
 import fsspec
 import numpy as np
