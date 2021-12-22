@@ -90,7 +90,7 @@ def validate_date(ctx, param, value):
     "--product",
     "--p",
     multiple=True,
-    default=["rss","cloud"],
+    default=["rss", "cloud"],
     help="Which products to download, of 'rss' and 'cloud' ",
 )
 def download_sat_files(*args, **kwargs):
