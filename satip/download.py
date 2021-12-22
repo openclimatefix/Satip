@@ -60,7 +60,7 @@ def download_eumetsat_data(
     user_secret: Optional[str] = None,
     auth_filename: Optional[str] = None,
     number_of_processes: int = 0,
-    product: Union[str, List[str]] = ["rss", "cloud"],
+    product: Union[str, List[str]] = ["rss", "cloud"]
 ):
     """
     Downloads EUMETSAT RSS and Cloud Masks to the given directory,
@@ -142,29 +142,27 @@ def download_time_range(x: Tuple[Tuple[datetime, datetime], str, eumetsat.Downlo
     _LOG.info(format_dt_str(end_time))
     # To help stop with rate limiting
     time.sleep(np.random.randint(0, 30))
-    try:
-        download_manager.download_date_range(
-            format_dt_str(start_time),
-            format_dt_str(end_time),
-            product_id=product_id,
-        )
-    except requests.exceptions.ConnectionError:
-        # Retry again after 10 minutes, should then continue working if intermittent
-        time.sleep(600)
-        download_manager.download_date_range(
-            format_dt_str(start_time),
-            format_dt_str(end_time),
-            product_id=product_id,
-        )
-    except Exception as e:
-        _LOG.warning(f"An Error was thrown, waiting and trying again: {e}")
-        # Wait between 10 and 20 minutes and try again
-        time.sleep(np.random.randint(600, 1200))
-        download_manager.download_date_range(
-            format_dt_str(start_time),
-            format_dt_str(end_time),
-            product_id=product_id,
-        )
+    complete = False
+    while not complete:
+        try:
+            time.sleep(np.random.randint(0, 600))
+            download_manager.download_date_range(
+                format_dt_str(start_time),
+                format_dt_str(end_time),
+                product_id=product_id,
+            )
+            complete = True
+        except requests.exceptions.ConnectionError:
+            # Retry again after 10 minutes, should then continue working if intermittent
+            time.sleep(600)
+            download_manager.download_date_range(
+                format_dt_str(start_time),
+                format_dt_str(end_time),
+                product_id=product_id,
+            )
+            complete = True
+        except Exception as e:
+            _LOG.warning(f"An Error was thrown, waiting and trying again: {e}")
 
 
 def load_key_secret(filename: str) -> Tuple[str, str]:
