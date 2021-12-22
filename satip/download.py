@@ -60,6 +60,7 @@ def download_eumetsat_data(
     user_secret: Optional[str] = None,
     auth_filename: Optional[str] = None,
     number_of_processes: int = 0,
+    product: Union[str, List[str]] = ["rss", "cloud"]
 ):
     """
     Downloads EUMETSAT RSS and Cloud Masks to the given directory,
@@ -74,6 +75,8 @@ def download_eumetsat_data(
         user_key: User key for the EUMETSAT API
         user_secret: User secret for the EUMETSAT API
         auth_filename: Path to a file containing the user_secret and user_key
+        number_of_processes: Number of processes to use
+        product: Which product(s) to download
 
     """
     # Get authentication
@@ -91,11 +94,12 @@ def download_eumetsat_data(
 
     # Download the data
     dm = eumetsat.DownloadManager(user_key, user_secret, download_directory, download_directory)
-
-    for product_id in [
-        RSS_ID,
-        CLOUD_ID,
-    ]:
+    products_to_use = []
+    if "rss" in product:
+        products_to_use.append(RSS_ID)
+    if "cloud" in product:
+        products_to_use.append(CLOUD_ID)
+    for product_id in products_to_use:
         # Do this to clear out any partially downloaded days
         sanity_check_files_and_move_to_directory(
             directory=download_directory, product_id=product_id

@@ -313,9 +313,7 @@ class DownloadManager:
 
         # Downloading specified datasets
         if not dataset_ids:
-            self.logger.info(
-                "No files will be downloaded. Set DownloadManager bucket_name argument for local download"
-            )
+            self.logger.info("No files will be downloaded. None were found in API search.")
             return
 
         for dataset_id in dataset_ids:

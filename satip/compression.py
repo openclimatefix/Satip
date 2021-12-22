@@ -106,12 +106,9 @@ class Compressor:
         dataarray /= new_max
         dataarray *= upper_bound
         dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
-        if is_dataset_clean(dataarray):
-            dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
-            return dataarray
-        else:
-            return None
+        return dataarray
 
     def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
         """
@@ -129,12 +126,9 @@ class Compressor:
             "time", "y_osgb", "x_osgb", "variable"
         )
         dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
-        if is_dataset_clean(dataarray):
-            dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
-            return dataarray
-        else:
-            return None
+        return dataarray
 
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:
