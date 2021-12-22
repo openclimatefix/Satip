@@ -61,7 +61,7 @@ class Compressor:
         self.maxs = maxs
         self.variable_order = variable_order
 
-    def fit(self, dataset: xr.Dataset, dims: list = ["time", "y", "x"]) -> None:
+    def fit(self, dataset: xr.Dataset, dims: list = ["time", "y_osgb", "x_osgb"]) -> None:
         """
         Calculate new min and max values for the compression
 
@@ -96,7 +96,7 @@ class Compressor:
             ), f"{attr} must be set in initialisation or through `fit`"
 
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y", "x", "variable"
+            "time", "y_osgb", "x_osgb", "variable"
         )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
@@ -105,13 +105,30 @@ class Compressor:
         dataarray -= self.mins
         dataarray /= new_max
         dataarray *= upper_bound
-        dataarray = dataarray.round().clip(min=0,max=upper_bound).astype(np.int16)
-        if is_dataset_clean(dataarray):
-            dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
+        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
 
-            return dataarray
-        else:
-            return None
+        return dataarray
+
+    def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
+        """
+        Compresses Cloud masks DataArrays
+
+        Args:
+            dataarray: DataArray to compress
+
+        Returns:
+            The compressed DataArray
+        """
+        da_meta = dataarray.attrs
+
+        dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
+            "time", "y_osgb", "x_osgb", "variable"
+        )
+        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
+        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+
+        return dataarray
 
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:

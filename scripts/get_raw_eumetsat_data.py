@@ -79,6 +79,20 @@ def validate_date(ctx, param, value):
     prompt="Bandwidth limit, in MB/sec, currently ignored",
     type=float,
 )
+@click.option(
+    "--number_of_processes",
+    "--np",
+    default=4,
+    prompt="Number of processes to use",
+    type=int,
+)
+@click.option(
+    "--product",
+    "--p",
+    multiple=True,
+    default=["rss", "cloud"],
+    help="Which products to download, of 'rss' and 'cloud' ",
+)
 def download_sat_files(*args, **kwargs):
     satip.download.download_eumetsat_data(*args, **kwargs)
 

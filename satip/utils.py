@@ -53,10 +53,13 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
 
 def load_native_to_dataset(
     filename: Path, temp_directory: Path, area: str
-) -> Union[Tuple[xr.DataArray, xr.DataArray], Tuple[None, None]]:
+) -> Tuple[xr.DataArray, xr.DataArray]:
     """
-    Load compressed native files into an Xarray dataset, resampling to the same grid for the HRV channel,
+    Load compressed native files into an Xarray dataset
+
+    Resampling to the same grid for the HRV channel,
      and replacing small chunks of NaNs with interpolated values, and add a time coordinate
+
     Args:
         filename: The filename of the compressed native file to load
         temp_directory: Temporary directory to store the decompressed files
@@ -147,14 +150,41 @@ def load_native_to_dataset(
     # Delete file off disk
     os.remove(decompressed_filename)
 
-    # If any NaNs still exist, then don't return it
-    if is_dataset_clean(dataarray) and is_dataset_clean(hrv_dataarray):
-        # Compress and return
-        dataarray = compressor.compress(dataarray)
-        hrv_dataarray = hrv_compressor.compress(hrv_dataarray)
-        return dataarray, hrv_dataarray
-    else:
-        return None, None
+    # Compress and return
+    dataarray = compressor.compress(dataarray)
+    hrv_dataarray = hrv_compressor.compress(hrv_dataarray)
+    return dataarray, hrv_dataarray
+
+
+def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -> xr.DataArray:
+    """
+    Load cloud mask files into an Xarray dataset
+
+    Replacing small chunks of NaNs with interpolated values, and add a time coordinate
+
+    Args:
+        filename: The filename of the compressed native file to load
+        temp_directory: Temporary directory to store the decompressed files
+        area: Name of the geographic area to use, such as 'UK'
+
+    Returns:
+        Returns Xarray DataArray if script worked, else returns None
+    """
+    compressor = Compressor(variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0]))
+    scene = Scene(filenames={"seviri_l2_grib": [decompressed_filename]})
+    scene.load(
+        [
+            "cloud_mask",
+        ]
+    )
+    # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
+    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area)
+
+    # Compress and return
+    dataarray = compressor.compress_mask(dataarray)
+    # Convert 3's to NaNs as they should be No Data/Space
+    dataarray = dataarray.where(dataarray["variable"] != 3)
+    return dataarray
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
@@ -163,6 +193,8 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     dataset: xr.Dataset = scene.to_xarray_dataset()
+    # Remove acq time as its not needed or helpful
+    dataset = dataset.drop_vars("acq_time", errors="ignore")
     osgb_y = osgb_y[:, 0]
     osgb_x = osgb_x[0, :]
     dataset = dataset.assign_coords(x=osgb_x, y=osgb_y)
@@ -171,6 +203,7 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
     # Stack DataArrays in the Dataset into a single DataArray
     dataarray = dataset.to_array()
+    dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
@@ -179,14 +212,11 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
 
     # Fill NaN's but only if its a short amount of NaNs
     # NaN's for off-disk would not be filled
-    dataarray = dataarray.interpolate_na(dim="x", max_gap=2, use_coordinate=False).interpolate_na(
-        dim="y", max_gap=2
-    )
+    dataarray = dataarray.interpolate_na(
+        dim="x_osgb", max_gap=2, use_coordinate=False
+    ).interpolate_na(dim="y_osgb", max_gap=2)
 
     return dataarray
-
-
-get_time_as_unix = lambda da: pd.Series(pd.to_datetime(da.time.values)).values
 
 
 def save_dataset_to_zarr(
@@ -210,10 +240,7 @@ def save_dataset_to_zarr(
         x_size_per_chunk: X pixels per Zarr chunk
 
     """
-    dataarray = dataarray.transpose(*["time", "x", "y", "variable"])
-    # We convert the datetime to seconds since the Unix epoch as otherwise appending to the Zarr store results in the
-    # first timestep being duplicated, and the actual timestep being thrown away.
-    dataarray["time"] = get_time_as_unix(dataarray)
+    dataarray = dataarray.transpose(*["time", "x_osgb", "y_osgb", "variable"])
 
     _, x_size, y_size, _ = dataarray.shape
     # If less than 2 chunks worth, just save the whole spatial extant
@@ -230,11 +257,11 @@ def save_dataset_to_zarr(
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
+    dataarray = dataarray.fillna(-1)  # Fill NaN with -1, even if none should exist
     if not is_dataset_clean(dataarray):
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = dataarray.fillna(-1)  # Fill NaN with -1, even if none should exist
     dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray})
 
     zarr_mode_to_extra_kwargs = {
@@ -286,7 +313,7 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
     Returns:
         Bool whether the timestep is in the Xarray 'time' coordinate or not
     """
-    dt = int((dt - pd.Timestamp("1970-01-01")).total_seconds())
+    dt = pd.Timestamp(dt).round("5 min")
     if dt in zarr_dataset.coords["time"].values:
         return True
     else:

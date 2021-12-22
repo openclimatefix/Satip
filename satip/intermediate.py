@@ -8,7 +8,12 @@ import xarray as xr
 from tqdm import tqdm
 
 from satip.eumetsat import eumetsat_cloud_name_to_datetime, eumetsat_filename_to_datetime
-from satip.utils import check_if_timestep_exists, load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import (
+    check_if_timestep_exists,
+    load_cloudmask_to_dataset,
+    load_native_to_dataset,
+    save_dataset_to_zarr,
+)
 
 
 def split_per_month(
@@ -42,28 +47,27 @@ def split_per_month(
     for year in year_directories:
         if not os.path.isdir(os.path.join(directory, year)):
             continue
-        if year in ["2020", "2021"]:
-            month_directories = os.listdir(os.path.join(directory, year))
-            for month in month_directories:
-                if not os.path.isdir(os.path.join(directory, year, month)):
-                    continue
-                month_directory = os.path.join(directory, year.split("/")[0], month.split("/")[0])
-                month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
-                hrv_month_zarr_path = (
-                    hrv_zarr_path + f"_{year.split('/')[0]}" f"_{month.split('/')[0]}.zarr"
+        month_directories = os.listdir(os.path.join(directory, year))
+        for month in month_directories:
+            if not os.path.isdir(os.path.join(directory, year, month)):
+                continue
+            month_directory = os.path.join(directory, year.split("/")[0], month.split("/")[0])
+            month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
+            hrv_month_zarr_path = (
+                hrv_zarr_path + f"_{year.split('/')[0]}" f"_{month.split('/')[0]}.zarr"
+            )
+            dirs.append(month_directory)
+            zarrs.append(month_zarr_path)
+            hrv_zarrs.append(hrv_month_zarr_path)
+            zarr_exists = os.path.exists(month_zarr_path)
+            if not zarr_exists:
+                # Inital zarr path before then appending
+                compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
+                dataset, hrv_dataset = load_native_to_dataset(
+                    compressed_native_files[0], temp_directory, region
                 )
-                dirs.append(month_directory)
-                zarrs.append(month_zarr_path)
-                hrv_zarrs.append(hrv_month_zarr_path)
-                zarr_exists = os.path.exists(month_zarr_path)
-                if not zarr_exists:
-                    # Inital zarr path before then appending
-                    compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
-                    dataset, hrv_dataset = load_native_to_dataset(
-                        compressed_native_files[0], temp_directory, region
-                    )
-                    save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
-                    save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=16)
@@ -89,6 +93,60 @@ def wrapper(args):
     create_or_update_zarr_with_native_files(
         dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
     )
+
+
+def create_or_update_zarr_with_cloud_mask_files(
+    directory: str,
+    zarr_path: str,
+    temp_directory: Path,
+    region: str,
+    spatial_chunk_size: int = 256,
+    temporal_chunk_size: int = 1,
+) -> None:
+    """
+    Creates or updates a zarr file with the cloud mask files
+
+    Args:
+        directory: Top-level directory containing the compressed native files
+        zarr_path: Path of the final Zarr file
+        region: Name of the region to keep for the datastore
+        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
+    """
+    # Satpy Scene doesn't do well with fsspec
+    grib_files = list(Path(directory).rglob("*.grb"))
+    zarr_exists = os.path.exists(zarr_path)
+    if zarr_exists:
+        zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
+        new_compressed_files = []
+        for f in grib_files:
+            base_filename = f.name
+            file_timestep = eumetsat_cloud_name_to_datetime(str(base_filename))
+            exists = check_if_timestep_exists(
+                pd.Timestamp(file_timestep).round("5 min"), zarr_dataset
+            )
+            if not exists:
+                new_compressed_files.append(f)
+        grib_files = new_compressed_files
+    # Check if zarr already exists
+    for entry in tqdm(grib_files):
+        try:
+            dataset = load_cloudmask_to_dataset(entry, temp_directory, region)
+            if dataset is not None:
+                try:
+                    save_dataset_to_zarr(
+                        dataset,
+                        zarr_path=zarr_path,
+                        x_size_per_chunk=spatial_chunk_size,
+                        y_size_per_chunk=spatial_chunk_size,
+                        timesteps_per_chunk=temporal_chunk_size,
+                        channel_chunk_size=11,
+                    )
+                except Exception as e:
+                    print(f"Failed with: {e}")
+            del dataset
+        except Exception as e:
+            print(f"Failed with Exception with {e}")
 
 
 def create_or_update_zarr_with_native_files(
