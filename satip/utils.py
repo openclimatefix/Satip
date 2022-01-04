@@ -163,7 +163,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
     Replacing small chunks of NaNs with interpolated values, and add a time coordinate
 
     Args:
-        filename: The filename of the compressed native file to load
+        filename: The filename of the GRIB file to load
         temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
 
@@ -171,7 +171,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
         Returns Xarray DataArray if script worked, else returns None
     """
     compressor = Compressor(variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0]))
-    scene = Scene(filenames={"seviri_l2_grib": [decompressed_filename]})
+    scene = Scene(filenames={"seviri_l2_grib": [filename]})
     scene.load(
         [
             "cloud_mask",

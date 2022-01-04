@@ -95,6 +95,76 @@ def wrapper(args):
     )
 
 
+def cloudmask_split_per_month(
+        directory: str,
+        zarr_path: str,
+        region: str,
+        temp_directory: str = "/mnt/ramdisk/",
+        spatial_chunk_size: int = 256,
+        temporal_chunk_size: int = 1,
+        ):
+    """
+    Splits the Zarr creation into multiple, month-long Zarr files for parallel writing
+
+    Args:
+        directory: Top-level directory containing the compressed native files
+        zarr_path: Path of the final Zarr file
+        region: Name of the region to keep for the datastore
+        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
+
+    """
+
+    # Get year
+    temp_directory = Path(temp_directory)
+    year_directories = os.listdir(directory)
+    print(year_directories)
+    dirs = []
+    zarrs = []
+    for year in year_directories:
+        if not os.path.isdir(os.path.join(directory, year)):
+            continue
+        month_directories = os.listdir(os.path.join(directory, year))
+        for month in month_directories:
+            if not os.path.isdir(os.path.join(directory, year, month)):
+                continue
+            month_directory = os.path.join(directory, year.split("/")[0], month.split("/")[0])
+            month_zarr_path = zarr_path + f"_{year.split('/')[0]}_{month.split('/')[0]}.zarr"
+            dirs.append(month_directory)
+            zarrs.append(month_zarr_path)
+            zarr_exists = os.path.exists(month_zarr_path)
+            if not zarr_exists:
+                # Inital zarr path before then appending
+                compressed_native_files = list(Path(month_directory).rglob("*.grb"))
+                dataset, hrv_dataset = load_native_to_dataset(
+                    compressed_native_files[0], temp_directory, region
+                    )
+                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
+    print(dirs)
+    print(zarrs)
+    pool = multiprocessing.Pool(processes=16)
+    for _ in tqdm(
+            pool.imap_unordered(
+                cloudmask_wrapper,
+                zip(
+                    dirs,
+                    zarrs,
+                    repeat(temp_directory),
+                    repeat(region),
+                    repeat(spatial_chunk_size),
+                    repeat(temporal_chunk_size),
+                    ),
+                )
+            ):
+        print("Month done")
+
+
+def cloudmask_wrapper(args):
+    dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size = args
+    create_or_update_zarr_with_cloud_mask_files(
+        dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
+        )
+
 def create_or_update_zarr_with_cloud_mask_files(
     directory: str,
     zarr_path: str,
@@ -140,7 +210,7 @@ def create_or_update_zarr_with_cloud_mask_files(
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=11,
+                        channel_chunk_size=1,
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
