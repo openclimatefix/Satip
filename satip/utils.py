@@ -197,14 +197,15 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     dataset = dataset.drop_vars("acq_time", errors="ignore")
     for i in range(len(osgb_y[0])):
         y_coords = osgb_y[:, i]
-        # Want to find the first one where there are coordinates for all pixels
-        if len(osgb_y) == len(y_coords[~np.isinf(y_coords)]):
+        if len(y_coords) == len(y_coords[~np.isinf(y_coords)]):
             osgb_y = y_coords
+            print(i)
             break
+
     for i in range(len(osgb_x)):
         x_coords = osgb_x[i, :]
         # Want to find the first one where there are coordinates for all pixels
-        if len(osgb_x) == len(x_coords[~np.isinf(x_coords)]):
+        if len(x_coords) == len(x_coords[~np.isinf(x_coords)]):
             osgb_x = x_coords
             break
 
