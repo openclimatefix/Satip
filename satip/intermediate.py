@@ -63,6 +63,8 @@ def split_per_month(
             if not zarr_exists:
                 # Inital zarr path before then appending
                 compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
+                if len(compressed_native_files) == 0:
+                    continue
                 dataset, hrv_dataset = load_native_to_dataset(
                     compressed_native_files[0], temp_directory, region
                 )
@@ -242,6 +244,8 @@ def create_or_update_zarr_with_native_files(
 
     # Satpy Scene doesn't do well with fsspec
     compressed_native_files = list(Path(directory).rglob("*.bz2"))
+    if len(compressed_native_files) == 0:
+        return
     zarr_exists = os.path.exists(zarr_path)
     if zarr_exists:
         zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
