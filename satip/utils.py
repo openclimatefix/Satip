@@ -195,8 +195,19 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     dataset: xr.Dataset = scene.to_xarray_dataset()
     # Remove acq time as its not needed or helpful
     dataset = dataset.drop_vars("acq_time", errors="ignore")
-    osgb_y = osgb_y[:, 0]
-    osgb_x = osgb_x[0, :]
+    for i in range(len(osgb_y[0])):
+        y_coords = osgb_y[:, i]
+        # Want to find the first one where there are coordinates for all pixels
+        if len(osgb_y) == len(y_coords[~np.isinf(y_coords)]):
+            osgb_y = y_coords
+            break
+    for i in range(len(osgb_x)):
+        x_coords = osgb_x[i, :]
+        # Want to find the first one where there are coordinates for all pixels
+        if len(osgb_x) == len(x_coords[~np.isinf(x_coords)]):
+            osgb_x = x_coords
+            break
+
     dataset = dataset.assign_coords(x=osgb_x, y=osgb_y)
     # Round to the nearest 5 minutes
     dataset.attrs["end_time"] = pd.Timestamp(dataset.attrs["end_time"]).round("5 min")
@@ -209,12 +220,6 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
 
     del dataarray["crs"]
-
-    # Fill NaN's but only if its a short amount of NaNs
-    # NaN's for off-disk would not be filled
-    dataarray = dataarray.interpolate_na(
-        dim="x_osgb", max_gap=2, use_coordinate=False
-    ).interpolate_na(dim="y_osgb", max_gap=2)
 
     return dataarray
 
