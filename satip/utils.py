@@ -199,7 +199,6 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
         y_coords = osgb_y[:, i]
         if len(y_coords) == len(y_coords[~np.isinf(y_coords)]):
             osgb_y = y_coords
-            print(i)
             break
 
     for i in range(len(osgb_x)):
