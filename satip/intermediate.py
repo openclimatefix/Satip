@@ -136,7 +136,7 @@ def cloudmask_split_per_month(
             if not zarr_exists:
                 # Inital zarr path before then appending
                 compressed_native_files = list(Path(month_directory).rglob("*.grb"))
-                dataset, hrv_dataset = load_native_to_dataset(
+                dataset, hrv_dataset = load_cloudmask_to_dataset(
                     compressed_native_files[0], temp_directory, region
                     )
                 save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
