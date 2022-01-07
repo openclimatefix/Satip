@@ -249,9 +249,9 @@ def save_dataset_to_zarr(
 
     _, x_size, y_size, _ = dataarray.shape
     # If less than 2 chunks worth, just save the whole spatial extant
-    if y_size_per_chunk < y_size // 2:
+    if y_size_per_chunk > y_size // 2:
         y_size_per_chunk = y_size
-    if x_size_per_chunk < x_size // 2:
+    if x_size_per_chunk > x_size // 2:
         x_size_per_chunk = x_size
 
     # Number of timesteps, x and y size per chunk, and channels (all 12)
