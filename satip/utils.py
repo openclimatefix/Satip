@@ -188,7 +188,8 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
-    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
+    if area != "RSS":
+        scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
