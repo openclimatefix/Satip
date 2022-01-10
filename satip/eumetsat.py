@@ -355,7 +355,7 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     """Takes a file from the EUMETSAT API and returns
     the date and time part of the filename"""
 
-    p = re.compile("^MSG[23]-SEVI-MSG15-0100-NA-(\d*)\.")
+    p = re.compile("^MSG[123]-SEVI-MSG15-0100-NA-(\d*)\.")
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
