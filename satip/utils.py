@@ -170,7 +170,6 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    compressor = Compressor(variable_order=["cloud_mask"], maxs=np.array([3]), mins=np.array([0]))
     scene = Scene(filenames={"seviri_l2_grib": [filename]})
     scene.load(
         [
@@ -181,15 +180,18 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
     dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area)
 
     # Compress and return
-    dataarray = compressor.compress_mask(dataarray)
+    da_meta = dataarray.attrs
+    dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
+    dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
     # Convert 3's to NaNs as they should be No Data/Space
     dataarray = dataarray.where(dataarray["variable"] != 3)
+    dataarray = dataarray.fillna(-1)
     return dataarray
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
-    if area != "RSS":
-        scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
+    #if area != "RSS":
+    scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
