@@ -181,16 +181,17 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
     # Compress and return
     da_meta = dataarray.attrs
+    dataarray = dataarray.transpose(
+        "time", "y_osgb", "x_osgb", "variable"
+        )
     dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
     dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
     # Convert 3's to NaNs as they should be No Data/Space
     dataarray = dataarray.where(dataarray["variable"] != 3)
-    dataarray = dataarray.fillna(-1)
     return dataarray
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
-    #if area != "RSS":
     scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
