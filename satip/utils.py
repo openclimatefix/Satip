@@ -194,8 +194,6 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
     if not 'RSS':
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-        print("AFter Crop")
-        print(scene)
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
@@ -236,6 +234,7 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     dataarray = dataset.to_array()
     # Now do it here as its a bit easier on slicing
     dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
+    dataarray = dataarray.where(~dataarray.isnull(), drop=True)
     dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
