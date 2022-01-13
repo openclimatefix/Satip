@@ -72,7 +72,7 @@ def split_per_month(
                 save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
     print(dirs)
     print(zarrs)
-    pool = multiprocessing.Pool(processes=16)
+    pool = multiprocessing.Pool(processes=os.cpu_count())
     for _ in tqdm(
         pool.imap_unordered(
             wrapper,
@@ -144,7 +144,7 @@ def cloudmask_split_per_month(
                 save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
     print(dirs)
     print(zarrs)
-    pool = multiprocessing.Pool(processes=16)
+    pool = multiprocessing.Pool(processes=os.cpu_count())
     for _ in tqdm(
             pool.imap_unordered(
                 cloudmask_wrapper,
