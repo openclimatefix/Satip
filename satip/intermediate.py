@@ -158,7 +158,8 @@ def cloudmask_split_per_month(
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
                     channel_chunk_size=1,
-                    dtype="int8"
+                    dtype="int8",
+                    zarr_mode="w",
                     )
     print(dirs)
     print(zarrs)
