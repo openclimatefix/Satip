@@ -253,6 +253,7 @@ def save_dataset_to_zarr(
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
     channel_chunk_size: int = 12,
+    dtype="int16"
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -281,7 +282,7 @@ def save_dataset_to_zarr(
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray})
+    dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray}).astype(dtype)
 
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},

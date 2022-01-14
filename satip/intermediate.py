@@ -68,8 +68,18 @@ def split_per_month(
                 dataset, hrv_dataset = load_native_to_dataset(
                     compressed_native_files[0], temp_directory, region
                 )
-                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
-                save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w",
+                                     x_size_per_chunk=spatial_chunk_size,
+                                     y_size_per_chunk=spatial_chunk_size,
+                                     timesteps_per_chunk=temporal_chunk_size,
+                                     channel_chunk_size=11,
+                                     dtype="int16")
+                save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w",
+                                     x_size_per_chunk=spatial_chunk_size,
+                                     y_size_per_chunk=spatial_chunk_size,
+                                     timesteps_per_chunk=temporal_chunk_size,
+                                     channel_chunk_size=1,
+                                     dtype="int16")
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=os.cpu_count())
@@ -141,7 +151,15 @@ def cloudmask_split_per_month(
                 dataset = load_cloudmask_to_dataset(
                     compressed_native_files[0], temp_directory, region
                     )
-                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w")
+                save_dataset_to_zarr(
+                    dataset,
+                    zarr_path=zarr_path,
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=1,
+                    dtype="int8"
+                    )
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=os.cpu_count())
@@ -213,6 +231,7 @@ def create_or_update_zarr_with_cloud_mask_files(
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
                         channel_chunk_size=1,
+                        dtype="int8"
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
