@@ -153,7 +153,7 @@ def cloudmask_split_per_month(
                     )
                 save_dataset_to_zarr(
                     dataset,
-                    zarr_path=zarr_path,
+                    zarr_path=month_zarr_path,
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
