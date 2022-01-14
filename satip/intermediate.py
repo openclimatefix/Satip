@@ -22,7 +22,7 @@ def split_per_month(
     hrv_zarr_path: str,
     region: str,
     temp_directory: str = "/mnt/ramdisk/",
-    spatial_chunk_size: int = 256,
+    spatial_chunk_size: int = 512,
     temporal_chunk_size: int = 1,
 ):
     """
@@ -112,7 +112,7 @@ def cloudmask_split_per_month(
         zarr_path: str,
         region: str,
         temp_directory: str = "/mnt/ramdisk/",
-        spatial_chunk_size: int = 256,
+        spatial_chunk_size: int = 512,
         temporal_chunk_size: int = 1,
         ):
     """
