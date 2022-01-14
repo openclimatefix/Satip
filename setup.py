@@ -9,7 +9,7 @@ install_requires = (this_directory / "requirements.txt").read_text().splitlines(
 
 setup(
     name="satip",
-    version="2.2.19",
+    version="2.2.20",
     license="MIT",
     description="Satip provides the functionality necessary for retrieving, and storing EUMETSAT data",
     author="Jacob Bieker, Ayrton Bourn",
