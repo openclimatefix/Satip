@@ -11,6 +11,7 @@ import pandas as pd
 import xarray as xr
 import zarr
 from satpy import Scene
+import numcodecs
 
 from satip.compression import Compressor, is_dataset_clean
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
@@ -289,7 +290,7 @@ def save_dataset_to_zarr(
         "w": {
             "encoding": {
                 "stacked_eumetsat_data": {
-                    "compressor": zarr.Blosc(cname="bz2", clevel=5),
+                    "compressor": numcodecs.get_codec(dict(id='bz2', level=5)),
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},
