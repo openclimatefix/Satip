@@ -289,7 +289,7 @@ def save_dataset_to_zarr(
         "w": {
             "encoding": {
                 "stacked_eumetsat_data": {
-                    "compressor": zarr.Blosc(cname="zstd", clevel=5),
+                    "compressor": zarr.Blosc(cname="bz2", clevel=5),
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},
