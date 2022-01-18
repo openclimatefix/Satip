@@ -62,7 +62,7 @@ def split_per_month(
             zarr_exists = os.path.exists(month_zarr_path)
             if not zarr_exists:
                 # Inital zarr path before then appending
-                compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
+                compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
                     continue
                 dataset, hrv_dataset = load_native_to_dataset(
@@ -205,7 +205,7 @@ def create_or_update_zarr_with_cloud_mask_files(
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
     """
     # Satpy Scene doesn't do well with fsspec
-    grib_files = list(Path(directory).rglob("*.grb"))
+    grib_files = sorted(list(Path(directory).rglob("*.grb")))
     zarr_exists = os.path.exists(zarr_path)
     if zarr_exists:
         zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
@@ -263,7 +263,7 @@ def create_or_update_zarr_with_native_files(
     """
 
     # Satpy Scene doesn't do well with fsspec
-    compressed_native_files = list(Path(directory).rglob("*.bz2"))
+    compressed_native_files = sorted(list(Path(directory).rglob("*.bz2")))
     if len(compressed_native_files) == 0:
         return
     zarr_exists = os.path.exists(zarr_path)

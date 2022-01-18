@@ -193,14 +193,20 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
-    if not 'RSS':
+    if area != 'RSS':
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
+    # Remove acq time from all bands
+    for channel in scene.wishlist:
+        scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
+
     dataset: xr.Dataset = scene.to_xarray_dataset()
-    # Remove acq time as its not needed or helpful
-    dataset = dataset.drop_vars("acq_time", errors="ignore")
+
+    # Drop all Null values
+    dataarray = dataset.to_array()
+
     best_coords = osgb_y[:, 0]
     for i in range(len(osgb_y[0])):
         y_coords = osgb_y[:, i]
@@ -227,15 +233,15 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     x_mask = ~np.isinf(osgb_x)
     x_locs = np.where(x_mask == True)
 
-    dataset = dataset.assign_coords(x=osgb_x, y=osgb_y)
+    dataarray = dataarray.assign_coords(x=osgb_x, y=osgb_y)
     # Round to the nearest 5 minutes
-    dataset.attrs["end_time"] = pd.Timestamp(dataset.attrs["end_time"]).round("5 min")
+    dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
     # Stack DataArrays in the Dataset into a single DataArray
-    dataarray = dataset.to_array()
+    #dataarray = dataset.to_array()
     # Now do it here as its a bit easier on slicing
-    dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
-    dataarray = dataarray.where(~dataarray.isnull(), drop=True)
+    #dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
+    #dataarray = dataarray.where(~dataarray.isnull(), drop=True)
     dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
