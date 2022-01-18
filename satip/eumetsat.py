@@ -1,14 +1,13 @@
 import copy
 import datetime
+import json
 import os
 import re
+import time
 import urllib
 import zipfile
 from io import BytesIO
 from typing import List, Union
-import json
-import time
-
 
 import pandas as pd
 import requests
@@ -97,6 +96,7 @@ def request_access_token(user_key, user_secret):
     access_token = r.json()["access_token"]
 
     return access_token
+
 
 format_dt_str = lambda dt: pd.to_datetime(dt).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -389,19 +389,26 @@ class DownloadManager:
                 )
                 self.download_single_dataset(dataset_link)
 
-    def download_tailored_datasets(self, datasets, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", roi: str = 'united_kingdom', file_format: str = 'geotiff', projection: str ='geographic'):
+    def download_tailored_datasets(
+        self,
+        datasets,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = "united_kingdom",
+        file_format: str = "geotiff",
+        projection: str = "geographic",
+    ):
         """
-       Query the data tailor service and return the requested ROI data
+        Query the data tailor service and return the requested ROI data
 
-       Args:
-           product_id: Product ID for the DAta Store, defaults to RSS ID
-           roi: Region of Interest, None if want the whole original area
-           file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
-           projection: Projection of the returned data, defaults to 'geographic'
+        Args:
+            product_id: Product ID for the DAta Store, defaults to RSS ID
+            roi: Region of Interest, None if want the whole original area
+            file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
+            projection: Projection of the returned data, defaults to 'geographic'
 
-       Returns:
-           The requested data, transformed as requested
-       """
+        Returns:
+            The requested data, transformed as requested
+        """
 
         # Identifying dataset ids to download
         dataset_ids = sorted([dataset["id"] for dataset in datasets])
@@ -414,13 +421,32 @@ class DownloadManager:
         for dataset_id in dataset_ids:
             # Download the raw data
             try:
-                self._download_single_tailored_dataset(dataset_id, product_id = product_id, roi=roi, file_format = file_format, projection = projection)
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
             except:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
-                self._download_single_tailored_dataset(dataset_id, product_id = product_id, roi=roi, file_format = file_format, projection = projection)
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
 
-    def _download_single_tailored_dataset(self, dataset_id, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", roi: str = 'united_kingdom', file_format: str = 'geotiff', projection: str ='geographic'):
+    def _download_single_tailored_dataset(
+        self,
+        dataset_id,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = "united_kingdom",
+        file_format: str = "geotiff",
+        projection: str = "geographic",
+    ):
         """
         Download a single tailored dataset
 
@@ -452,23 +478,21 @@ class DownloadManager:
             "product": tailor_id,
             "format": file_format,
             "projection": projection,
-            }
+        }
         if roi is not None:
-            chain_config['roi'] = roi
-        dataset_link = dataset_id_to_link(
-            product_id, dataset_id, access_token=self.access_token
-            )
+            chain_config["roi"] = roi
+        dataset_link = dataset_id_to_link(product_id, dataset_id, access_token=self.access_token)
         parameters = {
             "product_paths": dataset_link,
             "chain_config": json.dumps(chain_config),
             "access_token": self.access_token,
-            }
+        }
 
         response = requests.post(
             service_customisations,
             params=parameters,
             headers={"Authorization": "Bearer {}".format(self.access_token)},
-            )
+        )
         jobID = response.json()["data"][0]
 
         status = "RUNNING"
@@ -476,7 +500,9 @@ class DownloadManager:
 
         while status == "RUNNING":
             url = service_customisations + "/" + jobID
-            response = requests.get(url, headers={"Authorization": "Bearer {}".format(self.access_token)})
+            response = requests.get(
+                url, headers={"Authorization": "Bearer {}".format(self.access_token)}
+            )
             status = response.json()[jobID]["status"]
             self.logger.info("Status: " + status)
             if "DONE" in status:
@@ -493,16 +519,21 @@ class DownloadManager:
 
         if status == "DONE":
             url = service_customisations + "/" + jobID
-            response = requests.get(url, headers={"Authorization": "Bearer {}".format(self.access_token)})
+            response = requests.get(
+                url, headers={"Authorization": "Bearer {}".format(self.access_token)}
+            )
             results = response.json()[jobID]["output_products"]
 
             url = service_DT_download + "?path="
             for result in results:
                 self.logger.info("Downloading: " + result)
                 response = requests.get(
-                    url + os.path.basename(result), headers={"Authorization": "Bearer {}".format(self.access_token)}
-                    )
-                open(os.path.join(self.data_dir, os.path.basename(result)), "wb").write(response.content)
+                    url + os.path.basename(result),
+                    headers={"Authorization": "Bearer {}".format(self.access_token)},
+                )
+                open(os.path.join(self.data_dir, os.path.basename(result)), "wb").write(
+                    response.content
+                )
 
 
 def get_dir_size(directory="."):
