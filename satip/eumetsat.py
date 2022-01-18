@@ -6,28 +6,16 @@ import urllib
 import zipfile
 from io import BytesIO
 from typing import List, Union
+import json
+import time
 
-import numpy as np
+
 import pandas as pd
-import rasterio
 import requests
-from PIL import Image
-from rasterio.plot import show
 from requests.auth import HTTPBasicAuth
 
 from satip import utils
 
-im = rasterio.open(
-    "/home/jacob/Development/Satip/satip/HRSEVIRI_RSS_20210430T090400Z_20210430T090400Z_epct_079a4e74_PCQ.tif"
-)
-show(im)
-im.read()
-print(im.count)
-print(im.height)
-print(im.width)
-im = np.array(im)
-print(im.shape)
-exit()
 API_ENDPOINT = "https://api.eumetsat.int"
 
 # Data Store searching endpoint
@@ -110,192 +98,6 @@ def request_access_token(user_key, user_secret):
 
     return access_token
 
-
-access_token = request_access_token("SWdEnLvOlVTVGli1An1nKJ3NcV0a", "gUQe0ej7H_MqQVGF4cd7wfQWcawa")
-
-SEVIRI = "HRSEVIRI"
-RSS_ID = "HRSEVIRI_RSS"
-AMV_ID = "MSGAMVE"
-CLAP_ID = "MSGCLAP"
-CLM_ID = "MSGCLMK"
-OPT_CLOUD_ID = "MSGOCAE"
-MULTI_SENSOR_RAIN = "MSGMPEG"
-import json
-
-# get available chain configs
-
-# Define our start and end dates for temporal subsetting
-start_date = datetime.datetime(2021, 4, 30, 9, 0)
-end_date = datetime.datetime(2021, 4, 30, 9, 5)
-
-# Format our paramters for searching
-dataset_parameters = {"format": "json", "pi": "EO:EUM:DAT:MSG:MSG15-RSS"}
-dataset_parameters["dtstart"] = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-dataset_parameters["dtend"] = end_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-# Retrieve datasets that match our filter
-url = service_search
-response = requests.get(url, dataset_parameters)
-found_data_sets = response.json()
-total_data_sets = found_data_sets["properties"]["totalResults"]
-
-download_urls = []
-if found_data_sets:
-    for selected_data_set in found_data_sets["features"]:
-        product_id = selected_data_set["properties"]["identifier"]
-        download_url = service_download + "/collections/{}/products/{}".format(
-            urllib.parse.quote("EO:EUM:DAT:MSG:MSG15-RSS"), urllib.parse.quote(product_id)
-        )
-        download_urls.append(download_url)
-else:
-    print("No data sets found")
-
-for download_url in download_urls:
-    print(download_url)
-
-response = requests.get(
-    service_formats, headers={"Authorization": "Bearer {}".format(access_token)}
-)
-
-for collection in response.json()["data"]:
-    print(collection["id"].ljust(20) + "\t " + collection["name"])
-
-response = requests.get(
-    service_products, headers={"Authorization": "Bearer {}".format(access_token)}
-)
-
-for collection in response.json()["data"]:
-    print(collection["id"].ljust(20) + "\t " + collection["name"])
-    if "HRSEVIRI" in collection["id"] and "_" not in collection["id"]:
-        productID = collection["id"]
-
-productID = RSS_ID
-
-parameters = {"product": productID}
-url = build_url_string(service_chains, parameters)
-
-response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-
-count = 0
-for chain in response.json()["data"]:
-    count = count + 1
-    print("Config (" + str(count) + "):")
-    print(json.dumps(chain))
-    print("\n")
-
-
-parameters = {"product": productID}
-url = build_url_string(service_filters, parameters)
-response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-found_filters = response.json()
-
-print(str(found_filters["total"]) + " filter(s) available for " + productID + " products :")
-
-for collection in response.json()["data"]:
-    print(collection["id"].ljust(20) + "\t " + collection["name"])
-
-count = 0
-for chain in response.json()["data"]:
-    count = count + 1
-    print("Config (" + str(count) + "):")
-    print(json.dumps(chain))
-    print("\n")
-
-chain_config = {
-    "product": RSS_ID,
-    "format": "netcdf4",
-    "projection": "geographic",
-    "roi": "united_kingdom",
-    "quicklook": {
-        "format": "png_rgb",
-        "filter": "hrseviri_rss_natural_color",
-        "stretch_method": "min_max",
-        "x_size": 500,
-    },
-}
-print(chain_config)
-
-roi = "united_kingdom"
-chain_config["roi"] = roi
-formats = "geotiff"
-chain_config["format"] = "geotiff"
-
-parameters = {
-    "product_paths": download_urls[0],
-    "chain_config": json.dumps(chain_config),
-    "access_token": access_token,
-}
-
-response = requests.post(
-    service_customisations,
-    params=parameters,
-    headers={"Authorization": "Bearer {}".format(access_token)},
-)
-print(response)
-jobID = response.json()["data"][0]
-
-status = "RUNNING"
-sleep_time = 10  # seconds
-import time
-
-while status == "RUNNING":
-    print(status)
-    access_token = request_access_token(
-        "SWdEnLvOlVTVGli1An1nKJ3NcV0a", "gUQe0ej7H_MqQVGF4cd7wfQWcawa"
-    )
-
-    url = service_customisations + "/" + jobID
-    response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-    status = response.json()[jobID]["status"]
-    print("Status: " + status)
-    if "DONE" in status:
-        break
-    elif "ERROR" in status or "KILLED" in status:
-        print("Job unsuccessful, exiting")
-        break
-    elif "QUEUED" in status:
-        status = "RUNNING"
-    elif "INACTIVE" in status:
-        print("Job inactive; doubling status polling time (max 10 mins)")
-        sleep_time = max(60 * 10, sleep_time * 2)
-    time.sleep(sleep_time)
-
-if status == "DONE":
-    access_token = request_access_token(
-        "SWdEnLvOlVTVGli1An1nKJ3NcV0a", "gUQe0ej7H_MqQVGF4cd7wfQWcawa"
-    )
-
-    url = service_customisations + "/" + jobID
-    response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-    results = response.json()[jobID]["output_products"]
-    for result in results:
-        print(result)
-
-url = service_DT_download + "?path="
-for result in results:
-    print("Downloading: " + result)
-    response = requests.get(
-        url + os.path.basename(result), headers={"Authorization": "Bearer {}".format(access_token)}
-    )
-    open(os.path.join(os.getcwd(), os.path.basename(result)), "wb").write(response.content)
-    # display images only if image available in the output products (ie no compression)
-    if "zip" not in result and "aux" not in result:
-        if "png" in result or "jpg" in result:
-            img_output = result
-print("Done!")
-
-import imageio
-
-if os.path.exists(os.path.join(os.getcwd(), img_output)):
-    import matplotlib.pyplot as plt
-
-    im = imageio.read(os.path.join(os.getcwd(), img_output))
-    plt.imshow(im)
-    plt.show()
-
-
-exit()
-
 format_dt_str = lambda dt: pd.to_datetime(dt).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
@@ -342,47 +144,6 @@ def query_data_products(
     assert r.ok, f"Request was unsuccesful: {r.status_code} - {r.text}"
 
     return r
-
-
-def query_data_tailor(access_token):
-    RSS_ID = "HRSEVIRI_RSS"
-    AMV_ID = "MSGAMVE"
-    CLAP_ID = "MSGCLAP"
-    CLM_ID = "MSGCLMK"
-    OPT_CLOUD_ID = "MSGOCAE"
-    MULTI_SENSOR_RAIN = "MSGMPEG"
-    import json
-
-    # get available chain configs
-
-    parameters = {"product": RSS_ID}
-    url = build_url_string(service_chains, parameters)
-
-    response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-
-    parameters = {"product": RSS_ID}
-    url = build_url_string(service_filters, parameters)
-    response = requests.get(url, headers={"Authorization": "Bearer {}".format(access_token)})
-    found_filters = response.json()
-
-    print(str(found_filters["total"]) + " filter(s) available for " + RSS_ID + " products :")
-
-    for collection in response.json()["data"]:
-        print(collection["id"].ljust(20) + "\t " + collection["name"])
-
-    count = 0
-    for chain in response.json()["data"]:
-        count = count + 1
-        print("Config (" + str(count) + "):")
-        print(json.dumps(chain))
-        print("\n")
-        if chain["name"] == "Projection Plate-Carree with quick-look":
-            chain_config = chain
-
-    roi = "united_kingdom"
-    chain_config["roi"] = roi
-    formats = "geotiff"
-    chain_config["format"] = "netcdf4"
 
 
 def identify_available_datasets(
@@ -595,7 +356,7 @@ class DownloadManager:
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
         self.download_datasets(datasets, product_id=product_id)
 
-    def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS", download_all=True):
+    def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS"):
         """
         Downloads a set of dataset from the EUMETSAT API
         in the defined date range and specified product
@@ -627,6 +388,121 @@ class DownloadManager:
                     product_id, dataset_id, access_token=self.access_token
                 )
                 self.download_single_dataset(dataset_link)
+
+    def download_tailored_datasets(self, datasets, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", roi: str = 'united_kingdom', file_format: str = 'geotiff', projection: str ='geographic'):
+        """
+       Query the data tailor service and return the requested ROI data
+
+       Args:
+           product_id: Product ID for the DAta Store, defaults to RSS ID
+           roi: Region of Interest, None if want the whole original area
+           file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
+           projection: Projection of the returned data, defaults to 'geographic'
+
+       Returns:
+           The requested data, transformed as requested
+       """
+
+        # Identifying dataset ids to download
+        dataset_ids = sorted([dataset["id"] for dataset in datasets])
+
+        # Downloading specified datasets
+        if not dataset_ids:
+            self.logger.info("No files will be downloaded. None were found in API search.")
+            return
+
+        for dataset_id in dataset_ids:
+            # Download the raw data
+            try:
+                self._download_single_tailored_dataset(dataset_id, product_id = product_id, roi=roi, file_format = file_format, projection = projection)
+            except:
+                self.logger.info("The EUMETSAT access token has been refreshed")
+                self.request_access_token()
+                self._download_single_tailored_dataset(dataset_id, product_id = product_id, roi=roi, file_format = file_format, projection = projection)
+
+    def _download_single_tailored_dataset(self, dataset_id, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", roi: str = 'united_kingdom', file_format: str = 'geotiff', projection: str ='geographic'):
+        """
+        Download a single tailored dataset
+
+        Args:
+            dataset_id: Dataset ID to download
+            roi: Region of Interest for the area, if None, then no cropping is done
+            file_format: File format of the output, defaults to 'geotiff'
+            projection: Projection for the output, defaults to native projection of 'geographic'
+
+        """
+
+        SEVIRI = "HRSEVIRI"
+        RSS_ID = "HRSEVIRI_RSS"
+        CLM_ID = "MSGCLMK"
+
+        if product_id == "EO:EUM:DAT:MSG:MSG15-RSS":
+            tailor_id = RSS_ID
+        elif product_id == "EO:EUM:DAT:MSG:MSG15":
+            tailor_id = SEVIRI
+        elif product_id == "EO:EUM:DAT:MSG:RSS-CLM":
+            tailor_id = CLM_ID
+        else:
+            self.logger.error(f"Product ID {product_id} not recognized, ending now")
+            return None
+
+        self.request_access_token()
+
+        chain_config = {
+            "product": tailor_id,
+            "format": file_format,
+            "projection": projection,
+            }
+        if roi is not None:
+            chain_config['roi'] = roi
+        dataset_link = dataset_id_to_link(
+            product_id, dataset_id, access_token=self.access_token
+            )
+        parameters = {
+            "product_paths": dataset_link,
+            "chain_config": json.dumps(chain_config),
+            "access_token": self.access_token,
+            }
+
+        response = requests.post(
+            service_customisations,
+            params=parameters,
+            headers={"Authorization": "Bearer {}".format(self.access_token)},
+            )
+        jobID = response.json()["data"][0]
+
+        status = "RUNNING"
+        sleep_time = 10  # seconds
+
+        while status == "RUNNING":
+            url = service_customisations + "/" + jobID
+            response = requests.get(url, headers={"Authorization": "Bearer {}".format(self.access_token)})
+            status = response.json()[jobID]["status"]
+            self.logger.info("Status: " + status)
+            if "DONE" in status:
+                break
+            elif "ERROR" in status or "KILLED" in status:
+                self.logger.info("Job unsuccessful, exiting")
+                break
+            elif "QUEUED" in status:
+                status = "RUNNING"
+            elif "INACTIVE" in status:
+                self.logger.info("Job inactive; doubling status polling time (max 10 mins)")
+                sleep_time = max(60 * 10, sleep_time * 2)
+            time.sleep(sleep_time)
+
+        if status == "DONE":
+            url = service_customisations + "/" + jobID
+            response = requests.get(url, headers={"Authorization": "Bearer {}".format(self.access_token)})
+            results = response.json()[jobID]["output_products"]
+
+            url = service_DT_download + "?path="
+            for result in results:
+                self.logger.info("Downloading: " + result)
+                response = requests.get(
+                    url + os.path.basename(result), headers={"Authorization": "Bearer {}".format(self.access_token)}
+                    )
+                open(os.path.join(self.data_dir, os.path.basename(result)), "wb").write(response.content)
 
 
 def get_dir_size(directory="."):
