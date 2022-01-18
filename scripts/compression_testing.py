@@ -1,26 +1,25 @@
-from satpy import Scene, MultiScene
 from glob import glob
-from satpy.multiscene import timeseries
-from satip.compression import Compressor, is_dataset_clean
+
+import numcodecs
 import numpy as np
-from imagecodecs.numcodecs import register_codecs
 import xarray as xr
 import zarr
-import numcodecs
+from imagecodecs.numcodecs import register_codecs
+from satpy import MultiScene, Scene
+from satpy.multiscene import timeseries
+
+from satip.compression import Compressor, is_dataset_clean
 from satip.utils import convert_scene_to_dataarray
 
 register_codecs()
 
-from numcodecs.abc import Codec
-from numcodecs.compat import \
-    ensure_bytes, \
-    ensure_contiguous_ndarray, \
-    ndarray_copy
-from numcodecs.registry import register_codec
 import imagecodecs
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
+from numcodecs.abc import Codec
+from numcodecs.compat import ensure_bytes, ensure_contiguous_ndarray, ndarray_copy
+from numcodecs.registry import register_codec
+
 """
 cloudmask_original = xr.open_zarr("/run/media/jacob/data/cloudmask_zarr_2017_07.zarr/cloudmask_zarr_2017_07.zarr", consolidated = True)
 
@@ -91,8 +90,7 @@ class jpeg2k(Codec):
 
     def __init__(self, level=50):
         self.level = level
-        assert (self.level > 0 and self.level <= 100
-                and isinstance(self.level, int))
+        assert self.level > 0 and self.level <= 100 and isinstance(self.level, int)
         super().__init__()
 
     def encode(self, buf):
@@ -111,6 +109,7 @@ class jpeg2k(Codec):
 
 register_codec(jpeg2k)
 
+
 class avif(Codec):
     """Codec providing jpeg2k compression via imagecodecs.
     Parameters
@@ -125,8 +124,7 @@ class avif(Codec):
 
     def __init__(self, level=50):
         self.level = level
-        assert (self.level > 0 and self.level <= 100
-                and isinstance(self.level, int))
+        assert self.level > 0 and self.level <= 100 and isinstance(self.level, int)
         super().__init__()
 
     def encode(self, buf):
@@ -151,25 +149,29 @@ print(filenames)
 # Load multiple timesteps
 compressor = Compressor(
     variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
-    )
+)
 scenes = []
 for f in filenames:
     scene = Scene(filenames={"seviri_l1b_native": [f]})
-    scene.load(["HRV",])
+    scene.load(
+        [
+            "HRV",
+        ]
+    )
     scene["HRV"] = scene["HRV"].drop_vars("acq_time", errors="ignore")
-    dataarray = convert_scene_to_dataarray(scene, 'HRV', 'RSS')
+    dataarray = convert_scene_to_dataarray(scene, "HRV", "RSS")
     dataarray = compressor.compress(dataarray)
     scenes.append(dataarray)
 
-#scene = MultiScene(scenes)
-#scene.load(["HRV"])
-#blended_scene = scene.blend(blend_function=timeseries)
+# scene = MultiScene(scenes)
+# scene.load(["HRV"])
+# blended_scene = scene.blend(blend_function=timeseries)
 
 print(scenes[0])
 dataarray = scenes[0]
 for scene in scenes[1:]:
     try:
-        dataarray = xr.concat([dataarray, scene], dim='time')
+        dataarray = xr.concat([dataarray, scene], dim="time")
     except Exception as e:
         print(e)
 print(dataarray)
@@ -183,7 +185,7 @@ chunks = (
     256,
     256,
     1,
-    )
+)
 dataarray = dataarray.chunk(chunks)
 dataarray = dataarray.fillna(-1)  # Fill NaN with 65535 for uint16, even if none should exist
 
@@ -200,39 +202,48 @@ zarr_mode_to_extra_kwargs = {
             "stacked_eumetsat_data": {
                 "compressor": zarr.Blosc(cname="zstd", clevel=5),
                 "chunks": chunks,
-                },
+            },
             "time": {"units": "nanoseconds since 1970-01-01"},
-            }
-        },
-    }
+        }
+    },
+}
 
 extra_kwargs = zarr_mode_to_extra_kwargs["w"]
 
 import zfpy
+
 zarr_path = "/run/media/jacob/data/hrv.zarr"
-extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id='bz2', level=5))
+extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(
+    dict(id="bz2", level=5)
+)
 dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
 exit()
 zarr_path = "/run/media/jacob/data/bz2_7_int.zarr"
-extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id='bz2', level=7))
+extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(
+    dict(id="bz2", level=7)
+)
 dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
 zarr_path = "/run/media/jacob/data/bz2_9_int.zarr"
-extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id='bz2', level=9))
+extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(
+    dict(id="bz2", level=9)
+)
 dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
 exit()
-#zarr_path = "/run/timeshift/backup/default.zarr"
-#dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
+# zarr_path = "/run/timeshift/backup/default.zarr"
+# dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
 
 # Compression 2
 zarr_path = "/run/timeshift/backup/jpeg2k.zarr"
-extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id="jpeg2k", level=100))
+extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(
+    dict(id="jpeg2k", level=100)
+)
 dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
 
-zarr_check = xr.open_zarr(zarr_path, consolidated = True)
+zarr_check = xr.open_zarr(zarr_path, consolidated=True)
 print(zarr_check)
 print(dataarray.equals(zarr_check))
 exit()
 print(numcodecs.get_codec(dict(id="imagecodecs_png", level=100)))
-#zarr_path = "/run/timeshift/backup/png.zarr"
-#extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id="imagecodecs_png", level=100))
-#dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)
+# zarr_path = "/run/timeshift/backup/png.zarr"
+# extra_kwargs["encoding"]["stacked_eumetsat_data"]["compressor"] = numcodecs.get_codec(dict(id="imagecodecs_png", level=100))
+# dataarray.to_zarr(zarr_path, mode="w", consolidated=True, compute=True, **extra_kwargs)

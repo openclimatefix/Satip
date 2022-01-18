@@ -6,12 +6,12 @@ import warnings
 from pathlib import Path
 from typing import Any, Tuple, Union
 
+import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
 import zarr
 from satpy import Scene
-import numcodecs
 
 from satip.compression import Compressor, is_dataset_clean
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
@@ -182,9 +182,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
     # Compress and return
     da_meta = dataarray.attrs
-    dataarray = dataarray.transpose(
-        "time", "y_osgb", "x_osgb", "variable"
-        )
+    dataarray = dataarray.transpose("time", "y_osgb", "x_osgb", "variable")
     dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
     dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
     # Convert 3's to NaNs as they should be No Data/Space
@@ -193,7 +191,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
-    if area != 'RSS':
+    if area != "RSS":
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
@@ -238,10 +236,10 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
     # Stack DataArrays in the Dataset into a single DataArray
-    #dataarray = dataset.to_array()
+    # dataarray = dataset.to_array()
     # Now do it here as its a bit easier on slicing
-    #dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
-    #dataarray = dataarray.where(~dataarray.isnull(), drop=True)
+    # dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
+    # dataarray = dataarray.where(~dataarray.isnull(), drop=True)
     dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
@@ -260,7 +258,7 @@ def save_dataset_to_zarr(
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
     channel_chunk_size: int = 12,
-    dtype="int16"
+    dtype="int16",
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -296,7 +294,7 @@ def save_dataset_to_zarr(
         "w": {
             "encoding": {
                 "stacked_eumetsat_data": {
-                    "compressor": numcodecs.get_codec(dict(id='bz2', level=5)),
+                    "compressor": numcodecs.get_codec(dict(id="bz2", level=5)),
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},
