@@ -62,24 +62,32 @@ def split_per_month(
             zarr_exists = os.path.exists(month_zarr_path)
             if not zarr_exists:
                 # Inital zarr path before then appending
-                compressed_native_files = list(Path(month_directory).rglob("*.bz2"))
+                compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
                     continue
                 dataset, hrv_dataset = load_native_to_dataset(
                     compressed_native_files[0], temp_directory, region
                 )
-                save_dataset_to_zarr(dataset, zarr_path=month_zarr_path, zarr_mode="w",
-                                     x_size_per_chunk=spatial_chunk_size,
-                                     y_size_per_chunk=spatial_chunk_size,
-                                     timesteps_per_chunk=temporal_chunk_size,
-                                     channel_chunk_size=11,
-                                     dtype="int16")
-                save_dataset_to_zarr(hrv_dataset, zarr_path=hrv_month_zarr_path, zarr_mode="w",
-                                     x_size_per_chunk=spatial_chunk_size,
-                                     y_size_per_chunk=spatial_chunk_size,
-                                     timesteps_per_chunk=temporal_chunk_size,
-                                     channel_chunk_size=1,
-                                     dtype="int16")
+                save_dataset_to_zarr(
+                    dataset,
+                    zarr_path=month_zarr_path,
+                    zarr_mode="w",
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=11,
+                    dtype="int16",
+                )
+                save_dataset_to_zarr(
+                    hrv_dataset,
+                    zarr_path=hrv_month_zarr_path,
+                    zarr_mode="w",
+                    x_size_per_chunk=spatial_chunk_size,
+                    y_size_per_chunk=spatial_chunk_size,
+                    timesteps_per_chunk=temporal_chunk_size,
+                    channel_chunk_size=1,
+                    dtype="int16",
+                )
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=os.cpu_count())
@@ -108,13 +116,13 @@ def wrapper(args):
 
 
 def cloudmask_split_per_month(
-        directory: str,
-        zarr_path: str,
-        region: str,
-        temp_directory: str = "/mnt/ramdisk/",
-        spatial_chunk_size: int = 512,
-        temporal_chunk_size: int = 1,
-        ):
+    directory: str,
+    zarr_path: str,
+    region: str,
+    temp_directory: str = "/mnt/ramdisk/",
+    spatial_chunk_size: int = 512,
+    temporal_chunk_size: int = 1,
+):
     """
     Splits the Zarr creation into multiple, month-long Zarr files for parallel writing
 
@@ -150,7 +158,7 @@ def cloudmask_split_per_month(
                 compressed_native_files = list(Path(month_directory).rglob("*.grb"))
                 dataset = load_cloudmask_to_dataset(
                     compressed_native_files[0], temp_directory, region
-                    )
+                )
                 save_dataset_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
@@ -160,23 +168,23 @@ def cloudmask_split_per_month(
                     channel_chunk_size=1,
                     dtype="int8",
                     zarr_mode="w",
-                    )
+                )
     print(dirs)
     print(zarrs)
     pool = multiprocessing.Pool(processes=os.cpu_count())
     for _ in tqdm(
-            pool.imap_unordered(
-                cloudmask_wrapper,
-                zip(
-                    dirs,
-                    zarrs,
-                    repeat(temp_directory),
-                    repeat(region),
-                    repeat(spatial_chunk_size),
-                    repeat(temporal_chunk_size),
-                    ),
-                )
-            ):
+        pool.imap_unordered(
+            cloudmask_wrapper,
+            zip(
+                dirs,
+                zarrs,
+                repeat(temp_directory),
+                repeat(region),
+                repeat(spatial_chunk_size),
+                repeat(temporal_chunk_size),
+            ),
+        )
+    ):
         print("Month done")
 
 
@@ -184,7 +192,8 @@ def cloudmask_wrapper(args):
     dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size = args
     create_or_update_zarr_with_cloud_mask_files(
         dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
-        )
+    )
+
 
 def create_or_update_zarr_with_cloud_mask_files(
     directory: str,
@@ -205,7 +214,7 @@ def create_or_update_zarr_with_cloud_mask_files(
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
     """
     # Satpy Scene doesn't do well with fsspec
-    grib_files = list(Path(directory).rglob("*.grb"))
+    grib_files = sorted(list(Path(directory).rglob("*.grb")))
     zarr_exists = os.path.exists(zarr_path)
     if zarr_exists:
         zarr_dataset = xr.open_zarr(zarr_path, consolidated=True)
@@ -232,7 +241,7 @@ def create_or_update_zarr_with_cloud_mask_files(
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
                         channel_chunk_size=1,
-                        dtype="int8"
+                        dtype="int8",
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
@@ -263,7 +272,7 @@ def create_or_update_zarr_with_native_files(
     """
 
     # Satpy Scene doesn't do well with fsspec
-    compressed_native_files = list(Path(directory).rglob("*.bz2"))
+    compressed_native_files = sorted(list(Path(directory).rglob("*.bz2")))
     if len(compressed_native_files) == 0:
         return
     zarr_exists = os.path.exists(zarr_path)

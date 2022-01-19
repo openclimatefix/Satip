@@ -1,7 +1,9 @@
 import copy
 import datetime
+import json
 import os
 import re
+import time
 import urllib
 import zipfile
 from io import BytesIO
@@ -12,6 +14,41 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 from satip import utils
+
+API_ENDPOINT = "https://api.eumetsat.int"
+
+# Data Store searching endpoint
+API_SEARCH_ENDPOINT = API_ENDPOINT + "/data/search-products/os"
+
+# Data Tailor customisations endpoint
+API_CUSTOMIZATION_ENDPOINT = API_ENDPOINT + "/epcs/customisations"
+
+# Data Tailor download endpoint
+API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
+
+
+def build_url_string(url, parameters):
+    """
+    Builds a url string from a parameters dictionary
+
+    Args:
+        url (str):         the base URL
+        parameters (dict): the query parameters
+
+    Return:
+        url (str):         the query ready URL
+    """
+    init = True
+    for key, value in parameters.items():
+        if init:
+            url = url + "?"
+            init = False
+        else:
+            url = url + "&"
+
+        url = url + key + "=" + value
+
+    return url
 
 
 def request_access_token(user_key, user_secret):
@@ -69,7 +106,7 @@ def query_data_products(
 
     """
 
-    search_url = "https://api.eumetsat.int/data/search-products/os"
+    search_url = API_ENDPOINT + "/data/search-products/os"
 
     params = {
         "format": "json",
@@ -298,7 +335,7 @@ class DownloadManager:
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
         self.download_datasets(datasets, product_id=product_id)
 
-    def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS", download_all=True):
+    def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS"):
         """
         Downloads a set of dataset from the EUMETSAT API
         in the defined date range and specified product
@@ -330,6 +367,152 @@ class DownloadManager:
                     product_id, dataset_id, access_token=self.access_token
                 )
                 self.download_single_dataset(dataset_link)
+
+    def download_tailored_datasets(
+        self,
+        datasets,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = "united_kingdom",
+        file_format: str = "geotiff",
+        projection: str = "geographic",
+    ):
+        """
+        Query the data tailor service and return the requested ROI data
+
+        Args:
+            product_id: Product ID for the DAta Store, defaults to RSS ID
+            roi: Region of Interest, None if want the whole original area
+            file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
+            projection: Projection of the returned data, defaults to 'geographic'
+
+        Returns:
+            The requested data, transformed as requested
+        """
+
+        # Identifying dataset ids to download
+        dataset_ids = sorted([dataset["id"] for dataset in datasets])
+
+        # Downloading specified datasets
+        if not dataset_ids:
+            self.logger.info("No files will be downloaded. None were found in API search.")
+            return
+
+        for dataset_id in dataset_ids:
+            # Download the raw data
+            try:
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
+            except:
+                self.logger.info("The EUMETSAT access token has been refreshed")
+                self.request_access_token()
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
+
+    def _download_single_tailored_dataset(
+        self,
+        dataset_id,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = "united_kingdom",
+        file_format: str = "geotiff",
+        projection: str = "geographic",
+    ) -> None:
+        """
+        Download a single tailored dataset
+
+        Args:
+            dataset_id: Dataset ID to download
+            roi: Region of Interest for the area, if None, then no cropping is done
+            file_format: File format of the output, defaults to 'geotiff'
+            projection: Projection for the output, defaults to native projection of 'geographic'
+
+        """
+
+        SEVIRI = "HRSEVIRI"
+        RSS_ID = "HRSEVIRI_RSS"
+        CLM_ID = "MSGCLMK"
+
+        if product_id == "EO:EUM:DAT:MSG:MSG15-RSS":
+            tailor_id = RSS_ID
+        elif product_id == "EO:EUM:DAT:MSG:MSG15":
+            tailor_id = SEVIRI
+        elif product_id == "EO:EUM:DAT:MSG:RSS-CLM":
+            tailor_id = CLM_ID
+        else:
+            self.logger.error(f"Product ID {product_id} not recognized, ending now")
+            return
+
+        self.request_access_token()
+
+        chain_config = {
+            "product": tailor_id,
+            "format": file_format,
+            "projection": projection,
+        }
+        if roi is not None:
+            chain_config["roi"] = roi
+        dataset_link = dataset_id_to_link(product_id, dataset_id, access_token=self.access_token)
+        parameters = {
+            "product_paths": dataset_link,
+            "chain_config": json.dumps(chain_config),
+            "access_token": self.access_token,
+        }
+
+        response = requests.post(
+            API_CUSTOMIZATION_ENDPOINT,
+            params=parameters,
+            headers={"Authorization": "Bearer {}".format(self.access_token)},
+        )
+        jobID = response.json()["data"][0]
+
+        status = "RUNNING"
+        sleep_time = 10  # seconds
+
+        while status == "RUNNING":
+            url = API_CUSTOMIZATION_ENDPOINT + "/" + jobID
+            response = requests.get(
+                url, headers={"Authorization": "Bearer {}".format(self.access_token)}
+            )
+            status = response.json()[jobID]["status"]
+            self.logger.info("Status: " + status)
+            if "DONE" in status:
+                break
+            elif "ERROR" in status or "KILLED" in status:
+                self.logger.info("Job unsuccessful, exiting")
+                break
+            elif "QUEUED" in status:
+                status = "RUNNING"
+            elif "INACTIVE" in status:
+                self.logger.info("Job inactive; doubling status polling time (max 10 mins)")
+                sleep_time = max(60 * 10, sleep_time * 2)
+            time.sleep(sleep_time)
+
+        if status == "DONE":
+            url = API_CUSTOMIZATION_ENDPOINT + "/" + jobID
+            response = requests.get(
+                url, headers={"Authorization": "Bearer {}".format(self.access_token)}
+            )
+            results = response.json()[jobID]["output_products"]
+
+            url = API_TAILORED_DOWNLOAD_ENDPOINT + "?path="
+            for result in results:
+                self.logger.info("Downloading: " + result)
+                response = requests.get(
+                    url + os.path.basename(result),
+                    headers={"Authorization": "Bearer {}".format(self.access_token)},
+                )
+                open(os.path.join(self.data_dir, os.path.basename(result)), "wb").write(
+                    response.content
+                )
 
 
 def get_dir_size(directory="."):

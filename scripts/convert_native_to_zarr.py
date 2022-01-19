@@ -30,7 +30,7 @@ from satip.intermediate import create_or_update_zarr_with_native_files, split_pe
 )
 @click.option(
     "--region",
-    default="UK",
+    default="RSS",
     prompt="The name of the geographic region to use, default 'UK', use 'RSS' for full extant ",
 )
 def create_eumetsat_zarr(*args, **kwargs):
