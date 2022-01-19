@@ -136,6 +136,9 @@ for area in ['UK', 'RSS']:
 
 
 # Then tailored cloud mask
+download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=CLOUD_ID)
+download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=RSS_ID)
+
 
 # Then tailored HRV Image
 

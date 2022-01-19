@@ -368,6 +368,23 @@ class DownloadManager:
                 )
                 self.download_single_dataset(dataset_link)
 
+    def download_tailored_date_range(self, start_date: str, end_date: str, product_id="EO:EUM:DAT:MSG:MSG15-RSS",         roi: str = "united_kingdom",
+                                     file_format: str = "geotiff",
+                                     projection: str = "geographic",):
+        """
+        Downloads a set of dataset from the EUMETSAT API
+        in the defined date range and specified product using the Data Tailor API
+
+        Parameters:
+            start_date: Start of the requested data period
+            end_date: End of the requested data period
+            product_id: ID of the EUMETSAT product requested
+
+        """
+
+        datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
+        self.download_tailored_datasets(datasets, product_id=product_id, file_format = file_format, projection = projection, roi = roi)
+
     def download_tailored_datasets(
         self,
         datasets,
