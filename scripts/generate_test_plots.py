@@ -52,7 +52,7 @@ cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grib")))
 print(rss_filename)
 print(cloud_mask_filename)
 
-for area in ['UK', 'RSS']:
+for area in ["UK", "RSS"]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
         Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
@@ -68,26 +68,26 @@ for area in ['UK', 'RSS']:
         channel_chunk_size=1,
         dtype="int8",
         zarr_mode="w",
-        )
+    )
     save_dataset_to_zarr(
         rss_dataset,
         zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
         channel_chunk_size=11,
         dtype="int16",
         zarr_mode="w",
-        )
+    )
     save_dataset_to_zarr(
         hrv_dataset,
         zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
         channel_chunk_size=1,
         dtype="int16",
         zarr_mode="w",
-        )
+    )
 
     # Load them from Zarr to ensure its the same as the output from satip
-    cloudmask_dataset = xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated = True)
-    rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated = True)
-    hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated = True)
+    cloudmask_dataset = xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)
+    rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)
+    hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)
 
     fig_size = (14, 6) if area == 'UK' else (6, 14)
 
