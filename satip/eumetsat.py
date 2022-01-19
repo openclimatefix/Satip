@@ -18,34 +18,13 @@ from satip import utils
 API_ENDPOINT = "https://api.eumetsat.int"
 
 # Data Store searching endpoint
-service_search = API_ENDPOINT + "/data/search-products/os"
-
-# Data Store downloading endpoint
-service_download = API_ENDPOINT + "/data/download"
-
-# Data Tailor products endpoint
-service_products = API_ENDPOINT + "/epcs/products"
-
-# Data Tailor chains endpoint
-service_chains = API_ENDPOINT + "/epcs/chains"
-
-# Data Tailor rois endpoint
-service_rois = API_ENDPOINT + "/epcs/rois"
+API_SEARCH_ENDPOINT = API_ENDPOINT + "/data/search-products/os"
 
 # Data Tailor customisations endpoint
-service_customisations = API_ENDPOINT + "/epcs/customisations"
+API_CUSTOMIZATION_ENDPOINT = API_ENDPOINT + "/epcs/customisations"
 
 # Data Tailor download endpoint
-service_DT_download = API_ENDPOINT + "/epcs/download"
-
-# Data Tailor projections endpoint
-service_projections = API_ENDPOINT + "/epcs/projections"
-
-# Data Tailor formats endpoint
-service_formats = API_ENDPOINT + "/epcs/formats"
-
-# Data Tailor filters endpoint
-service_filters = API_ENDPOINT + "/epcs/filters"
+API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
 
 
 def build_url_string(url, parameters):
@@ -446,7 +425,7 @@ class DownloadManager:
         roi: str = "united_kingdom",
         file_format: str = "geotiff",
         projection: str = "geographic",
-    ):
+    ) -> None:
         """
         Download a single tailored dataset
 
@@ -470,7 +449,7 @@ class DownloadManager:
             tailor_id = CLM_ID
         else:
             self.logger.error(f"Product ID {product_id} not recognized, ending now")
-            return None
+            return
 
         self.request_access_token()
 
@@ -489,7 +468,7 @@ class DownloadManager:
         }
 
         response = requests.post(
-            service_customisations,
+            API_CUSTOMIZATION_ENDPOINT,
             params=parameters,
             headers={"Authorization": "Bearer {}".format(self.access_token)},
         )
@@ -499,7 +478,7 @@ class DownloadManager:
         sleep_time = 10  # seconds
 
         while status == "RUNNING":
-            url = service_customisations + "/" + jobID
+            url = API_CUSTOMIZATION_ENDPOINT + "/" + jobID
             response = requests.get(
                 url, headers={"Authorization": "Bearer {}".format(self.access_token)}
             )
@@ -518,13 +497,13 @@ class DownloadManager:
             time.sleep(sleep_time)
 
         if status == "DONE":
-            url = service_customisations + "/" + jobID
+            url = API_CUSTOMIZATION_ENDPOINT + "/" + jobID
             response = requests.get(
                 url, headers={"Authorization": "Bearer {}".format(self.access_token)}
             )
             results = response.json()[jobID]["output_products"]
 
-            url = service_DT_download + "?path="
+            url = API_TAILORED_DOWNLOAD_ENDPOINT + "?path="
             for result in results:
                 self.logger.info("Downloading: " + result)
                 response = requests.get(
