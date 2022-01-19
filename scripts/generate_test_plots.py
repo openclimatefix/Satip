@@ -49,18 +49,44 @@ cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grib")))
 print(rss_filename)
 print(cloud_mask_filename)
 
-# First do it with the cloud mask
-cloudmask_dataset = load_cloudmask_to_dataset(
-    Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area="RSS"
-)
-rss_dataset, hrv_dataset = load_native_to_dataset(
-    Path(rss_filename[0]), temp_directory=Path(os.getcwd()), area="RSS"
-)
+for area in ['UK', 'RSS']:
+    # First do it with the cloud mask
+    cloudmask_dataset = load_cloudmask_to_dataset(
+        Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
+    )
+    rss_dataset, hrv_dataset = load_native_to_dataset(
+        Path(rss_filename[0]), temp_directory=Path(os.getcwd()), area=area
+    )
 
-# Convert scenes to data
-# Then with the HRV RSS image
+    # Save to Zarrs, to then load them back
+    save_dataset_to_zarr(
+        cloudmask_dataset,
+        zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
+        channel_chunk_size=1,
+        dtype="int8",
+        zarr_mode="w",
+        )
+    save_dataset_to_zarr(
+        rss_dataset,
+        zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
+        channel_chunk_size=11,
+        dtype="int16",
+        zarr_mode="w",
+        )
+    save_dataset_to_zarr(
+        hrv_dataset,
+        zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
+        channel_chunk_size=1,
+        dtype="int16",
+        zarr_mode="w",
+        )
 
-# Then with non-HRV RSS Image
+    # Load them from Zarr to ensure its the same as the output from satip
+    cloudmask_dataset = xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated = True)
+    rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated = True)
+    hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated = True)
+
+
 
 # Then tailored cloud mask
 
