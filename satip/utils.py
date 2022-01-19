@@ -201,8 +201,6 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
         scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
 
     dataset: xr.Dataset = scene.to_xarray_dataset()
-
-    # Drop all Null values
     dataarray = dataset.to_array()
 
     best_coords = osgb_y[:, 0]
@@ -225,21 +223,10 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
             best_coords = x_coords
     osgb_x = best_coords
 
-    # Crop around inf boxes?
-    y_mask = ~np.isinf(osgb_y)
-    y_locs = np.where(y_mask == True)
-    x_mask = ~np.isinf(osgb_x)
-    x_locs = np.where(x_mask == True)
-
     dataarray = dataarray.assign_coords(x=osgb_x, y=osgb_y)
     # Round to the nearest 5 minutes
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
-    # Stack DataArrays in the Dataset into a single DataArray
-    # dataarray = dataset.to_array()
-    # Now do it here as its a bit easier on slicing
-    # dataarray = dataarray.isel(x=x_locs[0], y=y_locs[0])
-    # dataarray = dataarray.where(~dataarray.isnull(), drop=True)
     dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
