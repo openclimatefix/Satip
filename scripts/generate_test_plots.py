@@ -6,14 +6,15 @@ import glob
 import os
 from pathlib import Path
 
+import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
+import rasterio
 import xarray as xr
+from rasterio.plot import show
 from satpy import Scene
 
 import satip
-import rasterio
-from rasterio.plot import show
 from satip import download, eumetsat, intermediate
 from satip.utils import (
     check_if_timestep_exists,
@@ -21,7 +22,6 @@ from satip.utils import (
     load_native_to_dataset,
     save_dataset_to_zarr,
 )
-import cartopy.crs as ccrs
 
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
@@ -89,7 +89,7 @@ for area in ["UK", "RSS"]:
     rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)
     hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)
 
-    fig_size = (14, 6) if area == 'UK' else (6, 14)
+    fig_size = (14, 6) if area == "UK" else (6, 14)
 
     plt.figure(figsize=fig_size)
     ax = plt.axes(projection=ccrs.OSGB())
@@ -100,7 +100,7 @@ for area in ["UK", "RSS"]:
         x="x_osgb",
         y="y_osgb",
         add_colorbar=True,
-        )
+    )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"cloud_mask_{area}.png"), dpi=300)
     plt.cla()
@@ -115,7 +115,7 @@ for area in ["UK", "RSS"]:
         x="x_osgb",
         y="y_osgb",
         add_colorbar=True,
-        )
+    )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"IR016_{area}.png"), dpi=300)
     plt.cla()
@@ -130,11 +130,12 @@ for area in ["UK", "RSS"]:
         x="x_osgb",
         y="y_osgb",
         add_colorbar=True,
-        )
+    )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"hrv_{area}.png"), dpi=300)
     plt.cla()
     plt.clf()
+
 
 def plot_tailored(input_name: str) -> None:
     geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tiff")))
@@ -146,8 +147,19 @@ def plot_tailored(input_name: str) -> None:
     plt.clf()
     os.remove(geotiff_files[0])
 
+
 # Then tailored ones
-download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=CLOUD_ID)
+download_manager.download_tailored_date_range(
+    start_date="2020-06-01 11:58:00",
+    end_date="2020-06-01 12:03:00",
+    file_format="geotiff",
+    product_id=CLOUD_ID,
+)
 plot_tailored("cloud_mask")
-download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=RSS_ID)
+download_manager.download_tailored_date_range(
+    start_date="2020-06-01 11:58:00",
+    end_date="2020-06-01 12:03:00",
+    file_format="geotiff",
+    product_id=RSS_ID,
+)
 plot_tailored("rss")
