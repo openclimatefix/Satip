@@ -12,6 +12,8 @@ import xarray as xr
 from satpy import Scene
 
 import satip
+import rasterio
+from rasterio.plot import show
 from satip import download, eumetsat, intermediate
 from satip.utils import (
     check_if_timestep_exists,
@@ -134,12 +136,18 @@ for area in ['UK', 'RSS']:
     plt.cla()
     plt.clf()
 
+def plot_tailored(input_name: str) -> None:
+    geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tiff")))
+    image = rasterio.open(geotiff_files[0])
+    plt.imshow(image.read(), transform=image.transform)
+    plt.title(f"Tailored {input_name}")
+    plt.savefig(os.path.join(os.getcwd(), f"tailored_{input_name}.png"), dpi=300)
+    plt.cla()
+    plt.clf()
+    os.remove(geotiff_files[0])
 
-# Then tailored cloud mask
+# Then tailored ones
 download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=CLOUD_ID)
+plot_tailored("cloud_mask")
 download_manager.download_tailored_date_range(start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", file_format = 'geotiff', product_id=RSS_ID)
-
-
-# Then tailored HRV Image
-
-# Then tailored non-HRV Image
+plot_tailored("rss")
