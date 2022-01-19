@@ -19,6 +19,7 @@ from satip.utils import (
     load_native_to_dataset,
     save_dataset_to_zarr,
 )
+import cartopy.crs as ccrs
 
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
@@ -86,6 +87,52 @@ for area in ['UK', 'RSS']:
     rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated = True)
     hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated = True)
 
+    fig_size = (14, 6) if area == 'UK' else (6, 14)
+
+    plt.figure(figsize=fig_size)
+    ax = plt.axes(projection=ccrs.OSGB())
+
+    cloudmask_dataset["cloud_mask"].plot.pcolormesh(
+        ax=ax,
+        transform=ccrs.OSGB(),
+        x="x_osgb",
+        y="y_osgb",
+        add_colorbar=True,
+        )
+    ax.coastlines()
+    plt.savefig(os.path.join(os.getcwd(), f"cloud_mask_{area}.png"), dpi=300)
+    plt.cla()
+    plt.clf()
+
+    plt.figure(figsize=fig_size)
+    ax = plt.axes(projection=ccrs.OSGB())
+
+    rss_dataset["IR_016"].plot.pcolormesh(
+        ax=ax,
+        transform=ccrs.OSGB(),
+        x="x_osgb",
+        y="y_osgb",
+        add_colorbar=True,
+        )
+    ax.coastlines()
+    plt.savefig(os.path.join(os.getcwd(), f"IR016_{area}.png"), dpi=300)
+    plt.cla()
+    plt.clf()
+
+    plt.figure(figsize=fig_size)
+    ax = plt.axes(projection=ccrs.OSGB())
+
+    hrv_dataset["HRV"].plot.pcolormesh(
+        ax=ax,
+        transform=ccrs.OSGB(),
+        x="x_osgb",
+        y="y_osgb",
+        add_colorbar=True,
+        )
+    ax.coastlines()
+    plt.savefig(os.path.join(os.getcwd(), f"hrv_{area}.png"), dpi=300)
+    plt.cla()
+    plt.clf()
 
 
 # Then tailored cloud mask
