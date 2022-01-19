@@ -117,11 +117,16 @@ def load_native_to_dataset(
             "WV_073",
         ],
     )
-    try:
-        # IF decompression fails, pass
-        decompressed_filename: str = decompress(filename, temp_directory)
-    except subprocess.CalledProcessError:
-        return None, None
+    if filename.suffix == ".bz2":
+        try:
+            # IF decompression fails, pass
+            decompressed_filename: str = decompress(filename, temp_directory)
+            decompressed_file = True
+        except subprocess.CalledProcessError:
+            return None, None
+    else:
+        decompressed_filename = str(filename)
+        decompressed_file = False
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene.load(
@@ -148,8 +153,9 @@ def load_native_to_dataset(
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
     dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="IR_016", area=area)
     hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(hrv_scene, band="HRV", area=area)
-    # Delete file off disk
-    os.remove(decompressed_filename)
+    if decompressed_file:
+        # Delete file off disk, but only if we decompressed it first, so still have a copy
+        os.remove(decompressed_filename)
 
     # Compress and return
     dataarray = compressor.compress(dataarray)
