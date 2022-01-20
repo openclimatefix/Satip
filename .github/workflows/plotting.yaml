@@ -25,16 +25,13 @@ jobs:
           sudo apt install ${{inputs.sudo_apt_install}}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install pytest-xdist
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install git+https://github.com/SheffieldSolar/PV_Live-API
-          if [ -f "setup.py" ]; then pip install -e .; else export PYTHONPATH=$PYTHONPATH:./src; fi
-          echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
       - name: Run plotting script
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
+          $CONDA/bin/conda activate base
           python scripts/generate_test_plots.py
       - name: Archive plots
         uses: actions/upload-artifact@v2
