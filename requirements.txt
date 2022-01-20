@@ -7,3 +7,5 @@ zarr
 xarray
 bottleneck
 tqdm
+cartopy
+rasterio

@@ -21,8 +21,8 @@ from satip.utils import (
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
 
-user_key = "SWdEnLvOlVTVGli1An1nKJ3NcV0a"
-user_secret = "gUQe0ej7H_MqQVGF4cd7wfQWcawa"
+user_key = os.environ.get("EUMETSAT_USER_KEY")
+user_secret = os.environ.get("EUMETSAT_USER_SECRET")
 
 download_manager = eumetsat.DownloadManager(
     user_key=user_key,
@@ -62,10 +62,8 @@ download_manager.download_date_range(
 rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
 cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
-def plot_dataset(dataset, name, area):
-    #plt.figure(figsize=fig_size)
+def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
     ax = plt.axes(projection=ccrs.OSGB())
-
     dataset.plot.pcolormesh(
         ax=ax,
         transform=ccrs.OSGB(),
@@ -73,13 +71,12 @@ def plot_dataset(dataset, name, area):
         y="y_osgb",
         add_colorbar=True,
         )
-    #ax.coastlines()
-    #plt.show()
+    ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
     plt.cla()
     plt.clf()
 
-for area in ["UK", "RSS"]:
+for area in ["UK",]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
         Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
