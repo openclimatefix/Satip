@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Iterable
 
 import numpy as np
 import xarray as xr
@@ -63,7 +63,7 @@ class Compressor:
         self.maxs = maxs
         self.variable_order = variable_order
 
-    def fit(self, dataset: xr.Dataset, dims: list = ("time", "y", "x")) -> None:
+    def fit(self, dataset: xr.Dataset, dims: Iterable = ("time", "y", "x")) -> None:
         """
         Calculate new min and max values for the compression
 

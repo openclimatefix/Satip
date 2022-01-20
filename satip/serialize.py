@@ -1,6 +1,7 @@
 import numpy as np
 import pyresample
 import yaml
+import datetime
 
 
 def serialize_attrs(attrs: dict) -> dict:
@@ -34,5 +35,8 @@ def serialize_attrs(attrs: dict) -> dict:
         # Convert area
         if isinstance(value, pyresample.geometry.AreaDefinition):
             attrs[attr_key] = value.dump()
+
+        if isinstance(value, datetime):
+            attrs[attr_key] = value.isoformat()
 
     return attrs
