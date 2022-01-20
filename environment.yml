@@ -12,3 +12,5 @@ dependencies:
   - xarray
   - bottleneck
   - tqdm
+  - matplotlib
+  - cartopy
