@@ -62,6 +62,23 @@ download_manager.download_date_range(
 rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
 cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
+def plot_dataset(dataset, name, area):
+    #plt.figure(figsize=fig_size)
+    ax = plt.axes(projection=ccrs.OSGB())
+
+    dataset.plot.pcolormesh(
+        ax=ax,
+        transform=ccrs.OSGB(),
+        x="x_osgb",
+        y="y_osgb",
+        add_colorbar=True,
+        )
+    #ax.coastlines()
+    #plt.show()
+    plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
+    plt.cla()
+    plt.clf()
+
 for area in ["UK", "RSS"]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
@@ -103,49 +120,9 @@ for area in ["UK", "RSS"]:
     print(rss_dataset)
     print(hrv_dataset)
 
-    fig_size = (14, 6) if area == 'UK' else (6, 14)
-
-    plt.figure(figsize=fig_size)
-    ax = plt.axes(projection=ccrs.OSGB())
-
-    cloudmask_dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
-    ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"cloud_mask_{area}.png"))
-    plt.cla()
-
-    plt.figure(figsize=fig_size)
-    ax = plt.axes(projection=ccrs.OSGB())
-
-    rss_dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
-    ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"IR016_{area}.png"))
-    plt.cla()
-
-    plt.figure(figsize=fig_size)
-    ax = plt.axes(projection=ccrs.OSGB())
-
-    hrv_dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
-    ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"hrv_{area}.png"))
-    plt.cla()
+    plot_dataset(hrv_dataset, "hrv", area)
+    plot_dataset(rss_dataset, "rss", area)
+    plot_dataset(cloudmask_dataset, "cloud_mask", area)
 
 
 
