@@ -152,8 +152,12 @@ def load_native_to_dataset(
     )
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="IR_016", area=area, calculate_osgb = calculate_osgb)
-    hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(hrv_scene, band="HRV", area=area, calculate_osgb = calculate_osgb)
+    dataarray: xr.DataArray = convert_scene_to_dataarray(
+        scene, band="IR_016", area=area, calculate_osgb=calculate_osgb
+    )
+    hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
+        hrv_scene, band="HRV", area=area, calculate_osgb=calculate_osgb
+    )
     if decompressed_file:
         # Delete file off disk, but only if we decompressed it first, so still have a copy
         os.remove(decompressed_filename)
@@ -164,7 +168,9 @@ def load_native_to_dataset(
     return dataarray, hrv_dataarray
 
 
-def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True) -> xr.DataArray:
+def load_cloudmask_to_dataset(
+    filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
+) -> xr.DataArray:
     """
     Load cloud mask files into an Xarray dataset
 
@@ -186,7 +192,9 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str, c
         ]
     )
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area, calculate_osgb = calculate_osgb)
+    dataarray: xr.DataArray = convert_scene_to_dataarray(
+        scene, band="cloud_mask", area=area, calculate_osgb=calculate_osgb
+    )
 
     # Compress and return
     dataarray = dataarray.transpose("time", "y", "x", "variable")
@@ -197,7 +205,9 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str, c
     return dataarray
 
 
-def convert_scene_to_dataarray(scene: Scene, band: str, area: str, calculate_osgb: bool = True) -> xr.DataArray:
+def convert_scene_to_dataarray(
+    scene: Scene, band: str, area: str, calculate_osgb: bool = True
+) -> xr.DataArray:
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
