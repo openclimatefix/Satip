@@ -37,7 +37,7 @@ def serialize_attrs(attrs: dict) -> dict:
         if isinstance(value, pyresample.geometry.AreaDefinition):
             attrs[attr_key] = value.dump()
 
-        if isinstance(value, datetime):
+        if isinstance(value, datetime.datetime):
             attrs[attr_key] = value.isoformat()
 
     return attrs
