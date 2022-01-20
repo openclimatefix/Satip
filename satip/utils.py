@@ -53,7 +53,7 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
 
 
 def load_native_to_dataset(
-    filename: Path, temp_directory: Path, area: str
+    filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
 ) -> Tuple[xr.DataArray, xr.DataArray]:
     """
     Load compressed native files into an Xarray dataset
@@ -65,6 +65,7 @@ def load_native_to_dataset(
         filename: The filename of the compressed native file to load
         temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
+        calculate_osgb: Whether to calculate OSGB x and y coordinates, only needed for first data array
 
     Returns:
         Returns Xarray DataArray if script worked, else returns None
@@ -151,8 +152,8 @@ def load_native_to_dataset(
     )
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="IR_016", area=area)
-    hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(hrv_scene, band="HRV", area=area)
+    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="IR_016", area=area, calculate_osgb = calculate_osgb)
+    hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(hrv_scene, band="HRV", area=area, calculate_osgb = calculate_osgb)
     if decompressed_file:
         # Delete file off disk, but only if we decompressed it first, so still have a copy
         os.remove(decompressed_filename)
@@ -163,7 +164,7 @@ def load_native_to_dataset(
     return dataarray, hrv_dataarray
 
 
-def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -> xr.DataArray:
+def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True) -> xr.DataArray:
     """
     Load cloud mask files into an Xarray dataset
 
@@ -173,6 +174,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
         filename: The filename of the GRIB file to load
         temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
+        calculate_osgb: Whether to calculate OSGB coordinates, only needed for first data array
 
     Returns:
         Returns Xarray DataArray if script worked, else returns None
@@ -184,7 +186,7 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
         ]
     )
     # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area)
+    dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area, calculate_osgb = calculate_osgb)
 
     # Compress and return
     dataarray = dataarray.transpose("time", "y", "x", "variable")
@@ -195,14 +197,15 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
     return dataarray
 
 
-def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
+def convert_scene_to_dataarray(scene: Scene, band: str, area: str, calculate_osgb: bool = True) -> xr.DataArray:
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
-    lon, lat = scene[band].attrs["area"].get_lonlats()
-    osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
+    if calculate_osgb:
+        lon, lat = scene[band].attrs["area"].get_lonlats()
+        osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
     for channel in scene.wishlist:
@@ -211,17 +214,20 @@ def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArr
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
-    # Assign x_osgb and y_osgb and set some attributes
-    dataarray = dataarray.assign_coords(
-        x_osgb=(("y", "x"), np.float32(osgb_x)),
-        y_osgb=(("y", "x"), np.float32(osgb_y)),
-    )
-    for name in ["x_osgb", "y_osgb"]:
-        dataarray[name].attrs = {"units": "meter", "coordinate_reference_system": "OSGB"}
+    if calculate_osgb:
+        # Assign x_osgb and y_osgb and set some attributes
+        dataarray = dataarray.assign_coords(
+            x_osgb=(("y", "x"), np.float32(osgb_x)),
+            y_osgb=(("y", "x"), np.float32(osgb_y)),
+        )
+        for name in ["x_osgb", "y_osgb"]:
+            dataarray[name].attrs = {"units": "meter", "coordinate_reference_system": "OSGB"}
+
+        dataarray.x_osgb.attrs["name"] = "Easting"
+        dataarray.y_osgb.attrs["name"] = "Northing"
+
     for name in ["x", "y"]:
         dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
-    dataarray.x_osgb.attrs["name"] = "Easting"
-    dataarray.y_osgb.attrs["name"] = "Northing"
 
     # Round to the nearest 5 minutes
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
