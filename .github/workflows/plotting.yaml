@@ -31,8 +31,7 @@ jobs:
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
-          $CONDA/bin/conda activate base
-          python scripts/generate_test_plots.py
+          $CONDA/bin/python scripts/generate_test_plots.py
       - name: Archive plots
         uses: actions/upload-artifact@v2
         with:
