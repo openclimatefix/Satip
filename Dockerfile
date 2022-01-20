@@ -25,7 +25,7 @@ RUN /bin/bash miniconda3.sh -b -p /conda \
     && echo export PATH=/conda/bin:$PATH >> .bashrc \
     && rm miniconda3.sh
 ENV PATH="/conda/bin:${PATH}"
-RUN conda env create -n ${CONDA_ENV_NAME} python=${PYTHON_VERSION} cartopy eccodes numpy matplotlib rasterio satpy[all] -c conda-forge
+RUN conda create -n ${CONDA_ENV_NAME} python=${PYTHON_VERSION} cartopy eccodes numpy matplotlib rasterio satpy[all] -c conda-forge
 
 # Switch to bash shell
 SHELL ["/bin/bash", "-c"]
