@@ -3,7 +3,7 @@ from typing import Union
 import numpy as np
 import xarray as xr
 
-from satip.utils import serialize_attrs
+from satip.serialize import serialize_attrs
 
 
 class Compressor:
