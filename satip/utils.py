@@ -197,43 +197,36 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
+    if area not in GEOGRAPHIC_BOUNDS:
+        raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
     # Lat and Lon are the same for all the channels now
     lon, lat = scene[band].attrs["area"].get_lonlats()
     osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
-    # Remove acq time from all bands
+    # Remove acq time from all bands because it is not useful, and can actually
+    # get in the way of combining multiple Zarr datasets.
     for channel in scene.wishlist:
         scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
 
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
-    best_coords = osgb_y[:, 0]
-    for i in range(len(osgb_y[0])):
-        y_coords = osgb_y[:, i]
-        if len(y_coords) == len(y_coords[~np.isinf(y_coords)]):
-            best_coords = y_coords
-            break
-        elif len(y_coords[~np.isinf(y_coords)]) > len(best_coords[~np.isinf(best_coords)]):
-            best_coords = y_coords
-    osgb_y = best_coords
-    best_coords = osgb_x[0, :]
-    for i in range(len(osgb_x)):
-        x_coords = osgb_x[i, :]
-        # Want to find the first one where there are coordinates for all pixels
-        if len(x_coords) == len(x_coords[~np.isinf(x_coords)]):
-            best_coords = x_coords
-            break
-        elif len(x_coords[~np.isinf(x_coords)]) > len(best_coords[~np.isinf(best_coords)]):
-            best_coords = x_coords
-    osgb_x = best_coords
+    # Assign x_osgb and y_osgb and set some attributes
+    dataarray = dataarray.assign_coords(
+        x_osgb=(("y", "x"), np.float32(osgb_x)),
+        y_osgb=(("y", "x"), np.float32(osgb_y)),
+    )
+    for name in ["x_osgb", "y_osgb"]:
+        dataarray[name].attrs = {"units": "meter", "coordinate_reference_system": "OSGB"}
+    for name in ["x", "y"]:
+        dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
+    dataarray.x_osgb.attrs["name"] = "Easting"
+    dataarray.y_osgb.attrs["name"] = "Northing"
 
-    dataarray = dataarray.assign_coords(x=osgb_x, y=osgb_y)
     # Round to the nearest 5 minutes
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
-    dataarray = dataarray.rename({"x": "x_osgb", "y": "y_osgb"})
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
