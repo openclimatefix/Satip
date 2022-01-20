@@ -6,8 +6,8 @@ jobs:
   plots:
     strategy:
       matrix:
-        python-version: [ "3.9" ]
-        os: [ "ubuntu-latest",]
+        python-version: ["3.9"]
+        os: ["ubuntu-latest"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
