@@ -1,6 +1,6 @@
+import numpy as np
 import pyresample
 import yaml
-import numpy as np
 
 
 def serialize_attrs(attrs: dict) -> dict:
