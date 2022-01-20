@@ -17,7 +17,7 @@ OSGB = 27700
 WGS84 = 4326
 WGS84_CRS = f"EPSG:{WGS84}"
 
-# Geographic bounds for various regions of interest, in order of min_lon, max_lon, min_lat, max_lat
+# Geographic bounds for various regions of interest, in order of min_lon, min_lat, max_lon, max_lat
 GEOGRAPHIC_BOUNDS = {"UK": (-16, 45, 10, 62), "RSS": (-64, 83, 16, 69)}
 
 
@@ -25,38 +25,17 @@ class Transformers:
     """
     Class to store transformation from one Grid to another.
 
-    Its good to make this only once, but need the
+    It's good to make this only once, but need the
     option of updating them, due to out of data grids.
     """
 
     def __init__(self):
         """Init"""
-        self._lat_lon_to_osgb = None
-        self.make_transformers()
-
-    def make_transformers(self):
-        """
-        Make transformers
-
-         Nice to only make these once, as it makes calling the functions below quicker
-        """
-        self._lat_lon_to_osgb = pyproj.Transformer.from_crs(crs_from=WGS84, crs_to=OSGB)
-
-    @property
-    def lat_lon_to_osgb(self):
-        """lat-lon to OSGB property"""
-        return self._lat_lon_to_osgb
+        self.lat_lon_to_osgb = pyproj.Transformer.from_crs(crs_from=WGS84, crs_to=OSGB)
 
 
 # make the transformers
-transformers = Transformers()
-
-
-def download_grids():
-    """The transformer grid sometimes need updating"""
-    pyproj.transformer.TransformerGroup(crs_from=WGS84, crs_to=OSGB).download_grids(verbose=True)
-
-    transformers.make_transformers()
+_transformers = Transformers()
 
 
 def lat_lon_to_osgb(lat: List[Number], lon: List[Number]) -> Tuple[np.ndarray, np.ndarray]:
@@ -70,4 +49,4 @@ def lat_lon_to_osgb(lat: List[Number], lon: List[Number]) -> Tuple[np.ndarray, n
     Return: 2-tuple of x (east-west), y (north-south).
 
     """
-    return transformers.lat_lon_to_osgb.transform(lat, lon)
+    return _transformers.lat_lon_to_osgb.transform(lat, lon)
