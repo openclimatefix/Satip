@@ -1,7 +1,9 @@
-from typing import Union
+from typing import Iterable, Union
 
 import numpy as np
 import xarray as xr
+
+from satip.serialize import serialize_attrs
 
 
 class Compressor:
@@ -61,7 +63,7 @@ class Compressor:
         self.maxs = maxs
         self.variable_order = variable_order
 
-    def fit(self, dataset: xr.Dataset, dims: list = ["time", "y_osgb", "x_osgb"]) -> None:
+    def fit(self, dataset: xr.Dataset, dims: Iterable = ("time", "y", "x")) -> None:
         """
         Calculate new min and max values for the compression
 
@@ -70,6 +72,7 @@ class Compressor:
             dims: Dims to compute over
 
         """
+        dims = list(dims)
         self.mins = dataset.min(dims).compute()
         self.maxs = dataset.max(dims).compute()
         self.variable_order = dataset.coords["variable"].values
@@ -88,15 +91,13 @@ class Compressor:
         Returns:
             The compressed DataArray
         """
-        da_meta = dataarray.attrs
-
         for attr in ["mins", "maxs"]:
             assert (
                 getattr(self, attr) is not None
             ), f"{attr} must be set in initialisation or through `fit`"
 
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y_osgb", "x_osgb", "variable"
+            "time", "y", "x", "variable"
         )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
@@ -106,7 +107,7 @@ class Compressor:
         dataarray /= new_max
         dataarray *= upper_bound
         dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
-        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
 
         return dataarray
 
@@ -120,13 +121,11 @@ class Compressor:
         Returns:
             The compressed DataArray
         """
-        da_meta = dataarray.attrs
-
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y_osgb", "x_osgb", "variable"
+            "time", "y", "x", "variable"
         )
         dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
-        dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+        dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
 
         return dataarray
 
