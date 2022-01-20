@@ -2,7 +2,7 @@ name: Build and Push Docker Images to Docker Hub and GitHub
 
 on:
   release:
-    types: [published]
+    types: [released, published]
 
 jobs:
   docker-release:
