@@ -212,10 +212,7 @@ def convert_scene_to_dataarray(
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
         scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-    # Lat and Lon are the same for all the channels now
-    if calculate_osgb:
-        lon, lat = scene[band].attrs["area"].get_lonlats()
-        osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
+
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
     for channel in scene.wishlist:
@@ -224,7 +221,10 @@ def convert_scene_to_dataarray(
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
+    # Lat and Lon are the same for all the channels now
     if calculate_osgb:
+        lon, lat = scene[band].attrs["area"].get_lonlats()
+        osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
         # Assign x_osgb and y_osgb and set some attributes
         dataarray = dataarray.assign_coords(
             x_osgb=(("y", "x"), np.float32(osgb_x)),
@@ -247,6 +247,7 @@ def convert_scene_to_dataarray(
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
 
     del dataarray["crs"]
+    del scene
 
     return dataarray
 
