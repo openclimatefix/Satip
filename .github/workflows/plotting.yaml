@@ -38,4 +38,4 @@ jobs:
         with:
           name: plots
           path: |
-            scripts/*.png
+            *.png
