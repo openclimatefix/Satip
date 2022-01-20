@@ -1,0 +1,14 @@
+name: Create Docker Image
+on: [push]
+
+jobs:
+  push_to_registry:
+    name: Build docker file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Build Docker image
+        run: docker build -t satip -f Dockerfile .
+      - name: Run tests inside the container
+        run: docker run satip pytest
