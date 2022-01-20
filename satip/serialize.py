@@ -1,7 +1,8 @@
+import datetime
+
 import numpy as np
 import pyresample
 import yaml
-import datetime
 
 
 def serialize_attrs(attrs: dict) -> dict:
