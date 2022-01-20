@@ -19,3 +19,20 @@ Or if you're working in the development environment you can run the following fr
 ```bash
 pip install -e .
 ```
+
+#### Conda
+
+Or, if you want to use `conda` from the a cloned Satip repository:
+
+```bash
+conda env create -f environment.yml
+conda activate satip
+pip install -e .
+```
+
+If you plan to work on the development of Satip then also consider installing these development tools:
+
+```bash
+conda install pytest flake8 jedi mypy black pre-commit
+pre-commit install
+```
