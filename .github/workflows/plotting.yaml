@@ -1,0 +1,50 @@
+name: Plots
+
+on: [push]
+
+jobs:
+  plots:
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+        os: ["ubuntu-latest"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: iterative/setup-cml@v1
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Do some macOS specific installs for Python 3.9
+        run: |
+          brew install ${{inputs.brew_install}}
+        if: matrix.os == 'macos-latest'
+      - name: Do some Ubunutu specific installs for Python 3.9
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install ${{inputs.sudo_apt_install}}
+      - name: Install dependencies
+        run: |
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
+          $CONDA/bin/pip install -e .
+      - name: Run plotting script
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
+          export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
+          $CONDA/bin/python scripts/generate_test_plots.py
+          cml-publish cloud_mask_UK.png --md >> report.md
+          cml-publish rss_UK.png --md >> report.md
+          cml-publish hrv_UK.png --md >> report.md
+          cml-publish tailored_cloud_mask.png --md >> report.md
+          cml-publish tailored_rss.png --md >> report.md
+          cml-send-comment report.md
+      - name: Archive plots
+        uses: actions/upload-artifact@v2
+        with:
+          name: plots
+          path: |
+            *.png
