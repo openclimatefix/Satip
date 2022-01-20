@@ -4,13 +4,14 @@ import os
 import subprocess
 import warnings
 from pathlib import Path
-from typing import Any, Tuple, Union
+from typing import Any, Tuple
 
 import numcodecs
 import numpy as np
 import pandas as pd
+import pyresample
 import xarray as xr
-import zarr
+import yaml
 from satpy import Scene
 
 from satip.compression import Compressor, is_dataset_clean
@@ -187,13 +188,47 @@ def load_cloudmask_to_dataset(filename: Path, temp_directory: Path, area: str) -
     dataarray: xr.DataArray = convert_scene_to_dataarray(scene, band="cloud_mask", area=area)
 
     # Compress and return
-    da_meta = dataarray.attrs
-    dataarray = dataarray.transpose("time", "y_osgb", "x_osgb", "variable")
+    dataarray = dataarray.transpose("time", "y", "x", "variable")
     dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
-    dataarray.attrs = {"meta": str(da_meta)}  # Must be serializable
+    dataarray.attrs = serialize_attrs(dataarray.attrs)
     # Convert 3's to NaNs as they should be No Data/Space
     dataarray = dataarray.where(dataarray["variable"] != 3)
     return dataarray
+
+
+def serialize_attrs(attrs: dict) -> dict:
+    """Ensure each value of dict can be serialized.
+
+    This is required before saving to Zarr because Zarr represents attrs values in a
+    JSON file (.zmetadata).
+
+    The `area` field (which is a `pyresample.geometry.AreaDefinition` object gets turned
+    into a YAML string, which can be loaded again using
+    `area_definition = pyresample.area_config.load_area_from_string(data_array.attrs['area'])`
+
+    Returns attrs dict where every value has been made serializable.
+    """
+    for attr_key in attrs:
+        value = attrs[attr_key]
+
+        # Convert Dicts
+        if isinstance(value, dict):
+            # Convert np.float32 to Python floats (otherwise yaml.dump complains)
+            for inner_key in value:
+                inner_value = value[inner_key]
+                if isinstance(inner_value, np.floating):
+                    value[inner_key] = float(inner_value)
+            attrs[attr_key] = yaml.dump(value)
+
+        # Convert Numpy bools
+        if isinstance(value, (bool, np.bool_)):
+            attrs[attr_key] = str(value)
+
+        # Convert area
+        if isinstance(value, pyresample.geometry.AreaDefinition):
+            attrs[attr_key] = value.dump()
+
+    return attrs
 
 
 def convert_scene_to_dataarray(scene: Scene, band: str, area: str) -> xr.DataArray:
@@ -258,7 +293,7 @@ def save_dataset_to_zarr(
         x_size_per_chunk: X pixels per Zarr chunk
 
     """
-    dataarray = dataarray.transpose(*["time", "x_osgb", "y_osgb", "variable"])
+    dataarray = dataarray.transpose("time", "y", "x", "variable")
 
     # Number of timesteps, x and y size per chunk, and channels (all 12)
     chunks = (
