@@ -11,6 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+      - uses: iterative/setup-cml@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -29,7 +30,6 @@ jobs:
           $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
           $CONDA/bin/pip install -e .
       - name: Run plotting script
-      - uses: iterative/setup-cml@v1
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
