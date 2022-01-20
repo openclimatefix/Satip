@@ -66,7 +66,7 @@ def split_per_month(
                 if len(compressed_native_files) == 0:
                     continue
                 dataset, hrv_dataset = load_native_to_dataset(
-                    compressed_native_files[0], temp_directory, region
+                    compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
                 save_dataset_to_zarr(
                     dataset,
@@ -157,7 +157,7 @@ def cloudmask_split_per_month(
                 # Inital zarr path before then appending
                 compressed_native_files = list(Path(month_directory).rglob("*.grb"))
                 dataset = load_cloudmask_to_dataset(
-                    compressed_native_files[0], temp_directory, region
+                    compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
                 save_dataset_to_zarr(
                     dataset,
@@ -231,7 +231,7 @@ def create_or_update_zarr_with_cloud_mask_files(
     # Check if zarr already exists
     for entry in tqdm(grib_files):
         try:
-            dataset = load_cloudmask_to_dataset(entry, temp_directory, region)
+            dataset = load_cloudmask_to_dataset(entry, temp_directory, region, calculate_osgb=False)
             if dataset is not None:
                 try:
                     save_dataset_to_zarr(
@@ -291,7 +291,9 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
         try:
-            dataset, hrv_dataset = load_native_to_dataset(entry, temp_directory, region)
+            dataset, hrv_dataset = load_native_to_dataset(
+                entry, temp_directory, region, calculate_osgb=False
+            )
             if dataset is not None and hrv_dataset is not None:
                 try:
                     save_dataset_to_zarr(
