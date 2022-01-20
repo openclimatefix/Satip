@@ -8,16 +8,11 @@ from pathlib import Path
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import numpy as np
-import rasterio
 import xarray as xr
-from rasterio.plot import show
-from satpy import Scene
 
-import satip
-from satip import download, eumetsat, intermediate
+import rasterio
+from satip import eumetsat
 from satip.utils import (
-    check_if_timestep_exists,
     load_cloudmask_to_dataset,
     load_native_to_dataset,
     save_dataset_to_zarr,
@@ -26,8 +21,8 @@ from satip.utils import (
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
 
-user_key = os.environ.get("EUMETSAT_USER_KEY")
-user_secret = os.environ.get("EUMETSAT_USER_SECRET")
+user_key = "SWdEnLvOlVTVGli1An1nKJ3NcV0a"
+user_secret = "gUQe0ej7H_MqQVGF4cd7wfQWcawa"
 
 download_manager = eumetsat.DownloadManager(
     user_key=user_key,
@@ -37,20 +32,35 @@ download_manager = eumetsat.DownloadManager(
     logger_name="Plotting_test",
 )
 
+def plot_tailored(input_name: str) -> None:
+    geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tif")))
+    image = rasterio.open(geotiff_files[0])
+    plt.imshow(image.read(1))
+    plt.title(f"Tailored {input_name}")
+    plt.savefig(os.path.join(os.getcwd(), f"tailored_{input_name}.png"), dpi=300)
+    plt.cla()
+    plt.clf()
+    os.remove(geotiff_files[0])
+
+
+# Then tailored ones
+download_manager.download_tailored_date_range(start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:02:00", file_format = 'geotiff', product_id=CLOUD_ID)
+plot_tailored("cloud_mask")
+download_manager.download_tailored_date_range(start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", file_format = 'geotiff', product_id=RSS_ID)
+plot_tailored("rss")
+
 # Get 1 RSS native file and 1 cloud mask file
 download_manager.download_date_range(
-    start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", product_id=RSS_ID
+    start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", product_id=RSS_ID
 )
 # 1 Cloud mask
 download_manager.download_date_range(
-    start_date="2020-06-01 11:58:00", end_date="2020-06-01 12:03:00", product_id=CLOUD_ID
+    start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:02:00", product_id=CLOUD_ID
 )
 
 # Convert to Xarray DataArray
 rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
-cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grib")))
-print(rss_filename)
-print(cloud_mask_filename)
+cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
 for area in ["UK", "RSS"]:
     # First do it with the cloud mask
@@ -85,16 +95,20 @@ for area in ["UK", "RSS"]:
     )
 
     # Load them from Zarr to ensure its the same as the output from satip
-    cloudmask_dataset = xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)
-    rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)
-    hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)
+    cloudmask_dataset = xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated = True)["stacked_eumetsat_data"].isel(time=0).sel(variable="cloud_mask")
+    rss_dataset = xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated = True)["stacked_eumetsat_data"].isel(time=0).sel(variable="IR_016")
+    hrv_dataset = xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated = True)["stacked_eumetsat_data"].isel(time=0).sel(variable="HRV")
 
-    fig_size = (14, 6) if area == "UK" else (6, 14)
+    print(cloudmask_dataset)
+    print(rss_dataset)
+    print(hrv_dataset)
+
+    fig_size = (14, 6) if area == 'UK' else (6, 14)
 
     plt.figure(figsize=fig_size)
     ax = plt.axes(projection=ccrs.OSGB())
 
-    cloudmask_dataset["cloud_mask"].plot.pcolormesh(
+    cloudmask_dataset.plot.pcolormesh(
         ax=ax,
         transform=ccrs.OSGB(),
         x="x_osgb",
@@ -102,14 +116,13 @@ for area in ["UK", "RSS"]:
         add_colorbar=True,
     )
     ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"cloud_mask_{area}.png"), dpi=300)
+    plt.savefig(os.path.join(os.getcwd(), f"cloud_mask_{area}.png"))
     plt.cla()
-    plt.clf()
 
     plt.figure(figsize=fig_size)
     ax = plt.axes(projection=ccrs.OSGB())
 
-    rss_dataset["IR_016"].plot.pcolormesh(
+    rss_dataset.plot.pcolormesh(
         ax=ax,
         transform=ccrs.OSGB(),
         x="x_osgb",
@@ -117,14 +130,13 @@ for area in ["UK", "RSS"]:
         add_colorbar=True,
     )
     ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"IR016_{area}.png"), dpi=300)
+    plt.savefig(os.path.join(os.getcwd(), f"IR016_{area}.png"))
     plt.cla()
-    plt.clf()
 
     plt.figure(figsize=fig_size)
     ax = plt.axes(projection=ccrs.OSGB())
 
-    hrv_dataset["HRV"].plot.pcolormesh(
+    hrv_dataset.plot.pcolormesh(
         ax=ax,
         transform=ccrs.OSGB(),
         x="x_osgb",
@@ -132,34 +144,8 @@ for area in ["UK", "RSS"]:
         add_colorbar=True,
     )
     ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"hrv_{area}.png"), dpi=300)
+    plt.savefig(os.path.join(os.getcwd(), f"hrv_{area}.png"))
     plt.cla()
-    plt.clf()
 
 
-def plot_tailored(input_name: str) -> None:
-    geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tiff")))
-    image = rasterio.open(geotiff_files[0])
-    plt.imshow(image.read(), transform=image.transform)
-    plt.title(f"Tailored {input_name}")
-    plt.savefig(os.path.join(os.getcwd(), f"tailored_{input_name}.png"), dpi=300)
-    plt.cla()
-    plt.clf()
-    os.remove(geotiff_files[0])
 
-
-# Then tailored ones
-download_manager.download_tailored_date_range(
-    start_date="2020-06-01 11:58:00",
-    end_date="2020-06-01 12:03:00",
-    file_format="geotiff",
-    product_id=CLOUD_ID,
-)
-plot_tailored("cloud_mask")
-download_manager.download_tailored_date_range(
-    start_date="2020-06-01 11:58:00",
-    end_date="2020-06-01 12:03:00",
-    file_format="geotiff",
-    product_id=RSS_ID,
-)
-plot_tailored("rss")
