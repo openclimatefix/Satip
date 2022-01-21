@@ -97,7 +97,7 @@ class Compressor:
             ), f"{attr} must be set in initialisation or through `fit`"
 
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y", "x", "variable"
+            "time", "y_geostationary", "x_geostationary", "variable"
         )
 
         upper_bound = (2 ** self.bits_per_pixel) - 1
@@ -122,7 +122,7 @@ class Compressor:
             The compressed DataArray
         """
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y", "x", "variable"
+            "time", "y_geostationary", "x_geostationary", "variable"
         )
         dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
         dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
