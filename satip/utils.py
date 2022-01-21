@@ -222,7 +222,6 @@ def convert_scene_to_dataarray(
             new_name = channel + "_" + attr
             data_attrs[new_name] = scene[channel].attrs[attr]
 
-
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
