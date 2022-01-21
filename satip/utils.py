@@ -197,7 +197,7 @@ def load_cloudmask_to_dataset(
     )
 
     # Compress and return
-    dataarray = dataarray.transpose("time", "y", "x", "variable")
+    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
     dataarray.attrs = serialize_attrs(dataarray.attrs)
     # Convert 3's to NaNs as they should be No Data/Space
@@ -242,6 +242,9 @@ def convert_scene_to_dataarray(
     # Round to the nearest 5 minutes
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
+    # Rename x and y to make clear the coordinate system they are in
+    dataarray = dataarray.rename({"x": "x_geostationary", "y": "y_geostationary"})
+
     if "time" not in dataarray.dims:
         time = pd.to_datetime(dataset.attrs["end_time"])
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
@@ -274,7 +277,7 @@ def save_dataset_to_zarr(
         x_size_per_chunk: X pixels per Zarr chunk
 
     """
-    dataarray = dataarray.transpose("time", "y", "x", "variable")
+    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
     # Number of timesteps, x and y size per chunk, and channels (all 12)
     chunks = (
