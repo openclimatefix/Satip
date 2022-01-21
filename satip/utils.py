@@ -219,7 +219,7 @@ def convert_scene_to_dataarray(
     for channel in scene.wishlist:
         scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
         for attr in scene[channel].attrs:
-            new_name = channel + "_" + attr
+            new_name = channel.name + "_" + attr
             data_attrs[new_name] = scene[channel].attrs[attr]
 
     dataset: xr.Dataset = scene.to_xarray_dataset()
@@ -244,8 +244,8 @@ def convert_scene_to_dataarray(
         dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
 
     # Round to the nearest 5 minutes
-    dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
     dataarray.attrs.update(data_attrs)
+    dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
 
     # Rename x and y to make clear the coordinate system they are in
     dataarray = dataarray.rename({"x": "x_geostationary", "y": "y_geostationary"})
