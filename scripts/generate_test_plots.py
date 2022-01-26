@@ -28,6 +28,20 @@ download_manager = eumetsat.DownloadManager(
     logger_name="Plotting_test",
 )
 
+def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
+    ax = plt.axes(projection=ccrs.OSGB())
+    dataset.plot.pcolormesh(
+        ax=ax,
+        transform=ccrs.OSGB(),
+        x="x_osgb",
+        y="y_osgb",
+        add_colorbar=True,
+    )
+    ax.coastlines()
+    plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
+    plt.cla()
+    plt.clf()
+
 
 def plot_tailored(input_name: str) -> None:
     geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tif")))
@@ -39,6 +53,46 @@ def plot_tailored(input_name: str) -> None:
     plt.clf()
     os.remove(geotiff_files[0])
 
+def plot_native_tailored(input_name: str) -> None:
+    native_files = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
+    rss_dataset, hrv_dataset = load_native_to_dataset(
+        Path(native_files[0]), temp_directory=Path(os.getcwd()), area=area
+    )
+    save_dataset_to_zarr(
+        rss_dataset,
+        zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
+        channel_chunk_size=11,
+        dtype="int16",
+        zarr_mode="w",
+    )
+    save_dataset_to_zarr(
+        hrv_dataset,
+        zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
+        channel_chunk_size=1,
+        dtype="int16",
+        zarr_mode="w",
+    )
+    rss_dataset = (
+        xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)[
+            "stacked_eumetsat_data"
+        ]
+        .isel(time=0)
+        .sel(variable="IR_016")
+    )
+    hrv_dataset = (
+        xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)[
+            "stacked_eumetsat_data"
+        ]
+        .isel(time=0)
+        .sel(variable="HRV")
+    )
+
+    print(rss_dataset)
+    print(hrv_dataset)
+
+    plot_dataset(hrv_dataset, "hrv", area)
+    plot_dataset(rss_dataset, "rss", area)
+    os.remove(native_files[0])
 
 # Then tailored ones
 download_manager.download_tailored_date_range(
@@ -56,6 +110,17 @@ download_manager.download_tailored_date_range(
 )
 plot_tailored("rss")
 
+# Then tailored ones
+plot_tailored("cloud_mask")
+
+download_manager.download_tailored_date_range(
+    start_date="2020-06-01 11:59:00",
+    end_date="2020-06-01 12:00:00",
+    file_format="msgnative",
+    product_id=RSS_ID,
+)
+plot_tailored("msg_native")
+
 # Get 1 RSS native file and 1 cloud mask file
 download_manager.download_date_range(
     start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", product_id=RSS_ID
@@ -70,19 +135,6 @@ rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
 cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
 
-def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
-    ax = plt.axes(projection=ccrs.OSGB())
-    dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
-    ax.coastlines()
-    plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
-    plt.cla()
-    plt.clf()
 
 
 for area in [
