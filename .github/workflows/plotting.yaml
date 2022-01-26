@@ -41,6 +41,8 @@ jobs:
           cml-publish hrv_UK.png --md >> report.md
           cml-publish tailored_cloud_mask.png --md >> report.md
           cml-publish tailored_rss.png --md >> report.md
+          cml-publish tailored_msgnative_rss.png --md >> report.md
+          cml-publish tailored_msgnative_hrv.png --md >> report.md
           cml-send-comment report.md
       - name: Archive plots
         uses: actions/upload-artifact@v2
