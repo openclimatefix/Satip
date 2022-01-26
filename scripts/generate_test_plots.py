@@ -58,7 +58,7 @@ def plot_tailored(input_name: str) -> None:
 def plot_native_tailored(input_name: str) -> None:
     native_files = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
     rss_dataset, hrv_dataset = load_native_to_dataset(
-        Path(native_files[0]), temp_directory=Path(os.getcwd()), area=area
+        Path(native_files[0]), temp_directory=Path(os.getcwd()), area='RSS'
     )
     save_dataset_to_zarr(
         rss_dataset,
@@ -92,8 +92,8 @@ def plot_native_tailored(input_name: str) -> None:
     print(rss_dataset)
     print(hrv_dataset)
 
-    plot_dataset(hrv_dataset, "hrv", area)
-    plot_dataset(rss_dataset, "rss", area)
+    plot_dataset(hrv_dataset, "hrv", "msgnative")
+    plot_dataset(rss_dataset, "rss", "msgnative)
     os.remove(native_files[0])
 
 
