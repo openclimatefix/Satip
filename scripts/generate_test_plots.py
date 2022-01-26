@@ -93,7 +93,7 @@ def plot_native_tailored(input_name: str) -> None:
     print(hrv_dataset)
 
     plot_dataset(hrv_dataset, "hrv", "msgnative")
-    plot_dataset(rss_dataset, "rss", "msgnative)
+    plot_dataset(rss_dataset, "rss", "msgnative")
     os.remove(native_files[0])
 
 
