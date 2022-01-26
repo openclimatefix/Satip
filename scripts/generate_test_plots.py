@@ -28,6 +28,7 @@ download_manager = eumetsat.DownloadManager(
     logger_name="Plotting_test",
 )
 
+
 def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
     ax = plt.axes(projection=ccrs.OSGB())
     dataset.plot.pcolormesh(
@@ -52,6 +53,7 @@ def plot_tailored(input_name: str) -> None:
     plt.cla()
     plt.clf()
     os.remove(geotiff_files[0])
+
 
 def plot_native_tailored(input_name: str) -> None:
     native_files = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
@@ -94,6 +96,7 @@ def plot_native_tailored(input_name: str) -> None:
     plot_dataset(rss_dataset, "rss", area)
     os.remove(native_files[0])
 
+
 # Then tailored ones
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
@@ -133,8 +136,6 @@ download_manager.download_date_range(
 # Convert to Xarray DataArray
 rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
 cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
-
-
 
 
 for area in [
