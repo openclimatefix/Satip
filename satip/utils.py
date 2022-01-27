@@ -1,3 +1,12 @@
+"""Utilities module to handle data and logging.
+
+Collection of helper functions and utilities around
+- data loading/saving
+- data conversion
+- data sanitation
+- setting up a logger
+"""
+
 import datetime
 import logging
 import os
@@ -23,7 +32,11 @@ warnings.filterwarnings("ignore", message="invalid value encountered in double_s
 warnings.filterwarnings("ignore", message="invalid value encountered in true_divide")
 warnings.filterwarnings(
     "ignore",
-    message="You will likely lose important projection information when converting to a PROJ string from another format. See: https://proj.org/faq.html#what-is-the-best-format-for-describing-coordinate-reference-systems",
+    message=(
+        "You will likely lose important projection information when converting "
+        "to a PROJ string from another format. See: https://proj.org/faq.html"
+        "#what-is-the-best-format-for-describing-coordinate-reference-systems"
+    ),
 )
 
 
@@ -65,7 +78,8 @@ def load_native_to_dataset(
         filename: The filename of the compressed native file to load
         temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
-        calculate_osgb: Whether to calculate OSGB x and y coordinates, only needed for first data array
+        calculate_osgb: Whether to calculate OSGB x and y coordinates,
+                        only needed for first data array
 
     Returns:
         Returns Xarray DataArray if script worked, else returns None
@@ -151,7 +165,8 @@ def load_native_to_dataset(
         ]
     )
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
-    # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
+    # Selected bounds empirically for have no NaN values from off disk image,
+    # and are covering the UK + a bit
     dataarray: xr.DataArray = convert_scene_to_dataarray(
         scene, band="IR_016", area=area, calculate_osgb=calculate_osgb
     )
@@ -180,7 +195,8 @@ def load_cloudmask_to_dataset(
         filename: The filename of the GRIB file to load
         temp_directory: Temporary directory to store the decompressed files
         area: Name of the geographic area to use, such as 'UK'
-        calculate_osgb: Whether to calculate OSGB coordinates, only needed for first data array
+        calculate_osgb: Whether to calculate OSGB x and y coordinates,
+                        only needed for first data array
 
     Returns:
         Returns Xarray DataArray if script worked, else returns None
@@ -191,23 +207,40 @@ def load_cloudmask_to_dataset(
             "cloud_mask",
         ]
     )
-    # Selected bounds emprically for have no NaN values from off disk image, and covering the UK + a bit
-    dataarray: xr.DataArray = convert_scene_to_dataarray(
-        scene, band="cloud_mask", area=area, calculate_osgb=calculate_osgb
-    )
+    try:
+        # Selected bounds empirically for have no NaN values from off disk image,
+        # and are covering the UK + a bit
+        dataarray: xr.DataArray = convert_scene_to_dataarray(
+            scene, band="cloud_mask", area=area, calculate_osgb=calculate_osgb
+        )
 
-    # Compress and return
-    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
-    dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
-    dataarray.attrs = serialize_attrs(dataarray.attrs)
-    # Convert 3's to NaNs as they should be No Data/Space
-    dataarray = dataarray.where(dataarray["variable"] != 3)
-    return dataarray
+        # Compress and return
+        dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
+        dataarray.attrs = serialize_attrs(dataarray.attrs)
+        # Convert 3's to NaNs as they should be No Data/Space
+        dataarray = dataarray.where(dataarray["variable"] != 3)
+        return dataarray
+    except Exception:
+        return None
 
 
 def convert_scene_to_dataarray(
     scene: Scene, band: str, area: str, calculate_osgb: bool = True
 ) -> xr.DataArray:
+    """
+    Convertes a Scene with satellite data into a data array.
+
+    Args:
+        scene: The satpy.Scene containing the satellite data
+        band: The name of the band
+        area: Name of the geographic area to use, such as 'UK'
+        calculate_osgb: Whether to calculate OSGB x and y coordinates,
+                        only needed for first data array
+
+    Returns:
+        Returns Xarray DataArray
+    """
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
@@ -235,7 +268,10 @@ def convert_scene_to_dataarray(
             y_osgb=(("y", "x"), np.float32(osgb_y)),
         )
         for name in ["x_osgb", "y_osgb"]:
-            dataarray[name].attrs = {"units": "meter", "coordinate_reference_system": "OSGB"}
+            dataarray[name].attrs = {
+                "units": "meter",
+                "coordinate_reference_system": "OSGB",
+            }
 
         dataarray.x_osgb.attrs["name"] = "Easting"
         dataarray.y_osgb.attrs["name"] = "Northing"
@@ -279,7 +315,8 @@ def save_dataset_to_zarr(
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
         x_size_per_chunk: X pixels per Zarr chunk
-
+        channel_chunk_size: Chunk size for the Dask arrays
+        dtype: Data type of the Xarray DataArray generated
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
@@ -356,13 +393,15 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
 
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     """
-    Returns a string for a markdown table, formatted
-    according to the dictionary passed as `table_info`
-    Parameters:
+    Returns a formatted string for a markdown table, according to the dictionary passed as `table_info`.  # noqa E501
+
+    Args:
         table_info: Mapping from index to values
         index_name: Name to use for the index column
+
     Returns:
         md_str: Markdown formatted table string
+
     Example:
         >>> table_info = {
                 'Apples': {
@@ -396,9 +435,9 @@ def set_up_logging(
     log_dir: str,
     main_logging_level: str = "DEBUG",
 ) -> logging.Logger:
-    """
-    `set_up_logging` initialises and configures a custom
-    logger for `satip`. The logging level of the file and
+    """`set_up_logging` initialises and configures a custom logger for `satip`.
+
+    The custom logger's logging level of the file and
     Jupyter outputs are specified by `main_logging_level`
     whilst the Slack handler uses `slack_logging_level`.
     There are three core ways that logs are broadcasted:
@@ -428,12 +467,17 @@ def set_up_logging(
         messages to the specified user and channel.
         >>> from satip.utils import set_up_logging
         >>> import logging
-        >>> logger = set_up_logging('test_log',
-                                    'test_log.txt',
-                                    slack_id=slack_id,
-                                    slack_webhook_url=slack_webhook_url)
-        >>> logger.log(logging.INFO, 'This will output to file and Jupyter but not to Slack as it is not critical')
-        '2020-10-20 10:24:35,367 - INFO - This will output to file and Jupyter but not to Slack as it is not critical'
+        >>> logger = set_up_logging(
+                'test_log',
+                'test_log.txt',
+                slack_id=slack_id,
+                slack_webhook_url=slack_webhook_url
+            )
+        >>> logger.log(
+                logging.INFO,
+                'This will output to file and Jupyter but not to Slack as it is not critical'
+            )
+        '2020-10-20 10:24:35,367 - INFO - This will output to file and Jupyter but not to Slack as it is not critical'  # noqa: E501
     """
 
     # Initialising logger
@@ -444,7 +488,16 @@ def set_up_logging(
         logger = name
 
     # Configuring log level
-    logging_levels = ["CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG", "NOTSET"]
+    logging_levels = [
+        "CRITICAL",
+        "FATAL",
+        "ERROR",
+        "WARNING",
+        "WARN",
+        "INFO",
+        "DEBUG",
+        "NOTSET",
+    ]
 
     assert (
         main_logging_level in logging_levels

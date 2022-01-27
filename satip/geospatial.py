@@ -1,4 +1,15 @@
-import datetime
+"""Conversion of lat-long-coordinates to OSGB-coordinates.
+
+Module sets up a transformer used in a transformation from lat-long
+coordinates to OSGB-coordinates. For details, see comment below or
+https://epsg.io/27700.
+
+  Typical usage example:
+
+  from satip.geospatial import lat_lon_to_osb
+  lat_lon_to_osb(numeric_list_of_latitudes, numeric_list_of_longitudes)
+"""
+
 from numbers import Number
 from typing import List, Tuple
 
