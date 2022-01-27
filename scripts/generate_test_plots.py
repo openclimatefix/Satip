@@ -113,9 +113,6 @@ download_manager.download_tailored_date_range(
 )
 plot_tailored("rss")
 
-# Then tailored ones
-plot_tailored("cloud_mask")
-
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:00:00",
