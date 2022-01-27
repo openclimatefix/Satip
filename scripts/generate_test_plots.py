@@ -104,14 +104,14 @@ download_manager.download_tailored_date_range(
     file_format="geotiff",
     product_id=CLOUD_ID,
 )
-plot_tailored("cloud_mask")
+#plot_tailored("cloud_mask")
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:00:00",
     file_format="geotiff",
     product_id=RSS_ID,
 )
-plot_tailored("rss")
+#plot_tailored("rss")
 
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
@@ -119,7 +119,7 @@ download_manager.download_tailored_date_range(
     file_format="msgnative",
     product_id=RSS_ID,
 )
-plot_tailored("msg_native")
+plot_native_tailored("msg_native")
 
 # Get 1 RSS native file and 1 cloud mask file
 download_manager.download_date_range(
