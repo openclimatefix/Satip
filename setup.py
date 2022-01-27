@@ -12,7 +12,7 @@ setup(
     version="2.3.11",
     license="MIT",
     description="Satip provides the functionality necessary for retrieving, and storing EUMETSAT data",
-    author="Jacob Bieker, Ayrton Bourn",
+    author="Jacob Bieker, Ayrton Bourn, Jack Kelly",
     author_email="info@openclimatefix.org",
     company="Open Climate Fix Ltd",
     install_requires=install_requires,
