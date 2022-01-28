@@ -1,4 +1,4 @@
-"""Pull raw satellite data from EUMetSat
+"""Pulls raw satellite data from EUMetSat.
 
 Functions to download and store satellite from EUMetSat.
 Includes functions to determine the datetime-ranges, process the RSS-images
