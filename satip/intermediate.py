@@ -1,3 +1,17 @@
+"""Handles XArray data generation/updating/splitting from files.
+
+Methods here pre-process file-based data and handle 
+... generation of XArray Dataset files from data files
+... updating of XArray Dataset files from data files
+... splitting XArray Dataset files by month
+
+Usage examples:
+  split_per_month(*args, **kwargs)
+  cloudmask_split_per_month(*args, **kwargs)
+  create_or_update_zarr_with_native_files(*args, **kwargs)
+  create_or_update_zarr_with_cloud_mask_files(*args, **kwargs)
+"""
+
 import multiprocessing
 import os
 from itertools import repeat
@@ -31,7 +45,10 @@ def split_per_month(
     Args:
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
+        hrv_zarr_path: Path of the final HRV-Zarr-file
         region: Name of the region to keep for the datastore
+        temp_directory: Temporary directory to store files to before they are moved
+                        to their final location once they passed the checks.
         spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
 
@@ -93,7 +110,7 @@ def split_per_month(
     pool = multiprocessing.Pool(processes=os.cpu_count())
     for _ in tqdm(
         pool.imap_unordered(
-            wrapper,
+            _wrapper_create_or_update_xarr_with_native_files,
             zip(
                 dirs,
                 zarrs,
@@ -108,7 +125,7 @@ def split_per_month(
         print("Month done")
 
 
-def wrapper(args):
+def _wrapper_create_or_update_xarr_with_native_files(args):
     dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size = args
     create_or_update_zarr_with_native_files(
         dirs, zarrs, hrv_zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
@@ -130,7 +147,9 @@ def cloudmask_split_per_month(
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
         region: Name of the region to keep for the datastore
-        spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
+        temp_directory: Temporary directory to store files to before they are moved
+                        to their final location once they passed the checks.
+        spatial_chunk_size: Chunk size, in pixels in the x and y directions, passed to Xarray
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
 
     """
@@ -174,7 +193,7 @@ def cloudmask_split_per_month(
     pool = multiprocessing.Pool(processes=os.cpu_count())
     for _ in tqdm(
         pool.imap_unordered(
-            cloudmask_wrapper,
+            _cloudmask_wrapper,
             zip(
                 dirs,
                 zarrs,
@@ -188,7 +207,7 @@ def cloudmask_split_per_month(
         print("Month done")
 
 
-def cloudmask_wrapper(args):
+def _cloudmask_wrapper(args):
     dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size = args
     create_or_update_zarr_with_cloud_mask_files(
         dirs, zarrs, temp_directory, region, spatial_chunk_size, temporal_chunk_size
@@ -209,6 +228,8 @@ def create_or_update_zarr_with_cloud_mask_files(
     Args:
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
+        temp_directory: Temporary directory to store files to before they are moved
+                        to their final location once they passed the checks.
         region: Name of the region to keep for the datastore
         spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
@@ -265,6 +286,9 @@ def create_or_update_zarr_with_native_files(
     Args:
         directory: Top-level directory containing the compressed native files
         zarr_path: Path of the final Zarr file
+        hrv_zarr_path: Path for the final HRV-Zarr-file
+        temp_directory: Temporary directory to store files to before they are moved
+                        to their final location once they passed the checks.
         region: Name of the region to keep for the datastore
         spatial_chunk_size: Chunk size, in pixels in the x  and y directions, passed to Xarray
         temporal_chunk_size: Chunk size, in timesteps, for saving into the zarr file
@@ -321,10 +345,12 @@ def create_or_update_zarr_with_native_files(
 
 
 def pool_init(q):
+    """Initialies a global process queue for the worker."""
     global processed_queue  # make queue global in workers
     processed_queue = q
 
 
 def native_wrapper(filename_and_area):
+    """Puts the data-load-job into the global worker queue."""
     filename, area = filename_and_area
     processed_queue.put(load_native_to_dataset(filename, area))

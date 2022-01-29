@@ -1,8 +1,10 @@
 bottleneck
+cartopy
 fsspec
 numcodecs
 numpy>=1.19.4
 pandas>=1.1.4
+rasterio
 requests
 satpy[seviri_l2_grib]>=0.30.1
 tqdm

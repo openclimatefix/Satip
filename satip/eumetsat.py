@@ -9,7 +9,6 @@ import zipfile
 from io import BytesIO
 from typing import List, Union
 
-import pandas as pd
 import requests
 
 from satip import utils
@@ -179,7 +178,8 @@ def identify_available_datasets(
 
 def dataset_id_to_link(collection_id, data_id, access_token):
     return (
-        f"https://api.eumetsat.int/data/download/collections/{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
+        "https://api.eumetsat.int/data/download/collections/"
+        + f"{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
         + "?access_token="
         + access_token
     )
@@ -194,6 +194,10 @@ def json_extract(json_obj: Union[dict, List], locators: List):
     return extracted_obj
 
 
+class InvalidCredentials(Exception):
+    pass
+
+
 def check_valid_request(r: requests.models.Response):
     """
     Checks that the response from the request is valid
@@ -202,11 +206,7 @@ def check_valid_request(r: requests.models.Response):
         r: Response object from the request
 
     """
-
-    class InvalidCredentials(Exception):
-        pass
-
-    if r.ok == False:
+    if r.ok is False:
         if "Invalid Credentials" in r.text:
             raise InvalidCredentials("The access token passed in the API request is invalid")
         else:
@@ -251,7 +251,7 @@ class DownloadManager:
         # Configuring the logger
         self.logger = utils.set_up_logging(logger_name, log_fp)
 
-        self.logger.info(f"********** Download Manager Initialised **************")
+        self.logger.info("********** Download Manager Initialised **************")
 
         # Requesting the API access token
         self.user_key = user_key
@@ -356,13 +356,15 @@ class DownloadManager:
             # Download the raw data
             try:
                 self.download_single_dataset(dataset_link)
-            except:
+            except InvalidCredentials:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
                 dataset_link = dataset_id_to_link(
                     product_id, dataset_id, access_token=self.access_token
                 )
                 self.download_single_dataset(dataset_link)
+            except Exception:
+                self.logger.exception(f"Error downloading dataset with id {dataset_id}")
 
     def download_tailored_date_range(
         self,
@@ -428,7 +430,7 @@ class DownloadManager:
                     file_format=file_format,
                     projection=projection,
                 )
-            except:
+            except Exception:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
                 self._download_single_tailored_dataset(
@@ -559,13 +561,13 @@ def eumetsat_filename_to_datetime(inner_tar_name):
     """Takes a file from the EUMETSAT API and returns
     the date and time part of the filename"""
 
-    p = re.compile("^MSG[123]-SEVI-MSG15-0100-NA-(\d*)\.")
+    p = re.compile(r"^MSG[123]-SEVI-MSG15-0100-NA-(\d*)\.")
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 
 def eumetsat_cloud_name_to_datetime(filename: str):
-    """Takes a file from the EUMETSAT API and returns the date and time part of the file for Cloud mask files"""
+    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
     date_str = filename.split("0100-0100-")[-1].split(".")[0]
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
