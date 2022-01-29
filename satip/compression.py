@@ -22,6 +22,7 @@ from satip.serialize import serialize_attrs
 
 class Compressor:
     """Compressor class which handles compression of dataarrays and masks."""
+
     def __init__(
         self,
         bits_per_pixel=10,

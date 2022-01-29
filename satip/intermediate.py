@@ -1,6 +1,6 @@
 """Handles XArray data generation/updating/splitting from files.
 
-Methods here pre-process file-based data and handle 
+Methods here pre-process file-based data and handle
 ... generation of XArray Dataset files from data files
 ... updating of XArray Dataset files from data files
 ... splitting XArray Dataset files by month
