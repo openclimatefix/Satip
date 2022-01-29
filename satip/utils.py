@@ -41,7 +41,6 @@ warnings.filterwarnings(
 )
 
 
-
 def format_dt_str(datetime_string):
     """Helper function to get a consistently formatted string."""
     return pd.to_datetime(datetime_string).strftime("%Y-%m-%dT%H:%M:%SZ")
