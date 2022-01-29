@@ -28,6 +28,7 @@ import requests.exceptions
 import yaml
 
 from satip import eumetsat
+from satip.utils import format_dt_str
 
 _LOG = logging.getLogger("satip.download")
 _LOG.setLevel(logging.INFO)
@@ -51,10 +52,6 @@ NATIVE_FILESIZE_MB = 102.210123
 CLOUD_FILESIZE_MB = 3.445185
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
-
-
-def _format_dt_str(datetime_string):
-    return pd.to_datetime(datetime_string).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def download_eumetsat_data(
@@ -97,7 +94,7 @@ def download_eumetsat_data(
     if backfill:
         # Set to year before data started to ensure gets everything
         # No downside to requesting an earlier time
-        start_date = _format_dt_str("2008-01-01")
+        start_date = format_dt_str("2008-01-01")
         # Set to current date to get everything up until this script started
         end_date = datetime.now()
 
@@ -149,8 +146,8 @@ def _download_time_range(
 ) -> None:
     time_range, product_id, download_manager = x
     start_time, end_time = time_range
-    _LOG.info(_format_dt_str(start_time))
-    _LOG.info(_format_dt_str(end_time))
+    _LOG.info(format_dt_str(start_time))
+    _LOG.info(format_dt_str(end_time))
     # To help stop with rate limiting
     time.sleep(np.random.randint(0, 30))
     complete = False
@@ -158,8 +155,8 @@ def _download_time_range(
         try:
             time.sleep(np.random.randint(0, 600))
             download_manager.download_date_range(
-                _format_dt_str(start_time),
-                _format_dt_str(end_time),
+                format_dt_str(start_time),
+                format_dt_str(end_time),
                 product_id=product_id,
             )
             complete = True
@@ -167,8 +164,8 @@ def _download_time_range(
             # Retry again after 10 minutes, should then continue working if intermittent
             time.sleep(600)
             download_manager.download_date_range(
-                _format_dt_str(start_time),
-                _format_dt_str(end_time),
+                format_dt_str(start_time),
+                format_dt_str(end_time),
                 product_id=product_id,
             )
             complete = True

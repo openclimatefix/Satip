@@ -11,7 +11,6 @@ from typing import List, Union
 
 import pandas as pd
 import requests
-from requests.auth import HTTPBasicAuth
 
 from satip import utils
 
@@ -77,9 +76,6 @@ def request_access_token(user_key, user_secret):
     return access_token
 
 
-format_dt_str = lambda dt: pd.to_datetime(dt).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
 def query_data_products(
     start_date: str = "2020-01-01",
     end_date: str = "2020-01-02",
@@ -114,8 +110,8 @@ def query_data_products(
         "si": start_index,
         "c": num_features,
         "sort": "start,time,0",
-        "dtstart": format_dt_str(start_date),
-        "dtend": format_dt_str(end_date),
+        "dtstart": utils.format_dt_str(start_date),
+        "dtend": utils.format_dt_str(end_date),
     }
 
     r = requests.get(search_url, params=params)
@@ -189,7 +185,7 @@ def dataset_id_to_link(collection_id, data_id, access_token):
     )
 
 
-def json_extract(json_obj: Union[dict, list], locators: list):
+def json_extract(json_obj: Union[dict, List], locators: List):
     extracted_obj = copy.deepcopy(json_obj)
 
     for locator in locators:

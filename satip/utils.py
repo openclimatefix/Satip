@@ -5,6 +5,7 @@ Collection of helper functions and utilities around
 - data conversion
 - data sanitation
 - setting up a logger
+- datetime string formatting
 """
 
 import datetime
@@ -38,6 +39,12 @@ warnings.filterwarnings(
         "#what-is-the-best-format-for-describing-coordinate-reference-systems"
     ),
 )
+
+
+
+def format_dt_str(datetime_string):
+    """Helper function to get a consistently formatted string."""
+    return pd.to_datetime(datetime_string).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
