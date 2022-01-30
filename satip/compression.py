@@ -22,6 +22,7 @@ from satip.serialize import serialize_attrs
 
 class Compressor:
     """Compressor class which handles compression of dataarrays and masks."""
+
     def __init__(
         self,
         bits_per_pixel=10,
@@ -75,7 +76,7 @@ class Compressor:
         """Initial setting for Compressor class.
 
         Args:
-            bits_per_pixel: bit-length of integer-variable into which XArray Datasets will be compressed.
+            bits_per_pixel: integer bit-length into which XArray Datasets will be compressed.
             mins: Initial setting of min-values.
             maxs: Intial setting of max-values.
             variable_order: Order in which variables will appear in the compressed XArray Dataset.

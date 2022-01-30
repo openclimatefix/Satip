@@ -1,6 +1,6 @@
 """Handles XArray data generation/updating/splitting from files.
 
-Methods here pre-process file-based data and handle 
+Methods here pre-process file-based data and handle
 ... generation of XArray Dataset files from data files
 ... updating of XArray Dataset files from data files
 ... splitting XArray Dataset files by month
@@ -11,6 +11,7 @@ Usage examples:
   create_or_update_zarr_with_native_files(*args, **kwargs)
   create_or_update_zarr_with_cloud_mask_files(*args, **kwargs)
 """
+# TODO: Replace print-statements with a properly configured logger
 
 import multiprocessing
 import os
@@ -344,12 +345,14 @@ def create_or_update_zarr_with_native_files(
             print(f"Failed with Exception with {e}")
 
 
+# TODO: Not used in the repo, remove?
 def pool_init(q):
     """Initialies a global process queue for the worker."""
     global processed_queue  # make queue global in workers
     processed_queue = q
 
 
+# TODO: Not used in the repo, remove?
 def native_wrapper(filename_and_area):
     """Puts the data-load-job into the global worker queue."""
     filename, area = filename_and_area
