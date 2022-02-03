@@ -42,8 +42,8 @@ jobs:
           cml-publish cloud_mask_RSS.png --md >> report.md
           cml-publish rss_RSS.png --md >> report.md
           cml-publish hrv_RSS.png --md >> report.md
-          cml-publish tailored_cloud_mask.png --md >> report.md
-          cml-publish tailored_rss.png --md >> report.md
+          # cml-publish tailored_cloud_mask.png --md >> report.md
+          # cml-publish tailored_rss.png --md >> report.md
           cml-send-comment report.md
       - name: Archive plots
         uses: actions/upload-artifact@v2
