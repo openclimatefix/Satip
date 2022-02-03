@@ -53,14 +53,14 @@ download_manager.download_tailored_date_range(
     file_format="geotiff",
     product_id=CLOUD_ID,
 )
-_plot_tailored("cloud_mask")
+#_plot_tailored("cloud_mask")
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:00:00",
     file_format="geotiff",
     product_id=RSS_ID,
 )
-_plot_tailored("rss")
+#_plot_tailored("rss")
 
 # Get 1 RSS native file and 1 cloud mask file
 download_manager.download_date_range(
@@ -84,23 +84,31 @@ def _plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
         name: File base name to write to.
         area: Area suffix for the filename; get appended to `name`.
     """
-    ax = plt.axes(projection=ccrs.OSGB())
-    dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
+    if area == "UK":
+        ax = plt.axes(projection=ccrs.OSGB())
+        dataset.plot.pcolormesh(
+            ax=ax,
+            transform=ccrs.OSGB(),
+            x="x_osgb",
+            y="y_osgb",
+            add_colorbar=True,
+        )
+    else:
+        ax = plt.axes(projection=ccrs.Geostationary(central_longitude=9.5))
+        dataset.plot.pcolormesh(
+            ax=ax,
+            transform=ccrs.Geostationary(central_longitude=9.5),
+            x="x_geostationary",
+            y="y_geostationary",
+            add_colorbar=True,
+        )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
     plt.cla()
     plt.clf()
 
 
-for area in [
-    "UK",
-]:
+for area in ["UK", "RSS"]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
         Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
