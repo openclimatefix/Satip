@@ -1,6 +1,7 @@
+"""Script to provide an annotated CLI for split_per_month."""
 import click
 
-from satip.intermediate import create_or_update_zarr_with_native_files, split_per_month
+from satip.intermediate import split_per_month
 
 
 @click.command()
@@ -34,6 +35,7 @@ from satip.intermediate import create_or_update_zarr_with_native_files, split_pe
     prompt="The name of the geographic region to use, default 'UK', use 'RSS' for full extant ",
 )
 def create_eumetsat_zarr(*args, **kwargs):
+    """Wrapper around split_per_month to attach decorators to."""
     split_per_month(*args, **kwargs)
 
 

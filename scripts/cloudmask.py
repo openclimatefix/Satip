@@ -1,4 +1,4 @@
-import satpy
+# noqa: D100
 from satpy import Scene, available_readers
 
 print(available_readers())

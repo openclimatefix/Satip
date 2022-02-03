@@ -1,9 +1,19 @@
+# noqa: D100
 import glob
-import shutil
 
+import xarray as xr
+from satpy import Scene
+
+from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
+
+# TODO: The following code needs fixing: osgb_* and filename are undefined.
+# Which values to chose is unclear from the context given here.
+# The code looks like it is copy-pasted from elsewhere where it
+# had been embedded in a different flow with the missing values defined.
 zarr_paths = list(
     glob.glob(
-        "/mnt/storage_ssd/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/eumetsat_zarr_*"
+        """/mnt/storage_ssd/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline
+        /satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/eumetsat_zarr_*"""
     )
 )
 for zarr_path in zarr_paths:
@@ -30,7 +40,8 @@ osgb_y = osgb_y[:, 0]
 osgb_x = osgb_x[0, :]
 zarr_paths = list(
     glob.glob(
-        "/mnt/storage_ssd/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/hrv_eumetsat_zarr_*"
+        """/mnt/storage_ssd/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline
+        /satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/hrv_eumetsat_zarr_*"""
     )
 )
 for zarr_path in zarr_paths:
