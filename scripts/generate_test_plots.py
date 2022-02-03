@@ -71,14 +71,24 @@ cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
 
 def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
-    ax = plt.axes(projection=ccrs.OSGB())
-    dataset.plot.pcolormesh(
-        ax=ax,
-        transform=ccrs.OSGB(),
-        x="x_osgb",
-        y="y_osgb",
-        add_colorbar=True,
-    )
+    if area == "UK":
+        ax = plt.axes(projection=ccrs.OSGB())
+        dataset.plot.pcolormesh(
+            ax=ax,
+            transform=ccrs.OSGB(),
+            x="x_osgb",
+            y="y_osgb",
+            add_colorbar=True,
+        )
+    else:
+        ax = plt.axes(projection=ccrs.Geostationary(central_longitude=9.5))
+        dataset.plot.pcolormesh(
+            ax=ax,
+            transform=ccrs.Geostationary(central_longitude=9.5),
+            x="x",
+            y="y",
+            add_colorbar=True,
+            )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
     plt.cla()
@@ -86,7 +96,7 @@ def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
 
 
 for area in [
-    "UK",
+    "UK", "RSS"
 ]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
