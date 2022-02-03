@@ -85,8 +85,8 @@ def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
         dataset.plot.pcolormesh(
             ax=ax,
             transform=ccrs.Geostationary(central_longitude=9.5),
-            x="x",
-            y="y",
+            x="x_geostationary",
+            y="y_geostationary",
             add_colorbar=True,
         )
     ax.coastlines()
