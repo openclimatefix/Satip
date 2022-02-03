@@ -1,6 +1,11 @@
-"""
-This script generates end 2 end data prep and plots for making sure the data is being processed
+"""Script to run end-to-end and generate plots to verify correct processing.
+
+This script generates end-to-end data prep and plots for making sure the data is being processed
 correctly.
+You will find the generated plots in the current working directory.
+
+Usage example:
+  python3 generate_test_plots.py
 """
 import glob
 import os
@@ -29,7 +34,8 @@ download_manager = eumetsat.DownloadManager(
 )
 
 
-def plot_tailored(input_name: str) -> None:
+def _plot_tailored(input_name: str) -> None:
+    """Plots the results of a download of tailored datasets."""
     geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tif")))
     image = rasterio.open(geotiff_files[0])
     plt.imshow(image.read(1))
@@ -40,21 +46,21 @@ def plot_tailored(input_name: str) -> None:
     os.remove(geotiff_files[0])
 
 
-# Then tailored ones
+# Then tailored ones: Download for the tailored date-range and plot.
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:02:00",
     file_format="geotiff",
     product_id=CLOUD_ID,
 )
-plot_tailored("cloud_mask")
+_plot_tailored("cloud_mask")
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:00:00",
     file_format="geotiff",
     product_id=RSS_ID,
 )
-plot_tailored("rss")
+_plot_tailored("rss")
 
 # Get 1 RSS native file and 1 cloud mask file
 download_manager.download_date_range(
@@ -70,7 +76,14 @@ rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
 cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
 
-def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
+def _plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
+    """Plots a xarray-dataset and saves the output to a defined filename.
+
+    Args:
+        dataset: xarray data set to plot.
+        name: File base name to write to.
+        area: Area suffix for the filename; get appended to `name`.
+    """
     ax = plt.axes(projection=ccrs.OSGB())
     dataset.plot.pcolormesh(
         ax=ax,
@@ -146,6 +159,6 @@ for area in [
     print(rss_dataset)
     print(hrv_dataset)
 
-    plot_dataset(hrv_dataset, "hrv", area)
-    plot_dataset(rss_dataset, "rss", area)
-    plot_dataset(cloudmask_dataset, "cloud_mask", area)
+    _plot_dataset(hrv_dataset, "hrv", area)
+    _plot_dataset(rss_dataset, "rss", area)
+    _plot_dataset(cloudmask_dataset, "cloud_mask", area)
