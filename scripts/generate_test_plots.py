@@ -88,16 +88,14 @@ def plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
             x="x",
             y="y",
             add_colorbar=True,
-            )
+        )
     ax.coastlines()
     plt.savefig(os.path.join(os.getcwd(), f"{name}_{area}.png"))
     plt.cla()
     plt.clf()
 
 
-for area in [
-    "UK", "RSS"
-]:
+for area in ["UK", "RSS"]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
         Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
