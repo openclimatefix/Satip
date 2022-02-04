@@ -1,3 +1,4 @@
+"""Script to provide an annotated CLI for cloudmask_split_per_month."""
 import click
 
 from satip.intermediate import cloudmask_split_per_month
@@ -28,6 +29,7 @@ from satip.intermediate import cloudmask_split_per_month
     prompt="The name of the geographic region to use, default 'UK', use 'RSS' for whole extant ",
 )
 def create_eumetsat_zarr(*args, **kwargs):
+    """Wrapper around cloudmask_split_per_month to attach decorators to."""
     cloudmask_split_per_month(*args, **kwargs)
 
 
