@@ -10,7 +10,6 @@ Usage example:
   See satip.download.py for a specific application example.
 """
 
-import copy
 import datetime
 import json
 import os
@@ -19,7 +18,7 @@ import time
 import urllib
 import zipfile
 from io import BytesIO
-from typing import List, Union
+from urllib.error import HTTPError
 
 import requests
 
@@ -207,40 +206,6 @@ def dataset_id_to_link(collection_id, data_id, access_token):
     )
 
 
-# TODO: This function is not used anywhere; can be removed.
-def json_extract(json_obj: Union[dict, List], locators: List):  # noqa: D103: flagged for deletion
-    extracted_obj = copy.deepcopy(json_obj)
-
-    for locator in locators:
-        extracted_obj = extracted_obj[locator]
-
-    return extracted_obj
-
-
-# TODO: Remove this class if `check_valid_requests` is removed as well.
-class InvalidCredentials(Exception):
-    """Class to catch the case of invalid credentials."""
-
-    pass
-
-
-# TODO: Remove this function, as its only functionality can also be achieved with raise_for_status
-def check_valid_request(r: requests.models.Response):
-    """
-    Checks that the response from the request is valid
-
-    Args:
-        r: Response object from the request
-    """
-    if r.ok is False:
-        if "Invalid Credentials" in r.text:
-            raise InvalidCredentials("The access token passed in the API request is invalid")
-        else:
-            raise Exception(f"The API request was unsuccesful {r.text} {r.status_code}")
-
-    return
-
-
 class DownloadManager:  # noqa: D205
     """
     The DownloadManager class provides a handler for downloading data
@@ -328,7 +293,7 @@ class DownloadManager:  # noqa: D205
         params = {"access_token": self.access_token}
 
         r = requests.get(data_link, params=params)
-        check_valid_request(r)  # TODO: This could be replaced with the canonical raise_for_status
+        r.raise_for_status()
 
         zipped_files = zipfile.ZipFile(BytesIO(r.content))
         zipped_files.extractall(f"{self.data_dir}")
@@ -372,7 +337,7 @@ class DownloadManager:  # noqa: D205
             # Download the raw data
             try:
                 self.download_single_dataset(dataset_link)
-            except InvalidCredentials:
+            except HTTPError:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
                 dataset_link = dataset_id_to_link(
@@ -554,20 +519,6 @@ class DownloadManager:  # noqa: D205
                 open(os.path.join(self.data_dir, os.path.basename(result)), "wb").write(
                     response.content
                 )
-
-
-# TODO: Delete? This function is not used anywhere.
-def get_dir_size(directory="."):  # noqa: D103 due to TODO above.
-    total_size = 0
-
-    for dirpath, dirnames, filenames in os.walk(directory):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
-
-    return total_size
 
 
 def get_filesize_megabytes(filename):
