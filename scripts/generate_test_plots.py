@@ -13,7 +13,6 @@ from pathlib import Path
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import rasterio
 import xarray as xr
 
 from satip import eumetsat
