@@ -292,7 +292,7 @@ def convert_scene_to_dataarray(
     # Rename x and y to make clear the coordinate system they are in
     dataarray = dataarray.rename({"x": "x_geostationary", "y": "y_geostationary"})
     if "time" not in dataarray.dims:
-        time = pd.to_datetime(dataset.attrs["end_time"])
+        time = pd.to_datetime(pd.Timestamp(dataarray.attrs["end_time"]).round("5 min"))
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
 
     del dataarray["crs"]
@@ -391,6 +391,7 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
         Bool whether the timestep is in the Xarray 'time' coordinate or not
     """
     dt = pd.Timestamp(dt).round("5 min")
+    print(f"DT: {dt}: Coords: {zarr_dataset.coords['time'].values}")
     if dt in zarr_dataset.coords["time"].values:
         return True
     else:
