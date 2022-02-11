@@ -37,7 +37,7 @@ download_manager = eumetsat.DownloadManager(
 def _plot_tailored(input_name: str) -> None:
     """Plots the results of a download of tailored datasets."""
     geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.nc")))
-    #image = rasterio.open(geotiff_files[0])
+    # image = rasterio.open(geotiff_files[0])
     image = xr.open_dataset(geotiff_files[0])
     print(image)
     plt.imshow(image.read(1))
