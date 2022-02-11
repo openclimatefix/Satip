@@ -391,7 +391,6 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
         Bool whether the timestep is in the Xarray 'time' coordinate or not
     """
     dt = pd.Timestamp(dt).round("5 min")
-    print(f"DT: {dt}: Coords: {zarr_dataset.coords['time'].values}")
     if dt in zarr_dataset.coords["time"].values:
         return True
     else:
