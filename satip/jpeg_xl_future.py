@@ -70,23 +70,19 @@ class JpegXlFuture(JpegXl):
 
         super().__init__(level=level, distance=distance, *args, **kwargs)
 
-    def encode(self, buf):
-        """Encode buf at JPEG-XL."""
-        n_examples = buf.shape[0]
-        n_timesteps = buf.shape[1]
+    def encode(self, buf: np.ndarray) -> None:
+        """Encode buf at JPEG-XL.
+
+        Args:
+            buf: The input array to compress as JPEG-XL.
+                Expects buf to be of shape (n_timesteps, y, x, n_channels).
+                n_timesteps and n_channels must == 1
+        """
+        n_timesteps = buf.shape[0]
         n_channels = buf.shape[-1]
-        assert n_examples == 1
         assert n_timesteps == 1
         assert n_channels == 1
-        buf = buf[0]
         return super().encode(buf)
-
-    def decode(self, buf, out=None):
-        """Decode JPEG-XL data."""
-        assert out is None
-        out = super().decode(buf, out)
-        out = out[np.newaxis, ...]
-        return out
 
 
 register_codec(JpegXlFuture)
