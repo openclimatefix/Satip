@@ -93,7 +93,6 @@ def split_per_month(
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1,
                 )
                 save_dataset_to_zarr(
                     hrv_dataset,
@@ -102,7 +101,6 @@ def split_per_month(
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1,
                 )
     print(dirs)
     print(zarrs)
@@ -183,8 +181,6 @@ def cloudmask_split_per_month(
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1,
-                    dtype="int8",
                     zarr_mode="w",
                 )
     print(dirs)
@@ -260,8 +256,6 @@ def create_or_update_zarr_with_cloud_mask_files(
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=1,
-                        dtype="int8",
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
@@ -325,7 +319,6 @@ def create_or_update_zarr_with_native_files(
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=1,
                     )
                     save_dataset_to_zarr(
                         hrv_dataset,
@@ -333,7 +326,6 @@ def create_or_update_zarr_with_native_files(
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=1,
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
