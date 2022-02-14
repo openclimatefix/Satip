@@ -309,7 +309,6 @@ def save_dataset_to_zarr(
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
     channel_chunk_size: int = 1,
-    dtype="float32",
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -324,8 +323,6 @@ def save_dataset_to_zarr(
         channel_chunk_size: Chunk size for the Dask arrays. Must be 1 whilst using JPEG-XL
           (at least until imagecodecs implements decompressing JPEG-XL files with multiple
           images per file.)
-        dtype: Data type of the Xarray DataArray generated. Should be float32 for satellite
-          images and uint8 for masks.
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
@@ -341,7 +338,6 @@ def save_dataset_to_zarr(
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = xr.Dataset({"data": dataarray}).astype(dtype)
 
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},
