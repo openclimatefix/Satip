@@ -6,8 +6,8 @@ This this wrapper is only required while the most recent version of imagecodecs 
 from typing import Optional
 
 import numpy as np
-from imagecodecs import JpegXl
-from numcodecs import register_codec
+from imagecodecs.numcodecs import JpegXl
+from numcodecs.registry import register_codec
 
 
 class JpegXlFuture(JpegXl):
