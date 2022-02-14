@@ -93,8 +93,7 @@ def split_per_month(
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=11,
-                    dtype="int16",
+                    channel_chunk_size=1,
                 )
                 save_dataset_to_zarr(
                     hrv_dataset,
@@ -104,7 +103,6 @@ def split_per_month(
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
                     channel_chunk_size=1,
-                    dtype="int16",
                 )
     print(dirs)
     print(zarrs)
@@ -327,7 +325,7 @@ def create_or_update_zarr_with_native_files(
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=11,
+                        channel_chunk_size=1,
                     )
                     save_dataset_to_zarr(
                         hrv_dataset,

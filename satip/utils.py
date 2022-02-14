@@ -16,14 +16,14 @@ import warnings
 from pathlib import Path
 from typing import Any, Tuple
 
-import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
 from satpy import Scene
 
-from satip.compression import Compressor, is_dataset_clean
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
+from satip.jpeg_xl_future import JpegXlFuture
+from satip.scale_to_zero_to_one import ScaleToZeroToOne, is_dataset_clean
 from satip.serialize import serialize_attrs
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
@@ -90,10 +90,10 @@ def load_native_to_dataset(
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    hrv_compressor = Compressor(
+    hrv_scaler = ScaleToZeroToOne(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
-    compressor = Compressor(
+    scaler = ScaleToZeroToOne(
         mins=np.array(
             [
                 -2.5118103,
@@ -184,8 +184,8 @@ def load_native_to_dataset(
         os.remove(decompressed_filename)
 
     # Compress and return
-    dataarray = compressor.compress(dataarray)
-    hrv_dataarray = hrv_compressor.compress(hrv_dataarray)
+    dataarray = scaler.rescale(dataarray)
+    hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
     return dataarray, hrv_dataarray
 
 
@@ -308,8 +308,8 @@ def save_dataset_to_zarr(
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
-    channel_chunk_size: int = 12,
-    dtype="int16",
+    channel_chunk_size: int = 1,
+    dtype="float32",
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -321,10 +321,16 @@ def save_dataset_to_zarr(
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
         x_size_per_chunk: X pixels per Zarr chunk
-        channel_chunk_size: Chunk size for the Dask arrays
+        channel_chunk_size: Chunk size for the Dask arrays. Must be 1 whilst using JPEG-XL
+          (at least until imagecodecs implements decompressing JPEG-XL files with multiple
+          images per file.)
         dtype: Data type of the Xarray DataArray generated
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+
+    # JPEG-XL cannot handle NaN values, so we must encode NaNs as a real value.
+    # See the docstring of encoding_nans for more details.
+    dataarray = encode_nans(dataarray)
 
     # Number of timesteps, x and y size per chunk, and channels (all 12)
     chunks = (
@@ -334,19 +340,18 @@ def save_dataset_to_zarr(
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
-    dataarray = dataarray.fillna(-1)  # Fill NaN with -1, even if none should exist
     if not is_dataset_clean(dataarray):
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray}).astype(dtype)
+    dataarray = xr.Dataset({"data": dataarray}).astype(dtype)
 
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
-                "stacked_eumetsat_data": {
-                    "compressor": numcodecs.get_codec(dict(id="bz2", level=5)),
+                "data": {
+                    "compressor": JpegXlFuture(lossless=False, distance=0.4, effort=8),
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},
@@ -530,3 +535,43 @@ def set_up_logging(
     logger.addHandler(file_handler)
 
     return logger
+
+
+def encode_nans(dataarray: xr.DataArray) -> xr.DataArray:
+    """Encode NaNs as the value 0.025. Encode all other values in the range [0.075, 1].
+
+    JPEG-XL does not understand "NaN" values. JPEG-XL only understands floating
+    point values in the range [0, 1]. So we must encode NaN values
+    as real values in the range [0, 1].
+
+    After JPEG-XL compression, there is slight "ringing" around the edges
+    of regions with filled with a constant number. In experiments, it appears
+    that the values at the inner edges of a "NaN region" vary in the range
+    [0.0227, 0.0280]. But, to be safe, we use a nice wide margin: We don't set
+    the value of "NaNs" to be 0.00 because the ringing would cause the values
+    to drop below zero, which is illegal for JPEG-XL images.
+
+    After decompression, reconstruct regions of NaNs using "image < 0.05" to find NaNs.
+
+    See this comment for more info:
+    https://github.com/openclimatefix/Satip/issues/67#issuecomment-1036456502
+
+    Args:
+        dataarray (xr.DataArray): The input DataArray. All values must already
+            be in the range [0, 1]. The original dataarray is modified in place.
+
+    Returns:
+        xr.DataArray: The returned DataArray. "Real" values will be shifted to
+            the range [0.075, 1]. NaNs will be encoded as 0.025.
+    """
+    LOWER_BOUND_FOR_REAL_PIXELS = 0.075
+    NAN_VALUE = 0.025
+
+    assert dataarray.dtype == np.float32, f"dataarray.dtype must be float32 not {dataarray.dtype}!"
+    dataarray = dataarray.clip(min=0, max=1)
+
+    # Shift all the "real" values up to the range [0.075, 1]
+    dataarray /= 1 + LOWER_BOUND_FOR_REAL_PIXELS
+    dataarray += LOWER_BOUND_FOR_REAL_PIXELS
+    dataarray = dataarray.fillna(NAN_VALUE)
+    return dataarray
