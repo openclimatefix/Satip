@@ -34,6 +34,11 @@ def test_data_tailor():
 
 def test_datetime_check_native():
     """ "Check that checking datetime works"""
+    RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
+    CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
+
+    user_key = os.environ.get("EUMETSAT_USER_KEY")
+    user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     download_manager = eumetsat.DownloadManager(
         user_key=user_key,
         user_secret=user_secret,
@@ -75,6 +80,11 @@ def test_datetime_check_native():
 
 def test_datetime_check_cloud_mask():
     """ "Check that checking datetime works"""
+    RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
+    CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
+
+    user_key = os.environ.get("EUMETSAT_USER_KEY")
+    user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     download_manager = eumetsat.DownloadManager(
         user_key=user_key,
         user_secret=user_secret,
