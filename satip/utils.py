@@ -329,10 +329,6 @@ def save_dataset_to_zarr(
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
-    # JPEG-XL cannot handle NaN values, so we must encode NaNs as a real value.
-    # See the docstring of encoding_nans for more details.
-    dataarray = encode_nans(dataarray)
-
     # Number of timesteps, x and y size per chunk, and channels (all 12)
     chunks = (
         timesteps_per_chunk,
@@ -536,43 +532,3 @@ def set_up_logging(
     logger.addHandler(file_handler)
 
     return logger
-
-
-def encode_nans(dataarray: xr.DataArray) -> xr.DataArray:
-    """Encode NaNs as the value 0.025. Encode all other values in the range [0.075, 1].
-
-    JPEG-XL does not understand "NaN" values. JPEG-XL only understands floating
-    point values in the range [0, 1]. So we must encode NaN values
-    as real values in the range [0, 1].
-
-    After JPEG-XL compression, there is slight "ringing" around the edges
-    of regions with filled with a constant number. In experiments, it appears
-    that the values at the inner edges of a "NaN region" vary in the range
-    [0.0227, 0.0280]. But, to be safe, we use a nice wide margin: We don't set
-    the value of "NaNs" to be 0.00 because the ringing would cause the values
-    to drop below zero, which is illegal for JPEG-XL images.
-
-    After decompression, reconstruct regions of NaNs using "image < 0.05" to find NaNs.
-
-    See this comment for more info:
-    https://github.com/openclimatefix/Satip/issues/67#issuecomment-1036456502
-
-    Args:
-        dataarray (xr.DataArray): The input DataArray. All values must already
-            be in the range [0, 1]. The original dataarray is modified in place.
-
-    Returns:
-        xr.DataArray: The returned DataArray. "Real" values will be shifted to
-            the range [0.075, 1]. NaNs will be encoded as 0.025.
-    """
-    LOWER_BOUND_FOR_REAL_PIXELS = 0.075
-    NAN_VALUE = 0.025
-
-    assert dataarray.dtype == np.float32, f"dataarray.dtype must be float32 not {dataarray.dtype}!"
-    dataarray = dataarray.clip(min=0, max=1)
-
-    # Shift all the "real" values up to the range [0.075, 1]
-    dataarray /= 1 + LOWER_BOUND_FOR_REAL_PIXELS
-    dataarray += LOWER_BOUND_FOR_REAL_PIXELS
-    dataarray = dataarray.fillna(NAN_VALUE)
-    return dataarray
