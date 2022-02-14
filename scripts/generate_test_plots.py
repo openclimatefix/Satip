@@ -51,14 +51,14 @@ def _plot_tailored(input_name: str) -> None:
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:02:00",
-    file_format="netcdf",
+    file_format="netcdf4",
     product_id=CLOUD_ID,
 )
 _plot_tailored("cloud_mask")
 download_manager.download_tailored_date_range(
     start_date="2020-06-01 11:59:00",
     end_date="2020-06-01 12:00:00",
-    file_format="netcdf",
+    file_format="netcdf4",
     product_id=RSS_ID,
 )
 _plot_tailored("rss")
