@@ -1,4 +1,15 @@
-import copy
+"""Classes and methods to provide an interface to the EUMETSAT data API.
+
+Classes and methods to handle access tokens, get data catalogues and
+manage the downloads and storage of data from the EUMETSET API and their logging.
+
+Usage example:
+  from satip.eumetsat import DownloadManager
+  dm = DownloadManager(user_key, user_secret, download_directory, log_directory)
+
+  See satip.download.py for a specific application example.
+"""
+
 import datetime
 import json
 import os
@@ -7,11 +18,9 @@ import time
 import urllib
 import zipfile
 from io import BytesIO
-from typing import List, Union
+from urllib.error import HTTPError
 
-import pandas as pd
 import requests
-from requests.auth import HTTPBasicAuth
 
 from satip import utils
 
@@ -27,6 +36,7 @@ API_CUSTOMIZATION_ENDPOINT = API_ENDPOINT + "/epcs/customisations"
 API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
 
 
+# TODO: This function is not used anywhere in the code, suggest to remove.
 def build_url_string(url, parameters):
     """
     Builds a url string from a parameters dictionary
@@ -51,11 +61,11 @@ def build_url_string(url, parameters):
     return url
 
 
-def request_access_token(user_key, user_secret):
+def _request_access_token(user_key, user_secret):
     """
     Requests an access token from the EUMETSAT data API
 
-    Parameters:
+    Args:
         user_key: EUMETSAT API key
         user_secret: EUMETSAT API secret
 
@@ -77,9 +87,6 @@ def request_access_token(user_key, user_secret):
     return access_token
 
 
-format_dt_str = lambda dt: pd.to_datetime(dt).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
 def query_data_products(
     start_date: str = "2020-01-01",
     end_date: str = "2020-01-02",
@@ -87,14 +94,15 @@ def query_data_products(
     num_features: int = 10_000,
     product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
 ) -> requests.models.Response:
-    """
+    """Queries the EUMETSAT-API for the specified product and date-range.
+
     Queries the EUMETSAT data API for the specified data
     product and date-range. The dates will accept any
     format that can be interpreted by `pd.to_datetime`.
     A maximum of 10,000 entries are returned by the API
     so the indexes of the returned entries can be specified.
 
-    Parameters:
+    Args:
         start_date: Start of the query period
         end_date: End of the query period
         start_index: Starting index of returned entries
@@ -103,7 +111,6 @@ def query_data_products(
 
     Returns:
         r: Response from the request
-
     """
 
     search_url = API_ENDPOINT + "/data/search-products/os"
@@ -114,34 +121,32 @@ def query_data_products(
         "si": start_index,
         "c": num_features,
         "sort": "start,time,0",
-        "dtstart": format_dt_str(start_date),
-        "dtend": format_dt_str(end_date),
+        "dtstart": utils.format_dt_str(start_date),
+        "dtend": utils.format_dt_str(end_date),
     }
 
     r = requests.get(search_url, params=params)
-
-    assert r.ok, f"Request was unsuccesful: {r.status_code} - {r.text}"
+    r.raise_for_status()
 
     return r
 
 
 def identify_available_datasets(
-    start_date: str, end_date: str, product_id="EO:EUM:DAT:MSG:MSG15-RSS", log=None
+    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", log=None
 ):
-    """
-    Identifies available datasets from the EUMETSAT data
-    API for the specified data product and date-range.
-    The dates will accept any format that can be
-    interpreted by `pd.to_datetime`.
+    """Identifies available datasets from the EUMETSAT data API
 
-    Parameters:
+    Identified available dataset for the specified data product and date-range.
+    The dates will accept any format that can be interpreted by `pd.to_datetime`.
+
+    Args:
         start_date: Start of the query period
         end_date: End of the query period
         product_id: ID of the EUMETSAT product requested
+        log: logger to send log messages to, set to None for no logging
 
     Returns:
-        r: Response from the request
-
+        JSON-formatted response from the request
     """
     r_json = query_data_products(start_date, end_date, product_id=product_id).json()
 
@@ -181,49 +186,30 @@ def identify_available_datasets(
     return datasets
 
 
+# TODO: Passing the access token is redundant, as we call the API with the token in params-arg.
 def dataset_id_to_link(collection_id, data_id, access_token):
+    """Generates a link for the get request.
+
+    Args:
+        collection_id: ID of the collection to request from.
+        data_id: Product ID to request for.
+        access_token: Access token for the request.
+
+    Returns:
+        str containing the URL for the dataset request.
+    """
     return (
-        f"https://api.eumetsat.int/data/download/collections/{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
+        "https://api.eumetsat.int/data/download/collections/"
+        + f"{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
         + "?access_token="
         + access_token
     )
 
 
-def json_extract(json_obj: Union[dict, list], locators: list):
-    extracted_obj = copy.deepcopy(json_obj)
-
-    for locator in locators:
-        extracted_obj = extracted_obj[locator]
-
-    return extracted_obj
-
-
-def check_valid_request(r: requests.models.Response):
-    """
-    Checks that the response from the request is valid
-
-    Parameters:
-        r: Response object from the request
-
-    """
-
-    class InvalidCredentials(Exception):
-        pass
-
-    if r.ok == False:
-        if "Invalid Credentials" in r.text:
-            raise InvalidCredentials("The access token passed in the API request is invalid")
-        else:
-            raise Exception(f"The API request was unsuccesful {r.text} {r.status_code}")
-
-    return
-
-
-class DownloadManager:
+class DownloadManager:  # noqa: D205
     """
     The DownloadManager class provides a handler for downloading data
     from the EUMETSAT API, managing: retrieval, logging and metadata
-
     """
 
     def __init__(
@@ -234,14 +220,15 @@ class DownloadManager:
         log_fp: str,
         logger_name="EUMETSAT Download",
     ):
-        """
+        """Download manager initialisation
+
         Initialises the download manager by:
         * Setting up the logger
         * Requesting an API access token
         * Configuring the download directory
         * Adding satip helper functions
 
-        Parameters:
+        Args:
             user_key: EUMETSAT API key
             user_secret: EUMETSAT API secret
             data_dir: Path to the directory where the satellite data will be saved
@@ -249,13 +236,12 @@ class DownloadManager:
 
         Returns:
             download_manager: Instance of the DownloadManager class
-
         """
 
         # Configuring the logger
         self.logger = utils.set_up_logging(logger_name, log_fp)
 
-        self.logger.info(f"********** Download Manager Initialised **************")
+        self.logger.info("********** Download Manager Initialised **************")
 
         # Requesting the API access token
         self.user_key = user_key
@@ -276,18 +262,16 @@ class DownloadManager:
         return
 
     def request_access_token(self, user_key=None, user_secret=None):
-        """
-        Requests an access token from the EUMETSAT data API.
-        If no key or secret are provided then they will default
-        to the values provided in the download manager initialisation
+        """Requests an access token from the EUMETSAT data API.
 
-        Parameters:
+        If no key or secret are provided then they will default
+        to the values provided in the download manager initialisation.
+
+        The requested token is stored in the respective class field.
+
+        Args:
             user_key: EUMETSAT API key
             user_secret: EUMETSAT API secret
-
-        Returns:
-            access_token: API access token
-
         """
 
         if user_key is None:
@@ -295,23 +279,21 @@ class DownloadManager:
         if user_secret is None:
             user_secret = self.user_secret
 
-        self.access_token = request_access_token(user_key, user_secret)
+        self.access_token = _request_access_token(user_key, user_secret)
 
         return
 
     def download_single_dataset(self, data_link: str):
-        """
-        Downloads a single dataset from the EUMETSAT API
+        """Downloads a single dataset from the EUMETSAT API
 
-        Parameters:
+        Args:
             data_link: Url link for the relevant dataset
-
         """
 
         params = {"access_token": self.access_token}
 
         r = requests.get(data_link, params=params)
-        check_valid_request(r)
+        r.raise_for_status()
 
         zipped_files = zipfile.ZipFile(BytesIO(r.content))
         zipped_files.extractall(f"{self.data_dir}")
@@ -321,28 +303,23 @@ class DownloadManager:
     def download_date_range(
         self, start_date: str, end_date: str, product_id="EO:EUM:DAT:MSG:MSG15-RSS"
     ):
-        """
-        Downloads a set of dataset from the EUMETSAT API
-        in the defined date range and specified product
+        """Downloads a date-range-specific dataset from the EUMETSAT API
 
-        Parameters:
+        Args:
             start_date: Start of the requested data period
             end_date: End of the requested data period
             product_id: ID of the EUMETSAT product requested
-
         """
 
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
         self.download_datasets(datasets, product_id=product_id)
 
     def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS"):
-        """
-        Downloads a set of dataset from the EUMETSAT API
-        in the defined date range and specified product
+        """Downloads a product-id- and date-range-specific dataset from the EUMETSAT API
 
-        Parameters:
+        Args:
             datasets: list of datasets returned by `identify_available_datasets`
-
+            product_id: ID of the EUMETSAT product requested
         """
 
         # Identifying dataset ids to download
@@ -360,13 +337,15 @@ class DownloadManager:
             # Download the raw data
             try:
                 self.download_single_dataset(dataset_link)
-            except:
+            except HTTPError:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
                 dataset_link = dataset_id_to_link(
                     product_id, dataset_id, access_token=self.access_token
                 )
                 self.download_single_dataset(dataset_link)
+            except Exception:
+                self.logger.exception(f"Error downloading dataset with id {dataset_id}")
 
     def download_tailored_date_range(
         self,
@@ -377,15 +356,18 @@ class DownloadManager:
         file_format: str = "geotiff",
         projection: str = "geographic",
     ):
-        """
-        Downloads a set of dataset from the EUMETSAT API
-        in the defined date range and specified product using the Data Tailor API
+        """Downloads a set of tailored datasets from the EUMETSAT API
 
-        Parameters:
+        Datasets will be in the defined date range and from the specified product
+        using the Data Tailor API.
+
+        Args:
             start_date: Start of the requested data period
             end_date: End of the requested data period
             product_id: ID of the EUMETSAT product requested
-
+            roi: Region of interest, None if you want the whole original area
+            file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
+            projection: Projection of the stored data, defaults to 'geographic'
         """
 
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
@@ -402,16 +384,14 @@ class DownloadManager:
         projection: str = "geographic",
     ):
         """
-        Query the data tailor service and return the requested ROI data
+        Query the data tailor service and write the requested ROI data to disk
 
         Args:
-            product_id: Product ID for the DAta Store, defaults to RSS ID
+            datasets: Dataset to extract ids from, for which the tailored sets will be downloaded
+            product_id: Product ID for the Data Store
             roi: Region of Interest, None if want the whole original area
             file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
-            projection: Projection of the returned data, defaults to 'geographic'
-
-        Returns:
-            The requested data, transformed as requested
+            projection: Projection of the stored data, defaults to 'geographic'
         """
 
         # Identifying dataset ids to download
@@ -432,7 +412,7 @@ class DownloadManager:
                     file_format=file_format,
                     projection=projection,
                 )
-            except:
+            except Exception:
                 self.logger.info("The EUMETSAT access token has been refreshed")
                 self.request_access_token()
                 self._download_single_tailored_dataset(
@@ -456,10 +436,10 @@ class DownloadManager:
 
         Args:
             dataset_id: Dataset ID to download
+            product_id: Product ID to determine the ID for the request
             roi: Region of Interest for the area, if None, then no cropping is done
             file_format: File format of the output, defaults to 'geotiff'
             projection: Projection for the output, defaults to native projection of 'geographic'
-
         """
 
         SEVIRI = "HRSEVIRI"
@@ -474,6 +454,7 @@ class DownloadManager:
             tailor_id = CLM_ID
         else:
             self.logger.error(f"Product ID {product_id} not recognized, ending now")
+            # TODO: This should raise a ValueError.
             return
 
         self.request_access_token()
@@ -540,19 +521,6 @@ class DownloadManager:
                 )
 
 
-def get_dir_size(directory="."):
-    total_size = 0
-
-    for dirpath, dirnames, filenames in os.walk(directory):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
-
-    return total_size
-
-
 def get_filesize_megabytes(filename):
     """Returns filesize in megabytes"""
     filesize_bytes = os.path.getsize(filename)
@@ -560,16 +528,25 @@ def get_filesize_megabytes(filename):
 
 
 def eumetsat_filename_to_datetime(inner_tar_name):
-    """Takes a file from the EUMETSAT API and returns
-    the date and time part of the filename"""
+    """Extracts datetime from EUMETSAT filename.
 
-    p = re.compile("^MSG[123]-SEVI-MSG15-0100-NA-(\d*)\.")
+    Takes a file from the EUMETSAT API and returns
+    the date and time part of the filename.
+
+    Args:
+        inner_tar_name: Filename part which contains the datetime information.
+
+    Usage example:
+        eumetsat_filename_to_datetime(filename)
+    """
+
+    p = re.compile(r"^MSG[123]-SEVI-MSG15-0100-NA-(\d*)\.")
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 
 def eumetsat_cloud_name_to_datetime(filename: str):
-    """Takes a file from the EUMETSAT API and returns the date and time part of the file for Cloud mask files"""
+    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
     date_str = filename.split("0100-0100-")[-1].split(".")[0]
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")

@@ -1,3 +1,17 @@
+"""Module to compress data and check its sanity.
+
+Class which handles compression of a XArray Dataset by forcing it to use
+10-bit-int and of a cloud mask to clip values. Data completeness and serialization
+are also checked.
+
+Usage Example:
+  from satip.compression import Compressor
+  compressor = Compressor(bits_per_pixel, mins_array, maxs_array, variable_order)
+  compressor.fit(dataset, dims)  # Optional, if you want to set new limits based on `dataset`
+  data_array = compressor.compress(data_array)
+  mask = compressor.compress_maks(mask)
+"""
+
 from typing import Iterable, Union
 
 import numpy as np
@@ -7,6 +21,8 @@ from satip.serialize import serialize_attrs
 
 
 class Compressor:
+    """Compressor class which handles compression of dataarrays and masks."""
+
     def __init__(
         self,
         bits_per_pixel=10,
@@ -57,6 +73,14 @@ class Compressor:
             "WV_073",
         ],
     ):
+        """Initial setting for Compressor class.
+
+        Args:
+            bits_per_pixel: integer bit-length into which XArray Datasets will be compressed.
+            mins: Initial setting of min-values.
+            maxs: Intial setting of max-values.
+            variable_order: Order in which variables will appear in the compressed XArray Dataset.
+        """
 
         self.bits_per_pixel = bits_per_pixel
         self.mins = mins

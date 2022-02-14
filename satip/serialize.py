@@ -1,3 +1,13 @@
+"""Serialises attributes.
+
+Function to ensure that each value of a dictionary can be serialised,
+because we need a JSON-format and JSON is picky.
+
+Usage example:
+  from satip.serialize import serialize_attrs
+  serialize_attrs(attribute_dictionary)
+"""
+
 import datetime
 
 import numpy as np
@@ -17,9 +27,7 @@ def serialize_attrs(attrs: dict) -> dict:
 
     Returns attrs dict where every value has been made serializable.
     """
-    for attr_key in attrs:
-        value = attrs[attr_key]
-
+    for key, value in attrs.items():
         # Convert Dicts
         if isinstance(value, dict):
             # Convert np.float32 to Python floats (otherwise yaml.dump complains)
@@ -27,17 +35,17 @@ def serialize_attrs(attrs: dict) -> dict:
                 inner_value = value[inner_key]
                 if isinstance(inner_value, np.floating):
                     value[inner_key] = float(inner_value)
-            attrs[attr_key] = yaml.dump(value)
+            attrs[key] = yaml.dump(value)
 
         # Convert Numpy bools
         if isinstance(value, (bool, np.bool_)):
-            attrs[attr_key] = str(value)
+            attrs[key] = str(value)
 
         # Convert area
         if isinstance(value, pyresample.geometry.AreaDefinition):
-            attrs[attr_key] = value.dump()
+            attrs[key] = value.dump()
 
         if isinstance(value, datetime.datetime):
-            attrs[attr_key] = value.isoformat()
+            attrs[key] = value.isoformat()
 
     return attrs
