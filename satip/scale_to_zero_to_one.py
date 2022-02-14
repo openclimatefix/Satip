@@ -211,11 +211,9 @@ def encode_nans_as_floats(dataarray: xr.DataArray) -> xr.DataArray:
     LOWER_BOUND_FOR_REAL_PIXELS = 0.075
     NAN_VALUE = 0.025
 
-    assert dataarray.dtype in [
-        np.float16,
-        np.float32,
-        np.float64,
-    ], f"dataarray.dtype must be floating point not {dataarray.dtype}!"
+    assert isinstance(
+        dataarray.dtype, np.floating
+    ), f"dataarray.dtype must be floating point not {dataarray.dtype}!"
     dataarray = dataarray.clip(min=0, max=1)
 
     # Shift all the "real" values up to the range [0.075, 1]
