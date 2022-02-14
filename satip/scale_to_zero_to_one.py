@@ -211,8 +211,8 @@ def encode_nans_as_floats(dataarray: xr.DataArray) -> xr.DataArray:
     LOWER_BOUND_FOR_REAL_PIXELS = 0.075
     NAN_VALUE = 0.025
 
-    assert isinstance(
-        dataarray.dtype, np.floating
+    assert issubclass(
+        dataarray.dtype.type, np.floating
     ), f"dataarray.dtype must be floating point not {dataarray.dtype}!"
     dataarray = dataarray.clip(min=0, max=1)
 
