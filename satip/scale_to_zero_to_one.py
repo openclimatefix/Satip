@@ -135,12 +135,21 @@ class ScaleToZeroToOne:
             dataarray: DataArray to compress
 
         Returns:
-            The compressed DataArray
+            The compressed DataArray. The returned array will be a uint8 array
+            with values in the set {0, 85, 170, 255}.
         """
         dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
             "time", "y_geostationary", "x_geostationary", "variable"
         )
-        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
+        # Times by 85 to fill up the range of uint8 values:
+        # 0 stays 0
+        # 1 becomes 85
+        # 2 becomes 170
+        # 3 becomes 255
+        # Otherwise, if we leave the values in the range [0, 3], JPEG-XL will
+        # think the image is a very dark image, and apply much more agressive compression
+        # (because it assumes the human eye doesn't care about details in the shadows.)
+        dataarray = (dataarray.round().clip(min=0, max=3) * 85).astype(np.uint8)
         dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
 
         return dataarray
