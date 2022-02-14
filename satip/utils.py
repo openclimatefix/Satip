@@ -324,7 +324,8 @@ def save_dataset_to_zarr(
         channel_chunk_size: Chunk size for the Dask arrays. Must be 1 whilst using JPEG-XL
           (at least until imagecodecs implements decompressing JPEG-XL files with multiple
           images per file.)
-        dtype: Data type of the Xarray DataArray generated
+        dtype: Data type of the Xarray DataArray generated. Should be float32 for satellite
+          images and uint8 for masks.
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
