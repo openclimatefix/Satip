@@ -112,6 +112,7 @@ import os
 # Rechunk to much larger ones
 from satip.utils import save_dataset_to_zarr
 
+
 def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     osgb_x = dataarray["x_osgb"].compute()
     osgb_y = dataarray["y_osgb"].compute()
@@ -123,16 +124,17 @@ def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     dataarray = dataarray.assign_coords(
         x_osgb=(("y", "x"), np.float32(osgb_x)),
         y_osgb=(("y", "x"), np.float32(osgb_y)),
-        )
+    )
     for name in ["x_osgb", "y_osgb"]:
         dataarray[name].attrs = {
             "units": "meter",
             "coordinate_reference_system": "OSGB",
-            }
+        }
 
     dataarray.x_osgb.attrs["name"] = "Easting"
     dataarray.y_osgb.attrs["name"] = "Northing"
     return dataarray
+
 
 def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
@@ -141,7 +143,7 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    #data_array = replace_osgb(data_array)
+    # data_array = replace_osgb(data_array)
     print(data_array)
     for i in range(10, len(data_array["time"].values), 10):
         save_dataset_to_zarr(
@@ -162,7 +164,7 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    #data_array = replace_osgb(data_array)
+    # data_array = replace_osgb(data_array)
     print(data_array)
     if not os.path.exists(new_zarr_path):
         save_dataset_to_zarr(
@@ -202,7 +204,6 @@ for _ in pool.imap_unordered(fix_non_hrv, non_hrv_names):
 
 for _ in pool.imap_unordered(fix_hrv, hrv_names):
     print()
-
 
 
 def fix_hrv_full(non_name):
