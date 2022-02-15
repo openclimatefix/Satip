@@ -120,6 +120,8 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
+    data_array = data_array.chunk({"y_osgb": (1536 if hrv else 512,1536 if hrv else 512),
+                                   "x_osgb": (1536 if hrv else 512,1536 if hrv else 512)})
     print(data_array)
     for i in range(10, len(data_array["time"].values), 10):
         save_dataset_to_zarr(
@@ -140,6 +142,8 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
+    data_array = data_array.chunk({"y_osgb": (1536 if hrv else 512,1536 if hrv else 512),
+                      "x_osgb": (1536 if hrv else 512,1536 if hrv else 512)})
     print(data_array)
     if not os.path.exists(new_zarr_path):
         save_dataset_to_zarr(
