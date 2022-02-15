@@ -16,13 +16,14 @@ import warnings
 from pathlib import Path
 from typing import Any, Tuple
 
+import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
 from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
-from satip.jpeg_xl_future import JpegXlFuture
+from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask, is_dataset_clean
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
@@ -296,6 +297,7 @@ def convert_scene_to_dataarray(
 def save_dataset_to_zarr(
     dataarray: xr.DataArray,
     zarr_path: str,
+    compressor_name: str,
     zarr_mode: str = "a",
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
@@ -308,6 +310,7 @@ def save_dataset_to_zarr(
     Args:
         dataarray: DataArray to save
         zarr_path: Filename of the Zarr dataset
+        compressor_name: The name of the compression algorithm to use. Must be 'bz2' or 'jpeg-xl'.
         zarr_mode: Mode to write to the filename, either 'w' for write, or 'a' to append
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
@@ -331,12 +334,18 @@ def save_dataset_to_zarr(
         print("Failing clean check after chunking")
         return
 
+    compression_algos = {
+        "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
+        "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
+    }
+    compression_algo = compression_algos[compressor_name]
+
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
                 "data": {
-                    "compressor": JpegXlFuture(lossless=False, distance=0.4, effort=8),
+                    "compressor": compression_algo,
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},

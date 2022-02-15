@@ -121,18 +121,26 @@ for area in ["UK", "RSS"]:
     save_dataset_to_zarr(
         cloudmask_dataset,
         zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
+        compressor_name="bz2",
         zarr_mode="w",
     )
+    del cloudmask_dataset
+
     save_dataset_to_zarr(
         rss_dataset,
         zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
+        compressor_name="jpeg-xl",
         zarr_mode="w",
     )
+    del rss_dataset
+
     save_dataset_to_zarr(
         hrv_dataset,
         zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
+        compressor_name="jpeg-xl",
         zarr_mode="w",
     )
+    del hrv_dataset
 
     # Load them from Zarr to ensure its the same as the output from satip
     cloudmask_dataset = (
