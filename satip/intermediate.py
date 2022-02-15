@@ -321,16 +321,16 @@ def create_or_update_zarr_with_native_files(
                         dataset,
                         zarr_path=zarr_path,
                         compressor_name="jpeg-xl",
-                        x_size_per_chunk=spatial_chunk_size,
-                        y_size_per_chunk=spatial_chunk_size,
+                        x_size_per_chunk=768,
+                        y_size_per_chunk=768,
                         timesteps_per_chunk=temporal_chunk_size,
                     )
                     save_dataset_to_zarr(
                         hrv_dataset,
                         zarr_path=hrv_zarr_path,
                         compressor_name="jpeg-xl",
-                        x_size_per_chunk=spatial_chunk_size,
-                        y_size_per_chunk=spatial_chunk_size,
+                        x_size_per_chunk=1536,
+                        y_size_per_chunk=1536,
                         timesteps_per_chunk=temporal_chunk_size,
                     )
                 except Exception as e:
