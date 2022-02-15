@@ -128,8 +128,8 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
             compressor_name="jpeg-xl",
             zarr_mode="a",
             timesteps_per_chunk=1,
-            y_size_per_chunk=512,
-            x_size_per_chunk=512,
+            y_size_per_chunk=1536 if hrv else 512,
+            x_size_per_chunk=1536 if hrv else 512,
         )
 
 
@@ -148,8 +148,8 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
             compressor_name="jpeg-xl",
             zarr_mode="w",
             timesteps_per_chunk=1,
-            y_size_per_chunk=512,
-            x_size_per_chunk=512,
+            y_size_per_chunk=1536 if hrv else 512,
+            x_size_per_chunk=1536 if hrv else 512,
         )
 
 
