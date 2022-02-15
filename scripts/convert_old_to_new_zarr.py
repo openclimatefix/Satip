@@ -116,7 +116,7 @@ from satip.utils import save_dataset_to_zarr
 def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
-    data_array = data_array.where(data_array >= 0)  # Negative will be NaN
+    data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
@@ -136,7 +136,7 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
 def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
-    data_array = data_array.where(data_array >= 0)  # Negative will be NaN
+    data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
