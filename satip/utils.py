@@ -523,10 +523,5 @@ def set_up_logging(
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-    log_fp = f"{log_dir}/{name}.txt"
-    file_handler = logging.FileHandler(log_fp, mode="a")
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(getattr(logging, main_logging_level))
-    logger.addHandler(file_handler)
 
     return logger
