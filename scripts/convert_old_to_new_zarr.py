@@ -152,8 +152,11 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
             x_size_per_chunk=512,
         )
 
+from multiprocessing import Pool
 
-for non_name in hrv_names:
+pool = Pool(processes = 8)
+
+def fix_hrv(non_name):
     new_path = non_name.replace("v3", "v4")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
@@ -162,7 +165,7 @@ for non_name in hrv_names:
     print(dataset)
     convert_to_new_format_start(dataset, hrv=True, new_zarr_path=new_path)
 
-for non_name in non_hrv_names:
+def fix_non_hrv(non_name):
     new_path = non_name.replace("v2", "v3")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
@@ -171,7 +174,13 @@ for non_name in non_hrv_names:
     print(dataset)
     convert_to_new_format_start(dataset, hrv=False, new_zarr_path=new_path)
 
-for non_name in hrv_names:
+for _ in pool.imap_unordered(fix_hrv, hrv_names):
+    print()
+
+for _ in pool.imap_unordered(fix_non_hrv, non_hrv_names):
+    print()
+
+def fix_hrv_full(non_name):
     new_path = non_name.replace("v3", "v4")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
@@ -180,7 +189,7 @@ for non_name in hrv_names:
     print(dataset)
     convert_to_new_format(dataset, hrv=True, new_zarr_path=new_path)
 
-for non_name in non_hrv_names:
+def fix_non_hrv_full(non_name):
     new_path = non_name.replace("v2", "v3")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
@@ -188,3 +197,10 @@ for non_name in non_hrv_names:
     dataset = dedupe_time_coords(dataset)
     print(dataset)
     convert_to_new_format(dataset, hrv=False, new_zarr_path=new_path)
+
+for _ in pool.imap_unordered(fix_hrv, hrv_names):
+    print()
+
+for _ in pool.imap_unordered(fix_non_hrv, non_hrv_names):
+    print()
+
