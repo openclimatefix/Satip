@@ -89,6 +89,7 @@ def split_per_month(
                 save_dataset_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
+                    compressor_name="jpeg-xl",
                     zarr_mode="w",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
@@ -97,6 +98,7 @@ def split_per_month(
                 save_dataset_to_zarr(
                     hrv_dataset,
                     zarr_path=hrv_month_zarr_path,
+                    compressor_name="jpeg-xl",
                     zarr_mode="w",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
@@ -178,6 +180,7 @@ def cloudmask_split_per_month(
                 save_dataset_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
+                    compressor_name="bz2",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
@@ -253,6 +256,7 @@ def create_or_update_zarr_with_cloud_mask_files(
                     save_dataset_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
+                        compressor_name="bz2",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
@@ -316,6 +320,7 @@ def create_or_update_zarr_with_native_files(
                     save_dataset_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
+                        compressor_name="jpeg-xl",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
@@ -323,6 +328,7 @@ def create_or_update_zarr_with_native_files(
                     save_dataset_to_zarr(
                         hrv_dataset,
                         zarr_path=hrv_zarr_path,
+                        compressor_name="jpeg-xl",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
