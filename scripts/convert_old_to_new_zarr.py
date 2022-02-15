@@ -112,7 +112,7 @@ import os
 # Rechunk to much larger ones
 from satip.utils import save_dataset_to_zarr
 
-def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
+def replace_osgb(dataarray: xr.Dataset) -> xr.Dataset:
     osgb_x = dataarray["x_osgb"].compute()
     osgb_y = dataarray["y_osgb"].compute()
     del dataarray["y_osgb"]
@@ -134,13 +134,14 @@ def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     return dataarray
 
 def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
+    dataset = replace_osgb(dataset)
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
     data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    data_array = replace_osgb(data_array)
+
     print(data_array)
     for i in range(10, len(data_array["time"].values), 10):
         save_dataset_to_zarr(
@@ -155,13 +156,14 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
 
 
 def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
+    dataset = replace_osgb(dataset)
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
     data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    data_array = replace_osgb(data_array)
+    #data_array = replace_osgb(data_array)
     print(data_array)
     if not os.path.exists(new_zarr_path):
         save_dataset_to_zarr(
