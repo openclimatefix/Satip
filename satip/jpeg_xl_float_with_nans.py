@@ -1,7 +1,4 @@
 """Thin wrapper around imagecodecs.JpegXl.
-
-This this wrapper is only required while the most recent version of imagecodecs is version
-2021.11.20.
 """
 from typing import Optional
 

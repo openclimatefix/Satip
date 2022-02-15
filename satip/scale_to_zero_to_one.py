@@ -137,23 +137,12 @@ def compress_mask(dataarray: xr.DataArray) -> xr.DataArray:
     """
     Compresses Cloud masks DataArrays.
 
-    If we leave the values in the range [0, 3], JPEG-XL will
-    think the image is a very dark image, and apply much more agressive compression
-    (because it assumes the human eye doesn't care about details in the shadows.)
-
-    So we stretch the values to fill up the range of uint8 values:
-
-        NaNs are represented as the value 0
-        0 in the original mask becomes 64 in the output
-        1 becomes 127
-        2 becomes 191
-        3 becomes 255
-
     Args:
         dataarray: DataArray to compress
 
     Returns:
-        The compressed DataArray. The returned array will be a uint8 array.
+        The compressed DataArray. The returned array will be an int8 array,
+        with NaNs represented as -1.
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.round().clip(min=0, max=3)
