@@ -329,10 +329,6 @@ def save_dataset_to_zarr(
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
-    if not is_dataset_clean(dataarray):
-        # One last check again just incase chunking causes any issues
-        print("Failing clean check after chunking")
-        return
 
     compression_algos = {
         "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
