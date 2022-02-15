@@ -133,39 +133,42 @@ class ScaleToZeroToOne:
         return dataarray
 
     def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
-        """
-        Compresses Cloud masks DataArrays
+        """Compresses Cloud masks DataArrays. See compress_mask docstring."""
+        dataarray = dataarray.reindex({"variable": self.variable_order})
+        return compress_mask(dataarray)
 
-        Args:
-            dataarray: DataArray to compress
 
-        Returns:
-            The compressed DataArray. The returned array will be a float array
-            with values in the set {0, 85, 170, 255}.
-        """
-        dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y_geostationary", "x_geostationary", "variable"
-        )
-        # If we leave the values in the range [0, 3], JPEG-XL will
-        # think the image is a very dark image, and apply much more agressive compression
-        # (because it assumes the human eye doesn't care about details in the shadows.)
-        # So we stretch the values to fill up the range of uint8 values:
-        #
-        # NaNs are represented as the value 0
-        # 0 in the original mask becomes 64
-        # 1 becomes 128
-        # 2 becomes 192
-        # 3 becomes 255
+def compress_mask(dataarray: xr.DataArray) -> xr.DataArray:
+    """
+    Compresses Cloud masks DataArrays.
 
-        dataarray = dataarray.round().clip(min=0, max=3)
-        dataarray += 1
-        dataarray *= 64
-        dataarray -= 1  # Because uint8 goes up to 255, not 256.
-        dataarray = dataarray.fillna(0)
-        dataarray = dataarray.astype(np.uint8)
-        dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
+    If we leave the values in the range [0, 3], JPEG-XL will
+    think the image is a very dark image, and apply much more agressive compression
+    (because it assumes the human eye doesn't care about details in the shadows.)
 
-        return dataarray
+    So we stretch the values to fill up the range of uint8 values:
+
+        NaNs are represented as the value 0
+        0 in the original mask becomes 64 in the output
+        1 becomes 127
+        2 becomes 191
+        3 becomes 255
+
+    Args:
+        dataarray: DataArray to compress
+
+    Returns:
+        The compressed DataArray. The returned array will be a uint8 array.
+    """
+    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+    dataarray = dataarray.round().clip(min=0, max=3)
+    dataarray += 1
+    dataarray *= 64
+    dataarray -= 1  # Because uint8 goes up to 255, not 256.
+    dataarray = dataarray.fillna(0)
+    dataarray = dataarray.astype(np.uint8)
+    dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
+    return dataarray
 
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:

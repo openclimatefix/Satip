@@ -23,8 +23,7 @@ from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_future import JpegXlFuture
-from satip.scale_to_zero_to_one import ScaleToZeroToOne, is_dataset_clean
-from satip.serialize import serialize_attrs
+from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask, is_dataset_clean
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
@@ -214,19 +213,12 @@ def load_cloudmask_to_dataset(
         ]
     )
     try:
-        # Selected bounds empirically for have no NaN values from off disk image,
+        # Selected bounds empirically that have no NaN values from off disk image,
         # and are covering the UK + a bit
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="cloud_mask", area=area, calculate_osgb=calculate_osgb
         )
-
-        # Compress and return
-        dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
-        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
-        dataarray.attrs = serialize_attrs(dataarray.attrs)
-        # Convert 3's to NaNs as they should be No Data/Space
-        dataarray = dataarray.where(dataarray["variable"] != 3)
-        return dataarray
+        return compress_mask(dataarray)
     except Exception:
         return None
 
