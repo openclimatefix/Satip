@@ -355,7 +355,8 @@ def save_dataset_to_zarr(
     assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
 
-    dataarray.to_zarr(zarr_path, mode=zarr_mode, consolidated=True, compute=True, **extra_kwargs)
+    dataset = dataarray.to_dataset(name="data")
+    dataset.to_zarr(zarr_path, mode=zarr_mode, consolidated=True, compute=True, **extra_kwargs)
 
 
 def add_constant_coord_to_dataarray(
