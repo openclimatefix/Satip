@@ -164,7 +164,7 @@ def encode_nans(data: np.ndarray) -> np.ndarray:
 
     # Shift all the "real" values up to the range [0.075, 1]
     data += LOWER_BOUND_FOR_REAL_PIXELS * (1 + LOWER_BOUND_FOR_REAL_PIXELS)
-    data /= 1 + LOWER_BOUND_FOR_REAL_PIXELS
+    data /= (1 + LOWER_BOUND_FOR_REAL_PIXELS)
     data = np.nan_to_num(data, nan=NAN_VALUE).clip(min=0, max=1)
     return data
 
@@ -174,7 +174,7 @@ def decode_nans(data: np.ndarray) -> np.ndarray:
     assert np.all(np.isfinite(data))
     assert issubclass(data.dtype.type, np.floating)
     data[data <= NAN_THRESHOLD] = np.NaN
-    data *= 1 + LOWER_BOUND_FOR_REAL_PIXELS
+    data *= (1 + LOWER_BOUND_FOR_REAL_PIXELS)
     data -= LOWER_BOUND_FOR_REAL_PIXELS * (1 + LOWER_BOUND_FOR_REAL_PIXELS)
     return data
 
