@@ -205,8 +205,8 @@ def fix_non_hrv_full(non_name):
     convert_to_new_format(dataset, hrv=False, new_zarr_path=new_path)
 
 
-for _ in pool.imap_unordered(fix_hrv, hrv_names):
+for _ in pool.imap_unordered(fix_hrv_full, hrv_names):
     print()
 
-for _ in pool.imap_unordered(fix_non_hrv, non_hrv_names):
+for _ in pool.imap_unordered(fix_non_hrv_full, non_hrv_names):
     print()
