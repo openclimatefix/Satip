@@ -107,8 +107,9 @@ class ScaleToZeroToOne:
             dataarray: DataArray to rescale.
 
         Returns:
-            The rescaled DataArray. NaNs in the original `dataarray` will still be NaNs
-              in the returned DataArray.
+            The rescaled DataArray. NaNs in the original `dataarray` will have been
+            converted to 0.025, and "real" pixels will be in the range [0.075, 1].
+            The returned DataArray will be float32.
         """
         for attr in ["mins", "maxs"]:
             assert (
@@ -126,6 +127,7 @@ class ScaleToZeroToOne:
         # JPEG-XL cannot handle NaN values, so we must encode NaNs as a different value.
         # See the docstring of encode_nans_as_floats for more details.
         dataarray = encode_nans_as_floats(dataarray)
+        dataarray = dataarray.astype(np.float32)
         dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
 
         return dataarray
