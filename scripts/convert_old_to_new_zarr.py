@@ -1,8 +1,10 @@
 """Convert the older zarr files to newer JPEG-XL ones"""
-import xarray as xr
 import glob
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import xarray as xr
+
 
 def drop_duplicate_times(data_array: xr.DataArray, class_name: str, time_dim: str) -> xr.DataArray:
     """
@@ -26,8 +28,8 @@ def drop_duplicate_times(data_array: xr.DataArray, class_name: str, time_dim: st
 
 
 def drop_non_monotonic_increasing(
-        data_array: xr.DataArray, class_name: str, time_dim: str
-        ) -> xr.DataArray:
+    data_array: xr.DataArray, class_name: str, time_dim: str
+) -> xr.DataArray:
     """
     Drop non monotonically increasing time steps
 
@@ -59,7 +61,6 @@ def drop_non_monotonic_increasing(
             # save how many have been removed, just for logging
             total_n_out_of_order_times += len(out_of_order)
 
-
     return data_array
 
 
@@ -90,8 +91,19 @@ def dedupe_time_coords(dataset: xr.Dataset) -> xr.Dataset:
 
     return dataset
 
-hrv_names = list(glob.glob("/mnt/storage_ssd_8tb/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v3/hrv_rss_eumetsat_zarr*"))
-non_hrv_names = list(glob.glob("/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/rss_eumetsat_zarr*"))
+
+hrv_names = list(
+    glob.glob(
+        "/mnt/storage_ssd_8tb/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v3/hrv_rss_eumetsat_zarr*"
+    )
+)
+non_hrv_names = list(
+    glob.glob(
+        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/rss_eumetsat_zarr*"
+    )
+)
+
+import os
 
 # Renamed to data
 # Convert to float32
@@ -99,63 +111,80 @@ non_hrv_names = list(glob.glob("/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowc
 # Divide by 1023 to get 0 to 1
 # Rechunk to much larger ones
 from satip.utils import save_dataset_to_zarr
-import os
+
 
 def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
-    data_array = data_array.where(data_array >= 0) # Negative will be NaN
+    data_array = data_array.where(data_array >= 0)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
-    data_array['time'] = data_array.coords["time"].dt.round("5 min").values
+    data_array["time"] = data_array.coords["time"].dt.round("5 min").values
     print(dataset)
     for i in range(10, len(data_array["time"].values), 10):
-        save_dataset_to_zarr(data_array.isel(time=slice(i,i+10)), zarr_path = new_zarr_path, compressor_name = 'jpeg-xl', zarr_mode = 'a', timesteps_per_chunk = 1, y_size_per_chunk = 512, x_size_per_chunk = 512, )
+        save_dataset_to_zarr(
+            data_array.isel(time=slice(i, i + 10)),
+            zarr_path=new_zarr_path,
+            compressor_name="jpeg-xl",
+            zarr_mode="a",
+            timesteps_per_chunk=1,
+            y_size_per_chunk=512,
+            x_size_per_chunk=512,
+        )
 
 
 def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
-    data_array = data_array.where(data_array >= 0) # Negative will be NaN
+    data_array = data_array.where(data_array >= 0)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
-    data_array['time'] = data_array.coords["time"].dt.round("5 min").values
+    data_array["time"] = data_array.coords["time"].dt.round("5 min").values
     print(dataset)
     if not os.path.exists(new_zarr_path):
-        save_dataset_to_zarr(data_array.isel(time=slice(0,10)), zarr_path = new_zarr_path, compressor_name = 'jpeg-xl', zarr_mode = 'w', timesteps_per_chunk = 1, y_size_per_chunk = 512, x_size_per_chunk = 512, )
+        save_dataset_to_zarr(
+            data_array.isel(time=slice(0, 10)),
+            zarr_path=new_zarr_path,
+            compressor_name="jpeg-xl",
+            zarr_mode="w",
+            timesteps_per_chunk=1,
+            y_size_per_chunk=512,
+            x_size_per_chunk=512,
+        )
+
 
 for non_name in hrv_names:
     new_path = non_name.replace("v3", "v4")
     print(new_path)
-    dataset = xr.open_zarr(non_name, consolidated = True)
+    dataset = xr.open_zarr(non_name, consolidated=True)
     print(dataset)
     dataset = dedupe_time_coords(dataset)
     print(dataset)
-    convert_to_new_format_start(dataset, hrv=True, new_zarr_path = new_path)
+    convert_to_new_format_start(dataset, hrv=True, new_zarr_path=new_path)
 
 for non_name in non_hrv_names:
     new_path = non_name.replace("v2", "v3")
     print(new_path)
-    dataset = xr.open_zarr(non_name, consolidated = True)
+    dataset = xr.open_zarr(non_name, consolidated=True)
     print(dataset)
     dataset = dedupe_time_coords(dataset)
     print(dataset)
-    convert_to_new_format_start(dataset, hrv=False, new_zarr_path = new_path)
+    convert_to_new_format_start(dataset, hrv=False, new_zarr_path=new_path)
 
 for non_name in hrv_names:
     new_path = non_name.replace("v3", "v4")
     print(new_path)
-    dataset = xr.open_zarr(non_name, consolidated = True)
+    dataset = xr.open_zarr(non_name, consolidated=True)
     print(dataset)
     dataset = dedupe_time_coords(dataset)
     print(dataset)
-    convert_to_new_format(dataset, hrv=True, new_zarr_path = new_path)
+    convert_to_new_format(dataset, hrv=True, new_zarr_path=new_path)
 
 for non_name in non_hrv_names:
     new_path = non_name.replace("v2", "v3")
     print(new_path)
-    dataset = xr.open_zarr(non_name, consolidated = True)
+    dataset = xr.open_zarr(non_name, consolidated=True)
     print(dataset)
     dataset = dedupe_time_coords(dataset)
     print(dataset)
-    convert_to_new_format(dataset, hrv=False, new_zarr_path = new_path)
+    convert_to_new_format(dataset, hrv=False, new_zarr_path=new_path)
