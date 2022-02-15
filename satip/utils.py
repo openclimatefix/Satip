@@ -523,5 +523,4 @@ def set_up_logging(
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
-
     return logger
