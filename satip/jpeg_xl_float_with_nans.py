@@ -163,7 +163,7 @@ def encode_nans(data: np.ndarray) -> np.ndarray:
     ), f"dataarray.dtype must be floating point not {data.dtype}!"
 
     # Shift all the "real" values up to the range [0.075, 1]
-    data *= (1 - LOWER_BOUND_FOR_REAL_PIXELS)
+    data *= 1 - LOWER_BOUND_FOR_REAL_PIXELS
     # Now [0, 1-0.075]
     data += LOWER_BOUND_FOR_REAL_PIXELS
     # Now [0.075, 1.]
@@ -179,7 +179,7 @@ def decode_nans(data: np.ndarray) -> np.ndarray:
     # [0.075, 1]
     data -= LOWER_BOUND_FOR_REAL_PIXELS
     # [0, 1-0.075]
-    data /= (1 - LOWER_BOUND_FOR_REAL_PIXELS)
+    data /= 1 - LOWER_BOUND_FOR_REAL_PIXELS
     # [0, 1]
     return data.clip(min=0, max=1)
 
