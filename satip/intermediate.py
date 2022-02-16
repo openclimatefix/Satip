@@ -93,8 +93,8 @@ def split_per_month(
                     zarr_path=month_zarr_path,
                     compressor_name="jpeg-xl",
                     zarr_mode="w",
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
+                    x_size_per_chunk=768,
+                    y_size_per_chunk=768,
                     timesteps_per_chunk=temporal_chunk_size,
                 )
                 save_dataset_to_zarr(
@@ -102,8 +102,8 @@ def split_per_month(
                     zarr_path=hrv_month_zarr_path,
                     compressor_name="jpeg-xl",
                     zarr_mode="w",
-                    x_size_per_chunk=spatial_chunk_size,
-                    y_size_per_chunk=spatial_chunk_size,
+                    x_size_per_chunk=1536,
+                    y_size_per_chunk=1536,
                     timesteps_per_chunk=temporal_chunk_size,
                 )
     print(dirs)
