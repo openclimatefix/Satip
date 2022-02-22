@@ -10,4 +10,4 @@ xarray
 zarr
 imagecodecs
 pyorbital
-netcdf4-python
+netCDF4
