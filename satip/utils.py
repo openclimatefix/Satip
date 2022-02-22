@@ -293,17 +293,25 @@ def convert_scene_to_dataarray(
 
     return dataarray
 
-def save_native_to_netcdf(list_of_native_files: list, bands: list = ["HRV","IR_016",
-                                                                     "IR_039",
-                                                                     "IR_087",
-                                                                     "IR_097",
-                                                                     "IR_108",
-                                                                     "IR_120",
-                                                                     "IR_134",
-                                                                     "VIS006",
-                                                                     "VIS008",
-                                                                     "WV_062",
-                                                                     "WV_073",], save_dir: str = "./") -> None:
+
+def save_native_to_netcdf(
+    list_of_native_files: list,
+    bands: list = [
+        "HRV",
+        "IR_016",
+        "IR_039",
+        "IR_087",
+        "IR_097",
+        "IR_108",
+        "IR_120",
+        "IR_134",
+        "VIS006",
+        "VIS008",
+        "WV_062",
+        "WV_073",
+    ],
+    save_dir: str = "./",
+) -> None:
     """
     Saves native files to NetCDF for consumer
 
@@ -326,10 +334,12 @@ def save_native_to_netcdf(list_of_native_files: list, bands: list = ["HRV","IR_0
                 ]
             )
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
-                hrv_scene, band="HRV", area='UK', calculate_osgb=True
+                hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
             hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
-            hrv_dataarray = hrv_dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+            hrv_dataarray = hrv_dataarray.transpose(
+                "time", "y_geostationary", "x_geostationary", "variable"
+            )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_datasets.append(hrv_dataset)
 
@@ -380,7 +390,7 @@ def save_native_to_netcdf(list_of_native_files: list, bands: list = ["HRV","IR_0
         )
         scene = Scene(filenames={"seviri_l1b_native": [f]})
         dataarray: xr.DataArray = convert_scene_to_dataarray(
-            scene, band="IR_016", area='UK', calculate_osgb=True
+            scene, band="IR_016", area="UK", calculate_osgb=True
         )
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
@@ -392,15 +402,13 @@ def save_native_to_netcdf(list_of_native_files: list, bands: list = ["HRV","IR_0
     if hrv_datasets:
         hrv_dataset = xr.concat(hrv_datasets, "time")
         hrv_dataset = hrv_dataset.sortby("time")
-        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode='w', compute=True)
-        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode='w', compute=True)
+        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode="w", compute=True)
+        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode="w", compute=True)
     if datasets:
         dataset = xr.concat(datasets, "time")
         dataset = dataset.sortby("time")
-        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode='w', compute=True)
-        dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode='w', compute=True)
-
-
+        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode="w", compute=True)
+        dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode="w", compute=True)
 
 
 def save_dataset_to_zarr(
