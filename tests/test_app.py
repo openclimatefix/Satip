@@ -14,8 +14,8 @@ def test_saving_netcdf():
         user_key=user_key, user_secret=user_secret, data_dir=os.getcwd()
     )
     download_manager.download_date_range(
-        start_date=(pd.Timestamp().now() - pd.Timedelta("1 hour")).strftime("%Y-%m-%d-%H-%M-%S"),
-        end_date=pd.Timestamp().now().strftime("%Y-%m-%d-%H-%M-%S"),
+        start_date=(pd.Timestamp.now() - pd.Timedelta("1 hour")).strftime("%Y-%m-%d-%H-%M-%S"),
+        end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"),
     )
 
     # 2. Load grib files to one Xarray Dataset
