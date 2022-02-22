@@ -29,7 +29,6 @@ download_manager = eumetsat.DownloadManager(
     user_key=user_key,
     user_secret=user_secret,
     data_dir=os.getcwd(),
-    log_fp=os.path.join(os.getcwd(), "log.txt"),
     logger_name="Plotting_test",
 )
 
