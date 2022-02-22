@@ -251,9 +251,8 @@ def convert_scene_to_dataarray(
     for channel in scene.wishlist:
         scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
         for attr in scene[channel].attrs:
-            new_name = channel.name + "_" + attr
+            new_name = channel["name"] + "_" + attr
             data_attrs[new_name] = scene[channel].attrs[attr]
-
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
@@ -320,13 +319,58 @@ def save_native_to_netcdf(
         bands: Bands to save
         save_dir: Directory to save the netcdf files
     """
+    scaler = ScaleToZeroToOne(
+        mins=np.array(
+            [
+                -2.5118103,
+                -64.83977,
+                63.404694,
+                2.844452,
+                199.10002,
+                -17.254883,
+                -26.29155,
+                -1.1009827,
+                -2.4184198,
+                199.57048,
+                198.95093,
+            ]
+        ),
+        maxs=np.array(
+            [
+                69.60857,
+                339.15588,
+                340.26526,
+                317.86752,
+                313.2767,
+                315.99194,
+                274.82297,
+                93.786545,
+                101.34922,
+                249.91806,
+                286.96323,
+            ]
+        ),
+        variable_order=[
+            "IR_016",
+            "IR_039",
+            "IR_087",
+            "IR_097",
+            "IR_108",
+            "IR_120",
+            "IR_134",
+            "VIS006",
+            "VIS008",
+            "WV_062",
+            "WV_073",
+        ],
+    )
+    hrv_scaler = ScaleToZeroToOne(
+        variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
+    )
     datasets = []
     hrv_datasets = []
     for f in list_of_native_files:
         if "HRV" in bands:
-            hrv_scaler = ScaleToZeroToOne(
-                variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
-            )
             hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
             hrv_scene.load(
                 [
@@ -334,7 +378,7 @@ def save_native_to_netcdf(
                 ]
             )
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
-                hrv_scene, band="HRV", area="UK", calculate_osgb=True
+                hrv_scene, band="HRV", area="RSS", calculate_osgb=True
             )
             hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
             hrv_dataarray = hrv_dataarray.transpose(
@@ -343,38 +387,9 @@ def save_native_to_netcdf(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_datasets.append(hrv_dataset)
 
-        scaler = ScaleToZeroToOne(
-            mins=np.array(
-                [
-                    -2.5118103,
-                    -64.83977,
-                    63.404694,
-                    2.844452,
-                    199.10002,
-                    -17.254883,
-                    -26.29155,
-                    -1.1009827,
-                    -2.4184198,
-                    199.57048,
-                    198.95093,
-                ]
-            ),
-            maxs=np.array(
-                [
-                    69.60857,
-                    339.15588,
-                    340.26526,
-                    317.86752,
-                    313.2767,
-                    315.99194,
-                    274.82297,
-                    93.786545,
-                    101.34922,
-                    249.91806,
-                    286.96323,
-                ]
-            ),
-            variable_order=[
+        scene = Scene(filenames={"seviri_l1b_native": [f]})
+        scene.load(
+            [
                 "IR_016",
                 "IR_039",
                 "IR_087",
@@ -386,11 +401,10 @@ def save_native_to_netcdf(
                 "VIS008",
                 "WV_062",
                 "WV_073",
-            ],
+            ]
         )
-        scene = Scene(filenames={"seviri_l1b_native": [f]})
         dataarray: xr.DataArray = convert_scene_to_dataarray(
-            scene, band="IR_016", area="UK", calculate_osgb=True
+            scene, band="IR_016", area="RSS", calculate_osgb=True
         )
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
@@ -446,10 +460,6 @@ def save_dataset_to_zarr(
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
-    if not is_dataset_clean(dataarray):
-        # One last check again just incase chunking causes any issues
-        print("Failing clean check after chunking")
-        return
 
     compression_algos = {
         "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
