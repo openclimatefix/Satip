@@ -9,6 +9,7 @@ import pandas as pd
 from satip.eumetsat import DownloadManager
 from satip.utils import save_native_to_netcdf
 
+
 def test_saving_netcdf():
     """Tests the same saving as in run.py"""
     user_key = os.environ.get("EUMETSAT_USER_KEY")
