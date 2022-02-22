@@ -387,20 +387,18 @@ def save_native_to_netcdf(list_of_native_files: list, bands: list = ["HRV","IR_0
         dataset = dataarray.to_dataset(name="data")
         datasets.append(dataset)
 
+    now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
     # Make one array
     if hrv_datasets:
         hrv_dataset = xr.concat(hrv_datasets, "time")
+        hrv_dataset = hrv_dataset.sortby("time")
+        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode='w', compute=True)
+        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode='w', compute=True)
     if datasets:
         dataset = xr.concat(datasets, "time")
-
-    # Now save out to NetCDF
-    hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode='w', compute=True)
-    dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode='w', compute=True)
-
-    # Save as datetime now
-    now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
-    hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode='w', compute=True)
-    dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode='w', compute=True)
+        dataset = dataset.sortby("time")
+        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode='w', compute=True)
+        dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode='w', compute=True)
 
 
 

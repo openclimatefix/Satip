@@ -5,10 +5,8 @@ import os
 
 import click
 import pandas as pd
-from satpy import Scene
 
 from satip.eumetsat import DownloadManager
-from satip.intermediate import load_native_to_dataset
 from satip.utils import save_native_to_netcdf
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
