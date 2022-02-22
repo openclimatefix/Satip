@@ -24,7 +24,7 @@ from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask, is_dataset_clean
+from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
