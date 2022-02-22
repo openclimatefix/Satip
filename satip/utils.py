@@ -555,7 +555,6 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 # Cell
 def set_up_logging(
     name: str,
-    log_dir: str,
     main_logging_level: str = "DEBUG",
 ) -> logging.Logger:
     """`set_up_logging` initialises and configures a custom logger for `satip`.
@@ -635,9 +634,5 @@ def set_up_logging(
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
-
-    # Configuring file output handler
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
 
     return logger
