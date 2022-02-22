@@ -45,9 +45,12 @@ logger = logging.getLogger(__name__)
 )
 def run(api_key, api_secret, save_dir, history):
     """Run main application
-    1. Get data from API, download grip files
-    2. Load grib files to one Xarray Dataset
-    3. Save to directory
+
+    Args:
+        api_key: API Key for EUMETSAT
+        api_secret: Secret for EUMETSAT
+        save_dir: Save directory
+        history: History time
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
