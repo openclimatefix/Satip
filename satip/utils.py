@@ -324,7 +324,6 @@ def save_native_to_netcdf(
     hrv_datasets = []
     for f in list_of_native_files:
         if "HRV" in bands:
-            use_hrv = True
             hrv_scaler = ScaleToZeroToOne(
                 variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
             )
