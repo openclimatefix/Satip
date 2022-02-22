@@ -121,44 +121,40 @@ for area in ["UK", "RSS"]:
     save_dataset_to_zarr(
         cloudmask_dataset,
         zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
-        channel_chunk_size=1,
-        dtype="int8",
+        compressor_name="bz2",
         zarr_mode="w",
     )
+    del cloudmask_dataset
+
     save_dataset_to_zarr(
         rss_dataset,
         zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
-        channel_chunk_size=11,
-        dtype="int16",
+        compressor_name="jpeg-xl",
         zarr_mode="w",
     )
+    del rss_dataset
+
     save_dataset_to_zarr(
         hrv_dataset,
         zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
-        channel_chunk_size=1,
-        dtype="int16",
+        compressor_name="jpeg-xl",
         zarr_mode="w",
     )
+    del hrv_dataset
 
     # Load them from Zarr to ensure its the same as the output from satip
     cloudmask_dataset = (
-        xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)[
-            "stacked_eumetsat_data"
-        ]
+        xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)["data"]
         .isel(time=0)
         .sel(variable="cloud_mask")
     )
     rss_dataset = (
-        xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)[
-            "stacked_eumetsat_data"
-        ]
+        xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)["data"]
         .isel(time=0)
         .sel(variable="IR_016")
     )
     hrv_dataset = (
-        xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)[
-            "stacked_eumetsat_data"
-        ]
+        xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)["data"]
         .isel(time=0)
         .sel(variable="HRV")
     )

@@ -89,22 +89,20 @@ def split_per_month(
                 save_dataset_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
+                    compressor_name="jpeg-xl",
                     zarr_mode="w",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=11,
-                    dtype="int16",
                 )
                 save_dataset_to_zarr(
                     hrv_dataset,
                     zarr_path=hrv_month_zarr_path,
+                    compressor_name="jpeg-xl",
                     zarr_mode="w",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1,
-                    dtype="int16",
                 )
     print(dirs)
     print(zarrs)
@@ -182,11 +180,10 @@ def cloudmask_split_per_month(
                 save_dataset_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
+                    compressor_name="bz2",
                     x_size_per_chunk=spatial_chunk_size,
                     y_size_per_chunk=spatial_chunk_size,
                     timesteps_per_chunk=temporal_chunk_size,
-                    channel_chunk_size=1,
-                    dtype="int8",
                     zarr_mode="w",
                 )
     print(dirs)
@@ -259,11 +256,10 @@ def create_or_update_zarr_with_cloud_mask_files(
                     save_dataset_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
+                        compressor_name="bz2",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=1,
-                        dtype="int8",
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
@@ -324,18 +320,18 @@ def create_or_update_zarr_with_native_files(
                     save_dataset_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
+                        compressor_name="jpeg-xl",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=11,
                     )
                     save_dataset_to_zarr(
                         hrv_dataset,
                         zarr_path=hrv_zarr_path,
+                        compressor_name="jpeg-xl",
                         x_size_per_chunk=spatial_chunk_size,
                         y_size_per_chunk=spatial_chunk_size,
                         timesteps_per_chunk=temporal_chunk_size,
-                        channel_chunk_size=1,
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")

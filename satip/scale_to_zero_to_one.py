@@ -1,15 +1,11 @@
-"""Module to compress data and check its sanity.
-
-Class which handles compression of a XArray Dataset by forcing it to use
-10-bit-int and of a cloud mask to clip values. Data completeness and serialization
-are also checked.
+"""Module to scale values to the range [0, 1] and check if the data is sane.
 
 Usage Example:
-  from satip.compression import Compressor
-  compressor = Compressor(bits_per_pixel, mins_array, maxs_array, variable_order)
-  compressor.fit(dataset, dims)  # Optional, if you want to set new limits based on `dataset`
-  data_array = compressor.compress(data_array)
-  mask = compressor.compress_maks(mask)
+  from satip.scale_to_zero_to_one import ScaleToZeroToOne
+  scaler = ScaleToZeroToOne(mins_array, maxs_array, variable_order)
+  scaler.fit(dataset, dims)  # Optional, if you want to set new limits based on `dataset`
+  data_array = scaler.scale(data_array)
+  mask = scaler.compress_masks(mask)
 """
 
 from typing import Iterable, Union
@@ -20,12 +16,11 @@ import xarray as xr
 from satip.serialize import serialize_attrs
 
 
-class Compressor:
-    """Compressor class which handles compression of dataarrays and masks."""
+class ScaleToZeroToOne:
+    """ScaleToZeroToOne: rescales dataarrays so all values lie in the range [0, 1]."""
 
     def __init__(
         self,
-        bits_per_pixel=10,
         mins=np.array(
             [
                 -1.2278595,
@@ -73,16 +68,13 @@ class Compressor:
             "WV_073",
         ],
     ):
-        """Initial setting for Compressor class.
+        """Initial setting for ScaleToZeroToOne class.
 
         Args:
-            bits_per_pixel: integer bit-length into which XArray Datasets will be compressed.
             mins: Initial setting of min-values.
             maxs: Intial setting of max-values.
             variable_order: Order in which variables will appear in the compressed XArray Dataset.
         """
-
-        self.bits_per_pixel = bits_per_pixel
         self.mins = mins
         self.maxs = maxs
         self.variable_order = variable_order
@@ -105,15 +97,18 @@ class Compressor:
         print(f"The maxs are: {self.maxs}")
         print(f"The variable order is: {self.variable_order}")
 
-    def compress(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
+    def rescale(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
         """
-        Compress Xarray DataArray to use 10-bit integers
+        Rescale Xarray DataArray so all values lie in the range [0, 1].
+
+        Warning: The original `dataarray` will be modified in-place.
 
         Args:
-            dataarray: DataArray to compress
+            dataarray: DataArray to rescale.
 
         Returns:
-            The compressed DataArray
+            The DataArray rescaled to [0, 1]. NaNs in the original `dataarray` will still
+            be present in the returned dataarray. The returned DataArray will be float32.
         """
         for attr in ["mins", "maxs"]:
             assert (
@@ -124,34 +119,37 @@ class Compressor:
             "time", "y_geostationary", "x_geostationary", "variable"
         )
 
-        upper_bound = (2 ** self.bits_per_pixel) - 1
-        new_max = self.maxs - self.mins
-
+        range = self.maxs - self.mins
         dataarray -= self.mins
-        dataarray /= new_max
-        dataarray *= upper_bound
-        dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
+        dataarray /= range
+        dataarray = dataarray.clip(min=0, max=1)
+        dataarray = dataarray.astype(np.float32)
         dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
-
         return dataarray
 
     def compress_mask(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
-        """
-        Compresses Cloud masks DataArrays
+        """Compresses Cloud masks DataArrays. See compress_mask docstring."""
+        dataarray = dataarray.reindex({"variable": self.variable_order})
+        return compress_mask(dataarray)
 
-        Args:
-            dataarray: DataArray to compress
 
-        Returns:
-            The compressed DataArray
-        """
-        dataarray = dataarray.reindex({"variable": self.variable_order}).transpose(
-            "time", "y_geostationary", "x_geostationary", "variable"
-        )
-        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int16)
-        dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
+def compress_mask(dataarray: xr.DataArray) -> xr.DataArray:
+    """
+    Compresses Cloud masks DataArrays.
 
-        return dataarray
+    Args:
+        dataarray: DataArray to compress
+
+    Returns:
+        The compressed DataArray. The returned array will be an int8 array,
+        with NaNs represented as -1.
+    """
+    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+    dataarray = dataarray.round().clip(min=0, max=3)
+    dataarray = dataarray.fillna(-1)
+    dataarray = dataarray.astype(np.int8)
+    dataarray.attrs = serialize_attrs(dataarray.attrs)  # Must be serializable
+    return dataarray
 
 
 def is_dataset_clean(dataarray: xr.DataArray) -> bool:

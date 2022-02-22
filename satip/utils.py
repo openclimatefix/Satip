@@ -22,9 +22,9 @@ import pandas as pd
 import xarray as xr
 from satpy import Scene
 
-from satip.compression import Compressor, is_dataset_clean
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
-from satip.serialize import serialize_attrs
+from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
+from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask, is_dataset_clean
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
@@ -90,10 +90,10 @@ def load_native_to_dataset(
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    hrv_compressor = Compressor(
+    hrv_scaler = ScaleToZeroToOne(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
-    compressor = Compressor(
+    scaler = ScaleToZeroToOne(
         mins=np.array(
             [
                 -2.5118103,
@@ -184,8 +184,8 @@ def load_native_to_dataset(
         os.remove(decompressed_filename)
 
     # Compress and return
-    dataarray = compressor.compress(dataarray)
-    hrv_dataarray = hrv_compressor.compress(hrv_dataarray)
+    dataarray = scaler.rescale(dataarray)
+    hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
     return dataarray, hrv_dataarray
 
 
@@ -214,19 +214,12 @@ def load_cloudmask_to_dataset(
         ]
     )
     try:
-        # Selected bounds empirically for have no NaN values from off disk image,
+        # Selected bounds empirically that have no NaN values from off disk image,
         # and are covering the UK + a bit
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="cloud_mask", area=area, calculate_osgb=calculate_osgb
         )
-
-        # Compress and return
-        dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
-        dataarray = dataarray.round().clip(min=0, max=3).astype(np.int8)
-        dataarray.attrs = serialize_attrs(dataarray.attrs)
-        # Convert 3's to NaNs as they should be No Data/Space
-        dataarray = dataarray.where(dataarray["variable"] != 3)
-        return dataarray
+        return compress_mask(dataarray)
     except Exception:
         return None
 
@@ -292,7 +285,7 @@ def convert_scene_to_dataarray(
     # Rename x and y to make clear the coordinate system they are in
     dataarray = dataarray.rename({"x": "x_geostationary", "y": "y_geostationary"})
     if "time" not in dataarray.dims:
-        time = pd.to_datetime(dataset.attrs["end_time"])
+        time = pd.to_datetime(pd.Timestamp(dataarray.attrs["end_time"]).round("5 min"))
         dataarray = add_constant_coord_to_dataarray(dataarray, "time", time)
 
     del dataarray["crs"]
@@ -304,12 +297,12 @@ def convert_scene_to_dataarray(
 def save_dataset_to_zarr(
     dataarray: xr.DataArray,
     zarr_path: str,
+    compressor_name: str,
     zarr_mode: str = "a",
     timesteps_per_chunk: int = 1,
     y_size_per_chunk: int = 256,
     x_size_per_chunk: int = 256,
-    channel_chunk_size: int = 12,
-    dtype="int16",
+    channel_chunk_size: int = 1,
 ) -> None:
     """
     Save an Xarray DataArray into a Zarr file
@@ -317,12 +310,14 @@ def save_dataset_to_zarr(
     Args:
         dataarray: DataArray to save
         zarr_path: Filename of the Zarr dataset
+        compressor_name: The name of the compression algorithm to use. Must be 'bz2' or 'jpeg-xl'.
         zarr_mode: Mode to write to the filename, either 'w' for write, or 'a' to append
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
         x_size_per_chunk: X pixels per Zarr chunk
-        channel_chunk_size: Chunk size for the Dask arrays
-        dtype: Data type of the Xarray DataArray generated
+        channel_chunk_size: Chunk size for the Dask arrays. Must be 1 whilst using JPEG-XL
+          (at least until imagecodecs implements decompressing JPEG-XL files with multiple
+          images per file.)
     """
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
@@ -334,19 +329,23 @@ def save_dataset_to_zarr(
         channel_chunk_size,
     )
     dataarray = dataarray.chunk(chunks)
-    dataarray = dataarray.fillna(-1)  # Fill NaN with -1, even if none should exist
     if not is_dataset_clean(dataarray):
         # One last check again just incase chunking causes any issues
         print("Failing clean check after chunking")
         return
-    dataarray = xr.Dataset({"stacked_eumetsat_data": dataarray}).astype(dtype)
+
+    compression_algos = {
+        "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
+        "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
+    }
+    compression_algo = compression_algos[compressor_name]
 
     zarr_mode_to_extra_kwargs = {
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
-                "stacked_eumetsat_data": {
-                    "compressor": numcodecs.get_codec(dict(id="bz2", level=5)),
+                "data": {
+                    "compressor": compression_algo,
                     "chunks": chunks,
                 },
                 "time": {"units": "nanoseconds since 1970-01-01"},
@@ -357,7 +356,8 @@ def save_dataset_to_zarr(
     assert zarr_mode in ["a", "w"], "`zarr_mode` must be one of: `a`, `w`"
     extra_kwargs = zarr_mode_to_extra_kwargs[zarr_mode]
 
-    dataarray.to_zarr(zarr_path, mode=zarr_mode, consolidated=True, compute=True, **extra_kwargs)
+    dataset = dataarray.to_dataset(name="data")
+    dataset.to_zarr(zarr_path, mode=zarr_mode, consolidated=True, compute=True, **extra_kwargs)
 
 
 def add_constant_coord_to_dataarray(
@@ -391,7 +391,7 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
         Bool whether the timestep is in the Xarray 'time' coordinate or not
     """
     dt = pd.Timestamp(dt).round("5 min")
-    if dt in zarr_dataset.coords["time"].values:
+    if dt in zarr_dataset.coords["time"].dt.round("5 min").values:
         return True
     else:
         return False
