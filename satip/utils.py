@@ -318,6 +318,7 @@ def save_native_to_netcdf(
     Args:
         list_of_native_files: List of native files to convert into a single NetCDF file
         bands: Bands to save
+        save_dir: Directory to save the netcdf files
     """
     datasets = []
     hrv_datasets = []
