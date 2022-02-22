@@ -9,3 +9,4 @@ tqdm
 xarray
 zarr
 imagecodecs
+pyorbital
