@@ -217,7 +217,6 @@ class DownloadManager:  # noqa: D205
         user_key: str,
         user_secret: str,
         data_dir: str,
-        log_fp: str,
         logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
@@ -239,7 +238,7 @@ class DownloadManager:  # noqa: D205
         """
 
         # Configuring the logger
-        self.logger = utils.set_up_logging(logger_name, log_fp)
+        self.logger = utils.set_up_logging(logger_name)
 
         self.logger.info("********** Download Manager Initialised **************")
 
@@ -454,8 +453,7 @@ class DownloadManager:  # noqa: D205
             tailor_id = CLM_ID
         else:
             self.logger.error(f"Product ID {product_id} not recognized, ending now")
-            # TODO: This should raise a ValueError.
-            return
+            raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
         self.request_access_token()
 
