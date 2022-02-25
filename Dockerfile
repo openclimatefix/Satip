@@ -43,3 +43,6 @@ RUN echo "source activate ${CONDA_ENV_NAME}" >> ~/.bashrc
 # Cp in the development directory and install
 COPY . ./
 RUN source activate ${CONDA_ENV_NAME} && pip install -e .
+
+# Example commnad that can be used, need to set API_KEY, API_SECRET and SAVE_DIR
+CMD ["python", "-u","scripts/app.py"]

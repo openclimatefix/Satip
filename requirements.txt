@@ -9,3 +9,5 @@ tqdm
 xarray
 zarr
 imagecodecs
+pyorbital
+netCDF4

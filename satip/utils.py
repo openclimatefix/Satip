@@ -24,7 +24,7 @@ from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask, is_dataset_clean
+from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
@@ -251,9 +251,8 @@ def convert_scene_to_dataarray(
     for channel in scene.wishlist:
         scene[channel] = scene[channel].drop_vars("acq_time", errors="ignore")
         for attr in scene[channel].attrs:
-            new_name = channel.name + "_" + attr
+            new_name = channel["name"] + "_" + attr
             data_attrs[new_name] = scene[channel].attrs[attr]
-
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
 
@@ -292,6 +291,138 @@ def convert_scene_to_dataarray(
     del scene
 
     return dataarray
+
+
+def save_native_to_netcdf(
+    list_of_native_files: list,
+    bands: list = [
+        "HRV",
+        "IR_016",
+        "IR_039",
+        "IR_087",
+        "IR_097",
+        "IR_108",
+        "IR_120",
+        "IR_134",
+        "VIS006",
+        "VIS008",
+        "WV_062",
+        "WV_073",
+    ],
+    save_dir: str = "./",
+) -> None:
+    """
+    Saves native files to NetCDF for consumer
+
+    Args:
+        list_of_native_files: List of native files to convert into a single NetCDF file
+        bands: Bands to save
+        save_dir: Directory to save the netcdf files
+    """
+    scaler = ScaleToZeroToOne(
+        mins=np.array(
+            [
+                -2.5118103,
+                -64.83977,
+                63.404694,
+                2.844452,
+                199.10002,
+                -17.254883,
+                -26.29155,
+                -1.1009827,
+                -2.4184198,
+                199.57048,
+                198.95093,
+            ]
+        ),
+        maxs=np.array(
+            [
+                69.60857,
+                339.15588,
+                340.26526,
+                317.86752,
+                313.2767,
+                315.99194,
+                274.82297,
+                93.786545,
+                101.34922,
+                249.91806,
+                286.96323,
+            ]
+        ),
+        variable_order=[
+            "IR_016",
+            "IR_039",
+            "IR_087",
+            "IR_097",
+            "IR_108",
+            "IR_120",
+            "IR_134",
+            "VIS006",
+            "VIS008",
+            "WV_062",
+            "WV_073",
+        ],
+    )
+    hrv_scaler = ScaleToZeroToOne(
+        variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
+    )
+    datasets = []
+    hrv_datasets = []
+    for f in list_of_native_files:
+        if "HRV" in bands:
+            hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
+            hrv_scene.load(
+                [
+                    "HRV",
+                ]
+            )
+            hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
+                hrv_scene, band="HRV", area="RSS", calculate_osgb=True
+            )
+            hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
+            hrv_dataarray = hrv_dataarray.transpose(
+                "time", "y_geostationary", "x_geostationary", "variable"
+            )
+            hrv_dataset = hrv_dataarray.to_dataset(name="data")
+            hrv_datasets.append(hrv_dataset)
+
+        scene = Scene(filenames={"seviri_l1b_native": [f]})
+        scene.load(
+            [
+                "IR_016",
+                "IR_039",
+                "IR_087",
+                "IR_097",
+                "IR_108",
+                "IR_120",
+                "IR_134",
+                "VIS006",
+                "VIS008",
+                "WV_062",
+                "WV_073",
+            ]
+        )
+        dataarray: xr.DataArray = convert_scene_to_dataarray(
+            scene, band="IR_016", area="RSS", calculate_osgb=True
+        )
+        dataarray = scaler.rescale(dataarray)
+        dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+        dataset = dataarray.to_dataset(name="data")
+        datasets.append(dataset)
+
+    now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
+    # Make one array
+    if hrv_datasets:
+        hrv_dataset = xr.concat(hrv_datasets, "time")
+        hrv_dataset = hrv_dataset.sortby("time")
+        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode="w", compute=True)
+        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode="w", compute=True)
+    if datasets:
+        dataset = xr.concat(datasets, "time")
+        dataset = dataset.sortby("time")
+        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode="w", compute=True)
+        dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode="w", compute=True)
 
 
 def save_dataset_to_zarr(
@@ -434,7 +565,6 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 # Cell
 def set_up_logging(
     name: str,
-    log_dir: str,
     main_logging_level: str = "DEBUG",
 ) -> logging.Logger:
     """`set_up_logging` initialises and configures a custom logger for `satip`.
@@ -514,15 +644,5 @@ def set_up_logging(
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
     logger.addHandler(stream_handler)
-
-    # Configuring file output handler
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    log_fp = f"{log_dir}/{name}.txt"
-    file_handler = logging.FileHandler(log_fp, mode="a")
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(getattr(logging, main_logging_level))
-    logger.addHandler(file_handler)
 
     return logger
