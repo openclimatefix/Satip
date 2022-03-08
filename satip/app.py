@@ -68,6 +68,7 @@ def run(api_key, api_secret, save_dir, history):
         )
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
+        logger.info(f"Files to download after filtering: {len(datasets)}")
         download_manager.download_datasets(datasets)
 
         # 2. Load nat files to one Xarray Dataset

@@ -590,7 +590,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir):
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     finished_datetimes = []
     for date in finished_files:
-        finished_datetimes.append(pd.to_datetime(date.split(".nc")[0], format="%Y%m%d%H%M", errors='ignore'))
+        finished_datetimes.append(pd.to_datetime(date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors='ignore'))
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
