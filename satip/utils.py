@@ -584,11 +584,11 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
         filesystem.put(path, filename)
 
 
-def filter_dataset_ids_on_current_files(datasets, save_dir:str):
+def filter_dataset_ids_on_current_files(datasets, save_dir: str):
     """
     Filter dataset ids on files in a directory
 
-    The following occurs
+    The following occurs:
     1. get ids of files that will be downloaded
     2. get datetimes of already downloaded files
     3. only keep indexes where we need to download them

@@ -5,7 +5,6 @@ import os
 import tempfile
 
 import click
-import fsspec
 import pandas as pd
 
 from satip.eumetsat import DownloadManager
