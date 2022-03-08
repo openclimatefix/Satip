@@ -12,13 +12,13 @@ import datetime
 import logging
 import os
 import subprocess
+import tempfile
 import warnings
 from pathlib import Path
 from typing import Any, Tuple
 
-import numcodecs
-import tempfile
 import fsspec
+import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -396,7 +396,7 @@ def save_native_to_netcdf(
             )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             now_time = hrv_dataset["time"].strftime("%Y%m%d%H%M")
-            save_file = os.path.join(save_dir, f'hrv_{now_time}.nc')
+            save_file = os.path.join(save_dir, f"hrv_{now_time}.nc")
             logger.info(f"Saving HRV netcdf in {save_file}")
             save_to_netcdf_to_s3(hrv_dataset, save_file)
 
@@ -424,10 +424,9 @@ def save_native_to_netcdf(
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
         now_time = dataset["time"].strftime("%Y%m%d%H%M")
-        save_file = os.path.join(save_dir, f'{now_time}.nc')
+        save_file = os.path.join(save_dir, f"{now_time}.nc")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
         save_to_netcdf_to_s3(dataset, save_file)
-
 
 
 def save_dataset_to_zarr(
@@ -566,6 +565,7 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 
     return md_str
 
+
 def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     """Save xarray to netcdf in s3
     1. Save in temp local dir
@@ -581,6 +581,7 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
         # save to s3
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
+
 
 # Cell
 def set_up_logging(

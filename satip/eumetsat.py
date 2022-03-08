@@ -18,10 +18,10 @@ import re
 import time
 import urllib
 import zipfile
-import fsspec
 from io import BytesIO
 from urllib.error import HTTPError
 
+import fsspec
 import requests
 
 from satip import utils
