@@ -18,6 +18,7 @@ import re
 import time
 import urllib
 import zipfile
+import fsspec
 from io import BytesIO
 from urllib.error import HTTPError
 
@@ -300,7 +301,9 @@ class DownloadManager:  # noqa: D205
         r.raise_for_status()
 
         zipped_files = zipfile.ZipFile(BytesIO(r.content))
-        zipped_files.extractall(f"{self.data_dir}")
+        # save to s3
+        filesystem = fsspec.open(self.data_dir).fs
+        zipped_files.extractall(filesystem)
 
         return
 
