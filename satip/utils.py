@@ -616,7 +616,6 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
             )
         )
     if len(finished_datetimes) > 0:
-        logger.debug(finished_datetimes)
         logger.debug(
             f"The already downloaded finished datetime are {finished_datetimes}"
         )
