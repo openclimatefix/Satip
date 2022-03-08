@@ -12,3 +12,4 @@ imagecodecs
 pyorbital
 netCDF4
 click
+s3fs
