@@ -588,7 +588,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir):
 
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
-    finished_files = filesystem.glob("*.nc")
+    finished_files = filesystem.glob(f"{save_dir}/*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     finished_datetimes = []
     for date in finished_files:
