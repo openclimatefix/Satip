@@ -395,7 +395,6 @@ def save_native_to_netcdf(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
-            hrv_dataset.attrs = {}
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
             save_file = os.path.join(save_dir, f"hrv_{now_time}.nc")
             logger.info(f"Saving HRV netcdf in {save_file}")
@@ -424,7 +423,6 @@ def save_native_to_netcdf(
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
-        dataset.attrs = {}
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
         save_file = os.path.join(save_dir, f"{now_time}.nc")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
@@ -575,29 +573,24 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     :param dataset: The Xarray Dataset to be save
     :param filename: The s3 filname
     """
-    print(dataset)
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.netcdf"
-        dataset.to_netcdf(path=path, mode="w", engine="h5netcdf", invalid_netcdf=True)
+        dataset.to_netcdf(path=path, mode="w", engine="netcdf4")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
 
-
 def filter_dataset_ids_on_current_files(datasets, save_dir):
     from satip.eumetsat import eumetsat_filename_to_datetime
-
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
     finished_files = filesystem.glob("*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     finished_datetimes = []
     for date in finished_files:
-        finished_datetimes.append(
-            pd.to_datetime(date.split(".nc")[0], format="%Y%m%d%H%M", errors="ignore")
-        )
+        finished_datetimes.append(pd.to_datetime(date.split(".nc")[0], format="%Y%m%d%H%M", errors='ignore'))
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
@@ -608,7 +601,6 @@ def filter_dataset_ids_on_current_files(datasets, save_dir):
         if idx < len(datasets):
             datasets.pop(idx)
     return datasets
-
 
 # Cell
 def set_up_logging(
