@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 )
 @click.option(
     "--save-dir",
-    default=None,
+    default="./",
     envvar="SAVE_DIR",
     help="Where to save the zarr files",
     type=click.STRING,
