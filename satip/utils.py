@@ -372,8 +372,6 @@ def save_native_to_netcdf(
     hrv_scaler = ScaleToZeroToOne(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
-    datasets = []
-    hrv_datasets = []
     for f in list_of_native_files:
 
         logger.debug(f"Processing {f}")
@@ -395,7 +393,9 @@ def save_native_to_netcdf(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
-            hrv_datasets.append(hrv_dataset)
+            now_time = hrv_dataset["time"].strftime("%Y%m%d%H%M")
+            logger.info(f"Saving HRV netcdf in {os.path.join(save_dir, f'hrv_{now_time}.nc')}")
+            hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode="w", compute=True)
 
         logger.debug("Processing non-HRV")
         scene = Scene(filenames={"seviri_l1b_native": [f]})
@@ -420,22 +420,10 @@ def save_native_to_netcdf(
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
-
-    now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
-
-    logger.info(f"Saving netcdf in {save_dir}")
-
-    # Make one array
-    if hrv_datasets:
-        hrv_dataset = xr.concat(hrv_datasets, "time")
-        hrv_dataset = hrv_dataset.sortby("time")
-        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode="w", compute=True)
-        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode="w", compute=True)
-    if datasets:
-        dataset = xr.concat(datasets, "time")
-        dataset = dataset.sortby("time")
-        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode="w", compute=True)
+        now_time = dataset["time"].strftime("%Y%m%d%H%M")
+        logger.info(f"Saving HRV netcdf in {os.path.join(save_dir, f'{now_time}.nc')}")
         dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode="w", compute=True)
+
 
 
 def save_dataset_to_zarr(
