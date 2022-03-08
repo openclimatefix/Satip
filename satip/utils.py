@@ -379,7 +379,7 @@ def save_native_to_netcdf(
         logger.debug(f"Processing {f}")
 
         if "HRV" in bands:
-            logger.debug(f"Processing HRV")
+            logger.debug("Processing HRV")
 
             hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
             hrv_scene.load(
@@ -397,7 +397,7 @@ def save_native_to_netcdf(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_datasets.append(hrv_dataset)
 
-        logger.debug(f"Processing non-HRV")
+        logger.debug("Processing non-HRV")
         scene = Scene(filenames={"seviri_l1b_native": [f]})
         scene.load(
             [
