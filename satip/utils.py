@@ -388,7 +388,7 @@ def save_native_to_netcdf(
                 ]
             )
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
-                hrv_scene, band="HRV", area="RSS", calculate_osgb=True
+                hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
             hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
             hrv_dataarray = hrv_dataarray.transpose(
@@ -415,12 +415,11 @@ def save_native_to_netcdf(
             ]
         )
         dataarray: xr.DataArray = convert_scene_to_dataarray(
-            scene, band="IR_016", area="RSS", calculate_osgb=True
+            scene, band="IR_016", area="UK", calculate_osgb=True
         )
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
-        datasets.append(dataset)
 
     now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
 
