@@ -12,6 +12,7 @@ Usage example:
 
 import datetime
 import json
+import logging
 import os
 import re
 import time
@@ -23,6 +24,8 @@ from urllib.error import HTTPError
 import requests
 
 from satip import utils
+
+logger = logging.getLogger(__name__)
 
 API_ENDPOINT = "https://api.eumetsat.int"
 
@@ -288,6 +291,8 @@ class DownloadManager:  # noqa: D205
         Args:
             data_link: Url link for the relevant dataset
         """
+
+        logger.debug(f"Downloading one file {data_link}")
 
         params = {"access_token": self.access_token}
 
