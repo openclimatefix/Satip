@@ -12,10 +12,12 @@ import datetime
 import logging
 import os
 import subprocess
+import tempfile
 import warnings
 from pathlib import Path
 from typing import Any, Tuple
 
+import fsspec
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -372,8 +374,6 @@ def save_native_to_netcdf(
     hrv_scaler = ScaleToZeroToOne(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
-    datasets = []
-    hrv_datasets = []
     for f in list_of_native_files:
 
         logger.debug(f"Processing {f}")
@@ -395,7 +395,10 @@ def save_native_to_netcdf(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
-            hrv_datasets.append(hrv_dataset)
+            now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+            save_file = os.path.join(save_dir, f"hrv_{now_time}.nc")
+            logger.info(f"Saving HRV netcdf in {save_file}")
+            save_to_netcdf_to_s3(hrv_dataset, save_file)
 
         logger.debug("Processing non-HRV")
         scene = Scene(filenames={"seviri_l1b_native": [f]})
@@ -420,22 +423,10 @@ def save_native_to_netcdf(
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
-
-    now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
-
-    logger.info(f"Saving netcdf in {save_dir}")
-
-    # Make one array
-    if hrv_datasets:
-        hrv_dataset = xr.concat(hrv_datasets, "time")
-        hrv_dataset = hrv_dataset.sortby("time")
-        hrv_dataset.to_netcdf(os.path.join(save_dir, "hrv_latest.nc"), mode="w", compute=True)
-        hrv_dataset.to_netcdf(os.path.join(save_dir, f"hrv_{now_time}.nc"), mode="w", compute=True)
-    if datasets:
-        dataset = xr.concat(datasets, "time")
-        dataset = dataset.sortby("time")
-        dataset.to_netcdf(os.path.join(save_dir, "latest.nc"), mode="w", compute=True)
-        dataset.to_netcdf(os.path.join(save_dir, f"{now_time}.nc"), mode="w", compute=True)
+        now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+        save_file = os.path.join(save_dir, f"{now_time}.nc")
+        logger.info(f"Saving non-HRV netcdf in {save_file}")
+        save_to_netcdf_to_s3(dataset, save_file)
 
 
 def save_dataset_to_zarr(
@@ -573,6 +564,49 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     md_str = df_info.to_markdown()
 
     return md_str
+
+
+def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
+    """Save xarray to netcdf in s3
+    1. Save in temp local dir
+    2. upload to s3
+    :param dataset: The Xarray Dataset to be save
+    :param filename: The s3 filname
+    """
+    with tempfile.TemporaryDirectory() as dir:
+        # save locally
+        path = f"{dir}/temp.netcdf"
+        dataset.to_netcdf(path=path, mode="w", engine="netcdf4")
+
+        # save to s3
+        filesystem = fsspec.open(filename).fs
+        filesystem.put(path, filename)
+
+
+def filter_dataset_ids_on_current_files(datasets, save_dir):
+    from satip.eumetsat import eumetsat_filename_to_datetime
+
+    ids = [dataset["id"] for dataset in datasets]
+    filesystem = fsspec.open(save_dir).fs
+    finished_files = filesystem.glob("*.nc")
+    datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
+    finished_datetimes = []
+    for date in finished_files:
+        finished_datetimes.append(
+            pd.to_datetime(
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            )
+        )
+    idx_to_remove = []
+    for idx, date in enumerate(datetimes):
+        if date in finished_datetimes:
+            idx_to_remove.append(idx)
+
+    indices = sorted(idx_to_remove, reverse=True)
+    for idx in indices:
+        if idx < len(datasets):
+            datasets.pop(idx)
+    return datasets
 
 
 # Cell
