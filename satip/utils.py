@@ -616,8 +616,11 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
                 date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
         )
-    logger.debug(f'The latest already downloaded '
-                 f'finished datetime is {max(finished_datetimes)}')
+    if len(finished_datetimes) > 0:
+        logger.debug(f'The latest already downloaded '
+                     f'finished datetime is {max(finished_datetimes)}')
+    else:
+        logger.debug('There are no files already downloaded')
 
     # find which indexes to remove, if file is already there
     idx_to_remove = []
