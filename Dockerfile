@@ -48,4 +48,4 @@ RUN source activate ${CONDA_ENV_NAME} && pip install -e .
 SHELL ["conda", "run", "-n", "satip", "/bin/bash", "-c"]
 
 # Example commnad that can be used, need to set API_KEY, API_SECRET and SAVE_DIR
-CMD ["conda", "run", "--no-capture-output", "-n", "satip", "python", "-u","scripts/app.py"]
+CMD ["conda", "run", "--no-capture-output", "-n", "satip", "python", "-u","satip/app.py"]
