@@ -44,5 +44,8 @@ RUN echo "source activate ${CONDA_ENV_NAME}" >> ~/.bashrc
 COPY . ./
 RUN source activate ${CONDA_ENV_NAME} && pip install -e .
 
+# Make RUN commands use the new environment:
+SHELL ["conda", "run", "-n", "satip", "/bin/bash", "-c"]
+
 # Example commnad that can be used, need to set API_KEY, API_SECRET and SAVE_DIR
-CMD ["python", "-u","scripts/app.py"]
+CMD ["conda", "run", "-n", "satip", "python", "-u","scripts/app.py"]
