@@ -604,8 +604,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
     finished_files = filesystem.glob(f"{save_dir}/*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
 
-    logger.debug(f'The latest datetime that we want to downloaded '
-                 f'is {max(datetimes)}')
+    logger.debug(f"The latest datetime that we want to downloaded " f"is {max(datetimes)}")
 
     finished_datetimes = []
 
@@ -617,18 +616,21 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
             )
         )
     if len(finished_datetimes) > 0:
-        logger.debug(f'The latest already downloaded '
-                     f'finished datetime is {max(finished_datetimes)}')
+        logger.debug(
+            f"The latest already downloaded " f"finished datetime is {max(finished_datetimes)}"
+        )
     else:
-        logger.debug('There are no files already downloaded')
+        logger.debug("There are no files already downloaded")
 
     # find which indexes to remove, if file is already there
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
             idx_to_remove.append(idx)
-    logger.debug(f'Will be not be downloading {len(idx_to_remove)} files '
-                 f'as they have already been downloaded')
+    logger.debug(
+        f"Will be not be downloading {len(idx_to_remove)} files "
+        f"as they have already been downloaded"
+    )
 
     # remove index
     indices = sorted(idx_to_remove, reverse=True)
