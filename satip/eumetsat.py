@@ -21,7 +21,6 @@ import zipfile
 from io import BytesIO
 from urllib.error import HTTPError
 
-import fsspec
 import requests
 
 from satip import utils
