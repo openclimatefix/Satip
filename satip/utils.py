@@ -582,15 +582,21 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
 
+
 def filter_dataset_ids_on_current_files(datasets, save_dir):
     from satip.eumetsat import eumetsat_filename_to_datetime
+
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
     finished_files = filesystem.glob("*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     finished_datetimes = []
     for date in finished_files:
-        finished_datetimes.append(pd.to_datetime(date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors='ignore'))
+        finished_datetimes.append(
+            pd.to_datetime(
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            )
+        )
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
@@ -601,6 +607,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir):
         if idx < len(datasets):
             datasets.pop(idx)
     return datasets
+
 
 # Cell
 def set_up_logging(
