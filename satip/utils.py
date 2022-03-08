@@ -26,6 +26,8 @@ from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 
+logger = logging.getLogger(__name__)
+
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
 warnings.filterwarnings("ignore", message="invalid value encountered in cos")
@@ -319,6 +321,9 @@ def save_native_to_netcdf(
         bands: Bands to save
         save_dir: Directory to save the netcdf files
     """
+
+    logger.info(f"Converting from native to netcdf in {save_dir}")
+
     scaler = ScaleToZeroToOne(
         mins=np.array(
             [
@@ -370,7 +375,12 @@ def save_native_to_netcdf(
     datasets = []
     hrv_datasets = []
     for f in list_of_native_files:
+
+        logger.debug(f"Processing {f}")
+
         if "HRV" in bands:
+            logger.debug("Processing HRV")
+
             hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
             hrv_scene.load(
                 [
@@ -387,6 +397,7 @@ def save_native_to_netcdf(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_datasets.append(hrv_dataset)
 
+        logger.debug("Processing non-HRV")
         scene = Scene(filenames={"seviri_l1b_native": [f]})
         scene.load(
             [
@@ -412,6 +423,9 @@ def save_native_to_netcdf(
         datasets.append(dataset)
 
     now_time = datetime.datetime.utcnow().strftime("%Y%m%d%H%M")
+
+    logger.info(f"Saving netcdf in {save_dir}")
+
     # Make one array
     if hrv_datasets:
         hrv_dataset = xr.concat(hrv_datasets, "time")
