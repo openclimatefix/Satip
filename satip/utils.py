@@ -568,6 +568,7 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 
 def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     """Save xarray to netcdf in s3
+
     1. Save in temp local dir
     2. upload to s3
     :param dataset: The Xarray Dataset to be save
@@ -583,7 +584,19 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
         filesystem.put(path, filename)
 
 
-def filter_dataset_ids_on_current_files(datasets, save_dir):
+def filter_dataset_ids_on_current_files(datasets, save_dir:str):
+    """
+    Filter dataset ids on files in a directory
+
+    The following occurs
+    1. get ids of files that will be downloaded
+    2. get datetimes of already downloaded files
+    3. only keep indexes where we need to download them
+
+    :param datasets: list of datasets with ids
+    :param save_dir: the directory where files will be (or already have been) saved
+    :return: #TODO
+    """
     from satip.eumetsat import eumetsat_filename_to_datetime
 
     ids = [dataset["id"] for dataset in datasets]
@@ -591,17 +604,22 @@ def filter_dataset_ids_on_current_files(datasets, save_dir):
     finished_files = filesystem.glob(f"{save_dir}/*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     finished_datetimes = []
+
+    # get datetimes of the finished files
     for date in finished_files:
         finished_datetimes.append(
             pd.to_datetime(
                 date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
         )
+
+    # find which indexes to remove, if file is already there
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
             idx_to_remove.append(idx)
 
+    # remove index
     indices = sorted(idx_to_remove, reverse=True)
     for idx in indices:
         if idx < len(datasets):
