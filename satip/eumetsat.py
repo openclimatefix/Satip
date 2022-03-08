@@ -151,6 +151,10 @@ def identify_available_datasets(
     Returns:
         JSON-formatted response from the request
     """
+    logger.debug(
+        f"Identifying which dataset are available for " f"{start_date=} {end_date=} {product_id=}"
+    )
+
     r_json = query_data_products(start_date, end_date, product_id=product_id).json()
 
     num_total_results = r_json["properties"]["totalResults"]
