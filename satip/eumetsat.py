@@ -301,9 +301,7 @@ class DownloadManager:  # noqa: D205
         r.raise_for_status()
 
         zipped_files = zipfile.ZipFile(BytesIO(r.content))
-        # save to s3
-        filesystem = fsspec.open(self.data_dir).fs
-        zipped_files.extractall(filesystem)
+        zipped_files.extractall(f"{self.data_dir}")
 
         return
 
