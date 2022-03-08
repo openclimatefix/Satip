@@ -604,7 +604,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
     finished_files = filesystem.glob(f"{save_dir}/*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
 
-    logger.debug(f"The latest datetime that we want to downloaded " f"is {max(datetimes)}")
+    logger.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
 
     finished_datetimes = []
 
@@ -617,7 +617,7 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
         )
     if len(finished_datetimes) > 0:
         logger.debug(
-            f"The latest already downloaded " f"finished datetime is {max(finished_datetimes)}"
+            f"The already downloaded finished datetime are {finished_datetimes}"
         )
     else:
         logger.debug("There are no files already downloaded")
