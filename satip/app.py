@@ -9,7 +9,7 @@ import fsspec
 import pandas as pd
 
 from satip.eumetsat import DownloadManager
-from satip.utils import save_native_to_netcdf, filter_dataset_ids_on_current_files
+from satip.utils import filter_dataset_ids_on_current_files, save_native_to_netcdf
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
@@ -62,7 +62,10 @@ def run(api_key, api_secret, save_dir, history):
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        datasets = download_manager.identify_available_datasets(start_date=(pd.Timestamp.now() - pd.Timedelta(history)).strftime("%Y-%m-%d-%H-%M-%S"), end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"))
+        datasets = download_manager.identify_available_datasets(
+            start_date=(pd.Timestamp.now() - pd.Timedelta(history)).strftime("%Y-%m-%d-%H-%M-%S"),
+            end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"),
+        )
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         download_manager.download_datasets(datasets)
