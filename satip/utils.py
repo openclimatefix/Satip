@@ -584,7 +584,7 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
         filesystem.put(path, filename)
 
 
-def filter_dataset_ids_on_current_files(datasets, save_dir: str):
+def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     """
     Filter dataset ids on files in a directory
 
@@ -593,9 +593,12 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
     2. get datetimes of already downloaded files
     3. only keep indexes where we need to download them
 
-    :param datasets: list of datasets with ids
-    :param save_dir: the directory where files will be (or already have been) saved
-    :return: #TODO
+    Args:
+        datasets: list of datasets with ids
+        save_dir: The directory where files wil be saved
+
+    Returns:
+        The filtered list of new datasets ids to download
     """
     from satip.eumetsat import eumetsat_filename_to_datetime
 
@@ -636,6 +639,50 @@ def filter_dataset_ids_on_current_files(datasets, save_dir: str):
         if idx < len(datasets):
             datasets.pop(idx)
     return datasets
+
+
+def move_older_files_to_different_location(save_dir: str, history_time: pd.Timestamp):
+    """
+    Move older files in save_dir to a different location
+
+    Args:
+        save_dir: Directory where data is being saved
+        history: History time to keep files
+
+    """
+    filesystem = fsspec.open(save_dir).fs
+
+    # Now to move into latest
+    finished_files = filesystem.glob(f"{save_dir}/*.nc")
+
+    logger.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
+
+    # get datetimes of the finished files
+    for date in finished_files:
+        if "hrv" in date:
+            continue
+        file_time = pd.to_datetime(
+            date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            )
+        if file_time > history_time:
+            # Move HRV and non-HRV to new place
+            filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
+            filesystem.move(date, f"{save_dir}/latest/hrv_{date.split('/')[-1]}")
+
+    finished_files = filesystem.glob(f"{save_dir}/latest/*.nc")
+    logger.info(f"Checking {save_dir}/latest/ for older files")
+    # get datetimes of the finished files
+    for date in finished_files:
+        if "hrv" in date:
+            continue
+        file_time = pd.to_datetime(
+            date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            )
+        if file_time < history_time:
+            # Move HRV and non-HRV to new place
+            filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
+            filesystem.move(date, f"{save_dir}/hrv_{date.split('/')[-1]}")
+
 
 
 # Cell

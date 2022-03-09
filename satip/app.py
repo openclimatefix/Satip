@@ -8,7 +8,7 @@ import click
 import pandas as pd
 
 from satip.eumetsat import DownloadManager
-from satip.utils import filter_dataset_ids_on_current_files, save_native_to_netcdf
+from satip.utils import filter_dataset_ids_on_current_files, save_native_to_netcdf, move_older_files_to_different_location
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
@@ -61,8 +61,9 @@ def run(api_key, api_secret, save_dir, history):
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
+        start_date = (pd.Timestamp.now() - pd.Timedelta(history))
         datasets = download_manager.identify_available_datasets(
-            start_date=(pd.Timestamp.now() - pd.Timedelta(history)).strftime("%Y-%m-%d-%H-%M-%S"),
+            start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
             end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"),
         )
         # Filter out ones that already exist
@@ -75,6 +76,10 @@ def run(api_key, api_secret, save_dir, history):
 
         # Save to S3
         save_native_to_netcdf(native_files, save_dir=save_dir)
+
+        # Move around files into and out of latest
+        move_older_files_to_different_location(save_dir=save_dir,
+                                               history_time=(start_date - pd.Timedelta("30 min")))
 
         logger.info("Finished Running application.")
 
