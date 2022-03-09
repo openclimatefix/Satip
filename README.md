@@ -49,13 +49,13 @@ pre-commit install
 The following command will download the last 2 hours of RSS imagery into NetCDF files at the specified location
 
 ```bash
-python scripts/app.py --api-key=<EUMETSAT API Key> --api-secret=<EUMETSAT API Secret> --save-dr="/path/to/saving/files/" --history="2 hours"
+python satip/app.py --api-key=<EUMETSAT API Key> --api-secret=<EUMETSAT API Secret> --save-dr="/path/to/saving/files/" --history="2 hours"
 ```
 
 To download more historical data, the command below will download the native files, compress with bz2, and save into a subdirectory.
 
 ```bash
-python scripts/get_raw_eumetsat_data.py --user-key=<EUMETSAT API Key> --user-secret=<EUMETSAT API Secret>
+python satip/get_raw_eumetsat_data.py --user-key=<EUMETSAT API Key> --user-secret=<EUMETSAT API Secret>
 ```
 
 ### Converting Native files to Zarr
