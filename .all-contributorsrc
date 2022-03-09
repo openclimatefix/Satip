@@ -31,6 +31,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Rabscuttler",
+      "name": "Laurence Watson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1125376?v=4",
+      "profile": "http://laurencewatson.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
