@@ -660,29 +660,32 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     # get datetimes of the finished files
     for date in finished_files:
         if "hrv" in date:
-            continue
-        file_time = pd.to_datetime(
-            date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            file_time = pd.to_datetime(
+            date.split(".nc")[0].split("/")[-1].split("_")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
-        if file_time > history_time:
+        else:
+            file_time = pd.to_datetime(
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                )
+        if file_time < history_time:
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
-            filesystem.move(date, f"{save_dir}/latest/hrv_{date.split('/')[-1]}")
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.nc")
     logger.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
         if "hrv" in date:
-            continue
-        file_time = pd.to_datetime(
-            date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+            file_time = pd.to_datetime(
+            date.split(".nc")[0].split("/")[-1].split("_")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
+        else:
+            file_time = pd.to_datetime(
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                )
         if file_time < history_time:
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
-            filesystem.move(date, f"{save_dir}/hrv_{date.split('/')[-1]}")
-
 
 
 # Cell
