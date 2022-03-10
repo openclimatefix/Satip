@@ -667,7 +667,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             file_time = pd.to_datetime(
                 date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
                 )
-        if file_time < history_time:
+        if file_time > history_time:
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
 
