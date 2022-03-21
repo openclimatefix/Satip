@@ -647,7 +647,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
     Args:
         save_dir: Directory where data is being saved
-        history: History time to keep files
+        history_time: History time to keep files
 
     """
     filesystem = fsspec.open(save_dir).fs
