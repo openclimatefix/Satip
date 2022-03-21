@@ -57,7 +57,7 @@ def split_per_month(
 
     # Get year
     temp_directory = Path(temp_directory)
-    year_directories = os.listdir(directory)
+    year_directories = sorted(os.listdir(directory), reverse=True)
     print(year_directories)
     dirs = []
     zarrs = []
@@ -67,7 +67,7 @@ def split_per_month(
             continue
         if str(year) not in ["2016", "2017", "2018", "2019", "2020", "2021", "2022"]:
             continue
-        month_directories = os.listdir(os.path.join(directory, year))
+        month_directories = sorted(os.listdir(os.path.join(directory, year)), reverse=True)
         for month in month_directories:
             if not os.path.isdir(os.path.join(directory, year, month)):
                 continue
