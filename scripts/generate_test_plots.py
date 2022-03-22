@@ -70,9 +70,9 @@ download_manager.download_date_range(
     start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:02:00", product_id=CLOUD_ID
 )
 
-# Convert to Xarray DataArray
-rss_filename = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
-cloud_mask_filename = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
+# Store filenames just downloaded to later convert them to Xarray DataArray:
+rss_filenames = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
+cloud_mask_filenames = list(glob.glob(os.path.join(os.getcwd(), "*.grb")))
 
 
 def _plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
@@ -110,10 +110,10 @@ def _plot_dataset(dataset: xr.DataArray, name: str, area: str) -> None:
 for area in ["UK", "RSS"]:
     # First do it with the cloud mask
     cloudmask_dataset = load_cloudmask_to_dataset(
-        Path(cloud_mask_filename[0]), temp_directory=Path(os.getcwd()), area=area
+        Path(cloud_mask_filenames[0]), temp_directory=Path(os.getcwd()), area=area
     )
     rss_dataset, hrv_dataset = load_native_to_dataset(
-        Path(rss_filename[0]), temp_directory=Path(os.getcwd()), area=area
+        Path(rss_filenames[0]), temp_directory=Path(os.getcwd()), area=area
     )
 
     # Save to Zarrs, to then load them back

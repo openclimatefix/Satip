@@ -193,6 +193,8 @@ def load_native_to_dataset(
     return dataarray, hrv_dataarray
 
 
+# TODO: temp_directory is unused and has no effect. But for the sake of interface consistency
+# with load_native_to_dataset, can also stay.
 def load_cloudmask_to_dataset(
     filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
 ) -> xr.DataArray:
