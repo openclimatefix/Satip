@@ -13,3 +13,4 @@ pyorbital
 netCDF4
 click
 s3fs
+nowcasting_datamodel==0.0.36
