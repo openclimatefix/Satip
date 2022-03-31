@@ -3,18 +3,20 @@ import glob
 import logging
 import os
 import tempfile
+from typing import Optional
 
 import click
 import pandas as pd
-
-from typing import Optional
-
 from nowcasting_datamodel.connection import DatabaseConnection
 from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 from satip.eumetsat import DownloadManager
-from satip.utils import filter_dataset_ids_on_current_files, save_native_to_netcdf, move_older_files_to_different_location
+from satip.utils import (
+    filter_dataset_ids_on_current_files,
+    move_older_files_to_different_location,
+    save_native_to_netcdf,
+)
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
@@ -74,7 +76,7 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        start_date = (pd.Timestamp.now() - pd.Timedelta(history))
+        start_date = pd.Timestamp.now() - pd.Timedelta(history)
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
             end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"),
@@ -91,8 +93,9 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         save_native_to_netcdf(native_files, save_dir=save_dir)
 
         # Move around files into and out of latest
-        move_older_files_to_different_location(save_dir=save_dir,
-                                               history_time=(start_date - pd.Timedelta("30 min")))
+        move_older_files_to_different_location(
+            save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
+        )
 
     # 4. update table to show when this data has been pulled
     if db_url is not None:
