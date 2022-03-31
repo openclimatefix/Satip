@@ -7,6 +7,12 @@ import tempfile
 import click
 import pandas as pd
 
+from typing import Optional
+
+from nowcasting_datamodel.connection import DatabaseConnection
+from nowcasting_datamodel.models.base import Base_Forecast
+from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
+
 from satip.eumetsat import DownloadManager
 from satip.utils import filter_dataset_ids_on_current_files, save_native_to_netcdf, move_older_files_to_different_location
 
@@ -45,7 +51,14 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="How much history to save",
     type=click.STRING,
 )
-def run(api_key, api_secret, save_dir, history):
+@click.option(
+    "--db-url",
+    default=None,
+    envvar="DB_URL",
+    help="Database to save when this has run",
+    type=click.STRING,
+)
+def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
     """Run main application
 
     Args:
@@ -81,7 +94,13 @@ def run(api_key, api_secret, save_dir, history):
         move_older_files_to_different_location(save_dir=save_dir,
                                                history_time=(start_date - pd.Timedelta("30 min")))
 
-        logger.info("Finished Running application.")
+    # 4. update table to show when this data has been pulled
+    if db_url is not None:
+        connection = DatabaseConnection(url=db_url, base=Base_Forecast)
+        with connection.get_session() as session:
+            update_latest_input_data_last_updated(session=session, component="nwp")
+
+    logger.info("Finished Running application.")
 
 
 if __name__ == "__main__":
