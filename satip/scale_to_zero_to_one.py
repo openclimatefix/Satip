@@ -79,7 +79,7 @@ class ScaleToZeroToOne:
         self.maxs = maxs
         self.variable_order = variable_order
 
-    def fit(self, dataset: xr.Dataset, dims: Iterable = ("time", "y", "x")) -> None:
+    def fit(self, dataset: xr.Dataset, dims: Iterable = ("time", "y", "x")) -> object:
         """
         Calculate new min and max values for the compression
 
@@ -97,6 +97,8 @@ class ScaleToZeroToOne:
         print(f"The maxs are: {self.maxs}")
         print(f"The variable order is: {self.variable_order}")
 
+        return self
+
     def rescale(self, dataarray: xr.DataArray) -> Union[xr.DataArray, None]:
         """
         Rescale Xarray DataArray so all values lie in the range [0, 1].
@@ -105,6 +107,7 @@ class ScaleToZeroToOne:
 
         Args:
             dataarray: DataArray to rescale.
+                Dims MUST be named ('time', 'x_geostationary', 'y_geostationary', 'variable')!
 
         Returns:
             The DataArray rescaled to [0, 1]. NaNs in the original `dataarray` will still
