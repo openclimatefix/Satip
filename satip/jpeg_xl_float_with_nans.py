@@ -7,6 +7,9 @@ from imagecodecs.numcodecs import JpegXl
 from numcodecs.registry import register_codec
 
 # See the docs in `encode_nans` for an explanation of what these consts do.
+# Also, please be aware that for sensical results, the values should follow the ordering:
+# LOWER_BOUND_FOR_REAL_PIXELS > NAN_THRESHOLD > NAN_VALUE.
+# Otherwise encoding and decoding back will lead to valid pixels being marked NaN.
 LOWER_BOUND_FOR_REAL_PIXELS = 0.075
 NAN_THRESHOLD = 0.05
 NAN_VALUE = 0.025
@@ -87,7 +90,7 @@ class JpegXlFloatWithNaNs(JpegXl):
                 If all the information is squished into, say, the range [0, 0.1] then
                 JPEG-XL will interpret the image as very dark, and will agressively
                 compress the data because JPEG-XL assumes that human viewers do not
-                notice if detail is lost in the shaddows.
+                notice if detail is lost in the shadows.
         """
         assert buf.dtype in (
             np.float16,
