@@ -1,4 +1,12 @@
-"""Tests for the Satip-utils."""
+"""Tests for the Satip-utils.
+
+Please note that at the moment, these tests are marked disabled for two reasons:
+a) There is a weird installation-bug which makes it such that on identical github-workflows,
+   script.generate_test_plots runs while this code here seems to draw from the wrong library.
+b) We want to have script.generate_test_plots as our try-it-out-script for new users, so
+   we have to test that. Though that means that utils gets tested as well, individual
+   util-tests seem redundant.
+"""
 import glob
 import os
 import unittest
