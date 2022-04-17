@@ -91,6 +91,12 @@ def download_eumetsat_data(
             raise RuntimeError("Please do not set BOTH auth_filename AND user_key or user_secret!")
         user_key, user_secret = _load_key_secret(auth_filename)
 
+    # If neither the auth-file-name nor the user-key / secret have been given,
+    # try to infer from the environment variable:
+    if auth_filename is None and (user_key is None or user_secret is None):
+        user_key = os.environ.get("EUMETSAT_USER_KEY")
+        user_secret = os.environ.get("EUMETSAT_USER_SECRET")
+
     if backfill:
         # Set to year before data started to ensure gets everything
         # No downside to requesting an earlier time

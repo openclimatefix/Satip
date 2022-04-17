@@ -19,4 +19,5 @@ from scripts.generate_test_plots import generate_test_plots
 
 class TestPlotGeneration(unittest.TestCase):  # noqa
     def test_plot_generation(self):  # noqa
-        self.assertTrue(generate_test_plots())
+        # Run the function and assert that it does not raise any errors.
+        self.assertIsNone(generate_test_plots())

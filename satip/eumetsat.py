@@ -259,7 +259,10 @@ class DownloadManager:  # noqa: D205
         self.data_dir = data_dir
 
         if not os.path.exists(self.data_dir):
-            os.makedirs(self.data_dir)
+            try:
+                os.makedirs(self.data_dir)
+            except PermissionError:
+                raise PermissionError(f"No permission to create {self.data_dir}.")
 
         # Adding satip helper functions
         self.identify_available_datasets = identify_available_datasets

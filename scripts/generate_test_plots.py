@@ -113,9 +113,6 @@ def generate_test_plots():
 
     for area in ["UK", "RSS"]:
         # First do it with the cloud mask
-        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-        print(os.getcwd())
-        print(cloud_mask_filenames[0])
         cloudmask_dataset = load_cloudmask_to_dataset(
             Path(cloud_mask_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
@@ -172,8 +169,6 @@ def generate_test_plots():
         _plot_dataset(hrv_dataset, "hrv", area)
         _plot_dataset(rss_dataset, "rss", area)
         _plot_dataset(cloudmask_dataset, "cloud_mask", area)
-
-        return True
 
 
 if __name__ == "__main__":
