@@ -65,6 +65,7 @@ def download_eumetsat_data(
     auth_filename: Optional[str] = None,
     number_of_processes: int = 0,
     product: Union[str, List[str]] = ["rss", "cloud"],
+    enforce_full_days: bool = True,
 ):
     """Downloads EUMETSAT RSS and Cloud Masks
 
@@ -83,6 +84,10 @@ def download_eumetsat_data(
         auth_filename: Path to a file containing the user_secret and user_key
         number_of_processes: Number of processes to use
         product: Which product(s) to download
+        enforce_full_days: Set to True means you download data for daily batches,
+                           i.e. no matter how you set the time of the end_date,
+                           you will always get a full day. Set to False to get
+                           incomplete days to strictly adhere to your start/end_date set.
 
     """
     # Get authentication
@@ -111,15 +116,19 @@ def download_eumetsat_data(
         products_to_use.append(RSS_ID)
     if "cloud" in product:
         products_to_use.append(CLOUD_ID)
+
     for product_id in products_to_use:
         # Do this to clear out any partially downloaded days
         _sanity_check_files_and_move_to_directory(
             directory=download_directory, product_id=product_id
         )
 
-        times_to_use = _determine_datetimes_to_download_files(
-            download_directory, start_date, end_date, product_id=product_id
-        )
+        if enforce_full_days:
+            times_to_use = _determine_datetimes_to_download_files(
+                download_directory, start_date, end_date, product_id=product_id
+            )
+        else:
+            times_to_use = [(pd.to_datetime(start_date), pd.to_datetime(end_date))]
         _LOG.info(times_to_use)
 
         if number_of_processes > 0:
