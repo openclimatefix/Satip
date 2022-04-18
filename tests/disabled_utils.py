@@ -78,14 +78,14 @@ class TestSatipUtils(unittest.TestCase):
         # test function but save_dataset_to_zarr depends on a dataset being loaded,
         # we have to reload the dataset here. This means that this test can theoretically
         # fail for two reasons: Either the data-loading failed, or the data-saving failed.
-        cloudmask_dataset = load_cloudmask_to_dataset(
-            Path(self.cloud_mask_filename), temp_directory=Path(os.getcwd()), area="UK"
+        rss_dataset, _ = load_native_to_dataset(
+            Path(self.rss_filename), temp_directory=Path(os.getcwd()), area="UK"
         )
 
         zarr_path = os.path.join(os.getcwd(), "tmp.zarr")
 
         save_dataset_to_zarr(
-            cloudmask_dataset,
+            rss_dataset,
             zarr_path=zarr_path,
             compressor_name="bz2",
             zarr_mode="w",
