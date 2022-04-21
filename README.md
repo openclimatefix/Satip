@@ -44,6 +44,14 @@ pre-commit install
 
 ## Operation
 
+### Getting your own API key
+
+In order to contribute to development or just test-run some scripts, you will need your own Eumetsat-API-key. Please follow these steps:
+
+1. Go to https://eoportal.eumetsat.int and register an account.
+2. You can log in and got to https://data.eumetsat.int/ to check available data services. From there go to your profile and choose the option "API key" or go to https://api.eumetsat.int/api-key/ directly.
+3. Please make sure that you added the key and secret to your user's environment variables.
+
 ### Downloading EUMETSAT Data
 
 The following command will download the last 2 hours of RSS imagery into NetCDF files at the specified location

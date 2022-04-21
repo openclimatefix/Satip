@@ -193,6 +193,8 @@ def load_native_to_dataset(
     return dataarray, hrv_dataarray
 
 
+# TODO: temp_directory is unused and has no effect. But for the sake of interface consistency
+# with load_native_to_dataset, can also stay.
 def load_cloudmask_to_dataset(
     filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
 ) -> xr.DataArray:
@@ -647,7 +649,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
     Args:
         save_dir: Directory where data is being saved
-        history: History time to keep files
+        history_time: History time to keep files
 
     """
     filesystem = fsspec.open(save_dir).fs

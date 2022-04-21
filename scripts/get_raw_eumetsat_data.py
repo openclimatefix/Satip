@@ -9,6 +9,7 @@ Usage example:
   python3 get_raw_eumetsat_data.py
 """
 
+import os
 from datetime import datetime
 
 import click
@@ -33,9 +34,8 @@ def _validate_date(ctx, param, value):
 @click.option(
     "--download_directory",
     "--dir",
-    default="/storage/",
-    help="""Where to download the data to.
-            Also where the script searches for previously downloaded data.""",
+    default=str(os.getcwd() + "/storage/"),
+    prompt="""Where to download the data to and/or search for previously downloaded data.\n""",
 )
 @click.option(
     "--start_date",

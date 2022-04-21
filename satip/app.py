@@ -68,6 +68,7 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         api_secret: Secret for EUMETSAT
         save_dir: Save directory
         history: History time
+        db_url: URL of database
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
