@@ -52,12 +52,10 @@ class TestJpegXlFloatWithNaNs(unittest.TestCase):
         we expect to get the original buf-array back again.
         """
         # As np.nan != np.nan (!) and thus np.isclose or array comparison do not consider
-        # two nan-values to be close or equal, we have to jump through some hoops.
-        # Hence, for the comparison between the original and the treated array,
-        # we replace nan-values in both arrays with the same but random number.
-        # If there would not be the exact same nan-values at the exact same places, any comparison
-        # would thus fail:
-        nan_replacement = np.random.rand()
+        # two nan-values to be close or equal, we have to replace all nan-values with
+        # a numeric value before comparison. This numeric value should be one that
+        # can not be created via decoding (e.g. a negative number).
+        nan_replacement = -3.14
         self.assertTrue(
             np.isclose(
                 np.nan_to_num(self.buf, nan_replacement),
@@ -77,7 +75,7 @@ class TestJpegXlFloatWithNaNs(unittest.TestCase):
 
         # For reasons explained in the decoding test, we have to manually replace
         # the nan-values to make them comparable:
-        nan_replacement = np.random.rand()
+        nan_replacement = -3.14
         reshaped_buf = np.nan_to_num(reshaped_buf, nan_replacement)
         roundtrip_result = np.nan_to_num(roundtrip_result, nan_replacement)
 
