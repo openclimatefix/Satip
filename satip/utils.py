@@ -674,6 +674,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if file_time > history_time:
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
+        elif file_time < (history_time - pd.Timedelta("2 days")):
+            # Delete files over 2 days old
+            filesystem.rm(date)
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.nc")
     logger.info(f"Checking {save_dir}/latest/ for older files")
