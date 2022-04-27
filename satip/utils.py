@@ -608,7 +608,9 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     filesystem = fsspec.open(save_dir).fs
     finished_files = filesystem.glob(f"{save_dir}/*.nc")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
-
+    if not datetimes: # Empty list
+        logger.debug(f"No datetimes to download")
+        return []
     logger.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
 
     finished_datetimes = []
@@ -705,8 +707,6 @@ def collate_files_into_latest(save_dir: str):
         save_dir: Directory where data is being saved
 
     """
-
-    filesystem = fsspec.open(save_dir).fs
 
     dataset = xr.open_mfdataset(f"{save_dir}/latest/hrv_*.nc", concat_dim="time", combine='nested').sortby("time")
     dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")

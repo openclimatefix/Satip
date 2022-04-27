@@ -78,10 +78,10 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        start_date = pd.Timestamp.now() - pd.Timedelta(history)
+        start_date = pd.Timestamp.utcnow() - pd.Timedelta(history)
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=pd.Timestamp.now().strftime("%Y-%m-%d-%H-%M-%S"),
+            end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
         )
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
