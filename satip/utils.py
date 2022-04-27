@@ -697,6 +697,24 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
 
+def collate_files_into_latest(save_dir: str):
+    """
+    Convert individual files into single latest file for HRV and non-HRV
+
+    Args:
+        save_dir: Directory where data is being saved
+
+    """
+
+    filesystem = fsspec.open(save_dir).fs
+
+    dataset = xr.open_mfdataset(f"{save_dir}/latest/hrv_*.nc", concat_dim="time", combine='nested').sortby("time")
+    dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")
+    logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.nc")
+    o_dataset = xr.open_mfdataset(f"{save_dir}/latest/2*.nc", concat_dim="time", combine='nested').sortby("time")
+    o_dataset.to_netcdf(f"{save_dir}/latest/latest.nc")
+    logger.info(f"Collating non-HRV into {save_dir}/latest/latest.nc")
+
 # Cell
 def set_up_logging(
     name: str,

@@ -16,6 +16,7 @@ from satip.utils import (
     filter_dataset_ids_on_current_files,
     move_older_files_to_different_location,
     save_native_to_netcdf,
+    collate_files_into_latest
 )
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
@@ -97,6 +98,9 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         move_older_files_to_different_location(
             save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
         )
+
+        # Collate files into single NetCDF file
+        collate_files_into_latest(save_dir=save_dir)
 
     # 4. update table to show when this data has been pulled
     if db_url is not None:
