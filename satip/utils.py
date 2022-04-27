@@ -709,11 +709,13 @@ def collate_files_into_latest(save_dir: str):
         save_dir: Directory where data is being saved
 
     """
-
-    dataset = xr.open_mfdataset(f"{save_dir}/latest/hrv_*.nc", concat_dim="time", combine='nested').sortby("time")
+    filesystem = fsspec.open(save_dir).fs
+    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_*.nc"))
+    dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested').sortby("time")
     dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.nc")
-    o_dataset = xr.open_mfdataset(f"{save_dir}/latest/2*.nc", concat_dim="time", combine='nested').sortby("time")
+    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.nc"))
+    o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested').sortby("time")
     o_dataset.to_netcdf(f"{save_dir}/latest/latest.nc")
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.nc")
 
