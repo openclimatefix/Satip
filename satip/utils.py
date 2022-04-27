@@ -668,10 +668,11 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 date.split(".nc")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
+                utc=True
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
             )
         if file_time > history_time:
             # Move HRV and non-HRV to new place
@@ -689,10 +690,11 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 date.split(".nc")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
+                utc=True
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
             )
         if file_time < history_time:
             # Move HRV and non-HRV to new place
