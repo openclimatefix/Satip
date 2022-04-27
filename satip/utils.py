@@ -710,7 +710,9 @@ def collate_files_into_latest(save_dir: str):
 
     """
     filesystem = fsspec.open(save_dir).fs
-    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_*.nc"))
+    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_2*.nc"))
+    if not hrv_files: # Empty set of files, don't do anything
+        return
     dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested').sortby("time")
     dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.nc")
