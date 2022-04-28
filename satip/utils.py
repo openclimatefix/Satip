@@ -714,12 +714,12 @@ def collate_files_into_latest(save_dir: str):
     if not hrv_files: # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    hrv_files = ["s3:/"+f for f in hrv_files]
+    hrv_files = ["s3://"+str(f) for f in hrv_files]
     dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested').sortby("time")
     dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.nc")
     nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.nc"))
-    nonhrv_files = ["s3:/"+f for f in nonhrv_files]
+    nonhrv_files = ["s3://"+str(f) for f in nonhrv_files]
     o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested').sortby("time")
     o_dataset.to_netcdf(f"{save_dir}/latest/latest.nc")
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.nc")
