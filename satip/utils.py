@@ -392,11 +392,13 @@ def save_native_to_netcdf(
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
+            attrs = hrv_dataarray.attrs
             hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
+            hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
             save_file = os.path.join(save_dir, f"hrv_{now_time}.nc")
             logger.info(f"Saving HRV netcdf in {save_file}")
@@ -422,9 +424,11 @@ def save_native_to_netcdf(
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
+        attrs = dataarray.attrs
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
+        dataset.attrs.update(attrs)
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
         save_file = os.path.join(save_dir, f"{now_time}.nc")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
@@ -579,7 +583,7 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.netcdf"
-        dataset.to_netcdf(path=path, mode="w", engine="netcdf4")
+        dataset.to_netcdf(path=path, mode="w", engine="h5netcdf")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
