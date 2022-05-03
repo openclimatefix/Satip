@@ -24,6 +24,8 @@ import pandas as pd
 import xarray as xr
 from satpy import Scene
 
+from satip.serialize import serialize_attrs
+
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
@@ -392,7 +394,7 @@ def save_native_to_netcdf(
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
-            attrs = hrv_dataarray.attrs
+            attrs = serialize_attrs(hrv_dataarray.attrs)
             hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
@@ -424,7 +426,7 @@ def save_native_to_netcdf(
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
-        attrs = dataarray.attrs
+        attrs = serialize_attrs(dataarray.attrs)
         dataarray = scaler.rescale(dataarray)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
