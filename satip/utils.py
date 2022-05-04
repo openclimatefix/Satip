@@ -671,6 +671,8 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
     # get datetimes of the finished files
     for date in finished_files:
+        if "latest" in date:
+            continue
         if "hrv" in date:
             file_time = pd.to_datetime(
                 date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
@@ -693,6 +695,8 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     logger.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
+        if "latest" in date:
+            continue
         if "hrv" in date:
             file_time = pd.to_datetime(
                 date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
