@@ -35,17 +35,16 @@ def serialize_attrs(attrs: dict) -> dict:
                 inner_value = value[inner_key]
                 if isinstance(inner_value, np.floating):
                     value[inner_key] = float(inner_value)
-                if inner_value.dtype.type is np.string_ or inner_value.dtype.type is np.str_:
-                    value[inner_key] = str(inner_value)
+                try:
+                    if inner_value.dtype.type is np.string_ or inner_value.dtype.type is np.str_:
+                        value[inner_key] = str(inner_value)
+                except:
+                    continue
             attrs[key] = yaml.dump(value)
 
         # Convert Numpy bools
         if isinstance(value, (bool, np.bool_)):
             attrs[key] = str(value)
-
-        # Convert strings from Numpy Unicode, which NetCDF doesn't take
-        if value.dtype.type is np.string_ or value.dtype.type is np.str_:
-            value[key] = str(value)
 
         # Convert area
         if isinstance(value, pyresample.geometry.AreaDefinition):
@@ -53,5 +52,12 @@ def serialize_attrs(attrs: dict) -> dict:
 
         if isinstance(value, datetime.datetime):
             attrs[key] = value.isoformat()
+
+        # Convert strings from Numpy Unicode, which NetCDF doesn't take
+        try:
+            if value.dtype.type is np.string_ or value.dtype.type is np.str_:
+                value[key] = str(value)
+        except:
+            continue
 
     return attrs
