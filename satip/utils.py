@@ -722,13 +722,13 @@ def collate_files_into_latest(save_dir: str):
     if not hrv_files: # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    hrv_files = ["s3://zip://"+str(f) for f in hrv_files]
+    hrv_files = ["zip:///::s3://"+str(f) for f in hrv_files]
     dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
     with zarr.ZipStore(f"{save_dir}/latest/hrv_latest.zarr.zip") as store:
         dataset.to_zarr(store, compute=True, mode="w")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.zarr.zip"))
-    nonhrv_files = ["s3://zip://"+str(f) for f in nonhrv_files]
+    nonhrv_files = ["zip:///::s3://"+str(f) for f in nonhrv_files]
     o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
     with zarr.ZipStore(f"{save_dir}/latest/latest.zarr.zip") as store:
         o_dataset.to_zarr(store, compute=True, mode="w")
