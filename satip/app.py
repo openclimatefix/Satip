@@ -28,14 +28,14 @@ logging.getLogger(__name__).setLevel(logging.INFO)
 @click.command()
 @click.option(
     "--api-key",
-    default="SWdEnLvOlVTVGli1An1nKJ3NcV0a",
+    default=None,
     envvar="API_KEY",
     help="The API key for EUMETSAT Data Center",
     type=click.STRING,
 )
 @click.option(
     "--api-secret",
-    default="gUQe0ej7H_MqQVGF4cd7wfQWcawa",
+    default=None,
     envvar="API_SECRET",
     help="The API secret for EUMETSAT Data Center",
     type=click.STRING,
