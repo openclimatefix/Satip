@@ -364,7 +364,7 @@ class DownloadManager:  # noqa: D205
         end_date: str,
         product_id="EO:EUM:DAT:MSG:MSG15-RSS",
         roi: str = "united_kingdom",
-        file_format: str = "geotiff",
+        file_format: str = "netcdf4",
         projection: str = "geographic",
     ):
         """Downloads a set of tailored datasets from the EUMETSAT API
@@ -391,7 +391,7 @@ class DownloadManager:  # noqa: D205
         datasets,
         product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
         roi: str = "united_kingdom",
-        file_format: str = "geotiff",
+        file_format: str = "netcdf4",
         projection: str = "geographic",
     ):
         """
@@ -439,7 +439,7 @@ class DownloadManager:  # noqa: D205
         dataset_id,
         product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
         roi: str = "united_kingdom",
-        file_format: str = "geotiff",
+        file_format: str = "netcdf4",
         projection: str = "geographic",
     ) -> None:
         """

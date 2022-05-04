@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from satpy import Scene
+import zarr
 
 from satip.serialize import serialize_attrs
 
@@ -402,9 +403,9 @@ def save_native_to_netcdf(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-            save_file = os.path.join(save_dir, f"hrv_{now_time}.nc")
+            save_file = os.path.join(save_dir, f"hrv_{now_time}.zarr.zip")
             logger.info(f"Saving HRV netcdf in {save_file}")
-            save_to_netcdf_to_s3(hrv_dataset, save_file)
+            save_to_zarr_to_s3(hrv_dataset, save_file)
 
         logger.debug("Processing non-HRV")
         scene = Scene(filenames={"seviri_l1b_native": [f]})
@@ -432,9 +433,9 @@ def save_native_to_netcdf(
         dataset = dataarray.to_dataset(name="data")
         dataset.attrs.update(attrs)
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-        save_file = os.path.join(save_dir, f"{now_time}.nc")
+        save_file = os.path.join(save_dir, f"{now_time}.zarr.zip")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
-        save_to_netcdf_to_s3(dataset, save_file)
+        save_to_zarr_to_s3(dataset, save_file)
 
 
 def save_dataset_to_zarr(
@@ -574,7 +575,7 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
+def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
     """Save xarray to netcdf in s3
 
     1. Save in temp local dir
@@ -584,8 +585,9 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     """
     with tempfile.TemporaryDirectory() as dir:
         # save locally
-        path = f"{dir}/temp.netcdf"
-        dataset.to_netcdf(path=path, mode="w", engine="h5netcdf")
+        path = f"{dir}/temp.zarr.zip"
+        with zarr.ZipStore(path) as store:
+            dataset.to_zarr(store, compute=True, mode="w")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
@@ -612,7 +614,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
-    finished_files = filesystem.glob(f"{save_dir}/*.nc")
+    finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes: # Empty list
         logger.debug(f"No datetimes to download")
@@ -625,7 +627,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     for date in finished_files:
         finished_datetimes.append(
             pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
         )
     if len(finished_datetimes) > 0:
@@ -663,7 +665,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     filesystem = fsspec.open(save_dir).fs
 
     # Now to move into latest
-    finished_files = filesystem.glob(f"{save_dir}/*.nc")
+    finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
 
     logger.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
 
@@ -671,14 +673,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     for date in finished_files:
         if "hrv" in date:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1].split("_")[-1],
+                date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
+                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
             )
         if file_time > history_time:
             # Move HRV and non-HRV to new place
@@ -687,20 +689,20 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             # Delete files over 2 days old
             filesystem.rm(date)
 
-    finished_files = filesystem.glob(f"{save_dir}/latest/*.nc")
+    finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
     logger.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
         if "hrv" in date:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1].split("_")[-1],
+                date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".nc")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
+                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
             )
         if file_time < history_time:
             # Move HRV and non-HRV to new place
@@ -716,19 +718,21 @@ def collate_files_into_latest(save_dir: str):
 
     """
     filesystem = fsspec.open(save_dir).fs
-    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_2*.nc"))
+    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_2*.zarr.zip"))
     if not hrv_files: # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    hrv_files = ["s3://"+str(f) for f in hrv_files]
-    dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested', engine='h5netcdf').sortby("time")
-    dataset.to_netcdf(f"{save_dir}/latest/hrv_latest.nc")
-    logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.nc")
-    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.nc"))
-    nonhrv_files = ["s3://"+str(f) for f in nonhrv_files]
-    o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested', engine='h5netcdf').sortby("time")
-    o_dataset.to_netcdf(f"{save_dir}/latest/latest.nc")
-    logger.info(f"Collating non-HRV into {save_dir}/latest/latest.nc")
+    hrv_files = ["s3://zip://"+str(f) for f in hrv_files]
+    dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
+    with zarr.ZipStore(f"{save_dir}/latest/hrv_latest.zarr.zip") as store:
+        dataset.to_zarr(store, compute=True, mode="w")
+    logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
+    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.zarr.zip"))
+    nonhrv_files = ["s3://zip://"+str(f) for f in nonhrv_files]
+    o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
+    with zarr.ZipStore(f"{save_dir}/latest/latest.zarr.zip") as store:
+        o_dataset.to_zarr(store, compute=True, mode="w")
+    logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
 
 # Cell
 def set_up_logging(

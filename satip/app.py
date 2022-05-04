@@ -28,14 +28,14 @@ logging.getLogger(__name__).setLevel(logging.INFO)
 @click.command()
 @click.option(
     "--api-key",
-    default=None,
+    default="SWdEnLvOlVTVGli1An1nKJ3NcV0a",
     envvar="API_KEY",
     help="The API key for EUMETSAT Data Center",
     type=click.STRING,
 )
 @click.option(
     "--api-secret",
-    default=None,
+    default="gUQe0ej7H_MqQVGF4cd7wfQWcawa",
     envvar="API_SECRET",
     help="The API secret for EUMETSAT Data Center",
     type=click.STRING,
@@ -49,7 +49,7 @@ logging.getLogger(__name__).setLevel(logging.INFO)
 )
 @click.option(
     "--history",
-    default="1 hour",
+    default="60 minutes",
     envvar="HISTORY",
     help="How much history to save",
     type=click.STRING,
