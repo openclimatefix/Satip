@@ -585,7 +585,7 @@ def save_to_netcdf_to_s3(dataset: xr.Dataset, filename: str):
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.netcdf"
-        dataset.to_netcdf(path=path, mode="w", engine="h5netcdf", invalid_netcdf=True)
+        dataset.to_netcdf(path=path, mode="w", engine="h5netcdf")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
