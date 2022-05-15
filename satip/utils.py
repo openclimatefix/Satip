@@ -78,7 +78,7 @@ def decompress(full_bzip_filename: Path, temp_pth: Path) -> str:
     return full_nat_filename
 
 
-def load_native_to_dataset(
+def load_native_to_dataarray(
     filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
 ) -> Tuple[xr.DataArray, xr.DataArray]:
     """
@@ -198,7 +198,7 @@ def load_native_to_dataset(
 
 # TODO: temp_directory is unused and has no effect. But for the sake of interface consistency
 # with load_native_to_dataset, can also stay.
-def load_cloudmask_to_dataset(
+def load_cloudmask_to_dataarray(
     filename: Path, temp_directory: Path, area: str, calculate_osgb: bool = True
 ) -> xr.DataArray:
     """
@@ -438,7 +438,7 @@ def save_native_to_netcdf(
         save_to_zarr_to_s3(dataset, save_file)
 
 
-def save_dataset_to_zarr(
+def save_dataarray_to_zarr(
     dataarray: xr.DataArray,
     zarr_path: str,
     compressor_name: str,

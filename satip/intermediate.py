@@ -25,9 +25,9 @@ from tqdm import tqdm
 from satip.eumetsat import eumetsat_cloud_name_to_datetime, eumetsat_filename_to_datetime
 from satip.utils import (
     check_if_timestep_exists,
-    load_cloudmask_to_dataset,
-    load_native_to_dataset,
-    save_dataset_to_zarr,
+    load_cloudmask_to_dataarray,
+    load_native_to_dataarray,
+    save_dataarray_to_zarr,
 )
 
 
@@ -85,10 +85,10 @@ def split_per_month(
                 compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
                     continue
-                dataset, hrv_dataset = load_native_to_dataset(
+                dataset, hrv_dataset = load_native_to_dataarray(
                     compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
-                save_dataset_to_zarr(
+                save_dataarray_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
                     compressor_name="jpeg-xl",
@@ -97,7 +97,7 @@ def split_per_month(
                     y_size_per_chunk=768,
                     timesteps_per_chunk=temporal_chunk_size,
                 )
-                save_dataset_to_zarr(
+                save_dataarray_to_zarr(
                     hrv_dataset,
                     zarr_path=hrv_month_zarr_path,
                     compressor_name="jpeg-xl",
@@ -176,10 +176,10 @@ def cloudmask_split_per_month(
             if not zarr_exists:
                 # Inital zarr path before then appending
                 compressed_native_files = list(Path(month_directory).rglob("*.grb"))
-                dataset = load_cloudmask_to_dataset(
+                dataset = load_cloudmask_to_dataarray(
                     compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
-                save_dataset_to_zarr(
+                save_dataarray_to_zarr(
                     dataset,
                     zarr_path=month_zarr_path,
                     compressor_name="bz2",
@@ -252,10 +252,10 @@ def create_or_update_zarr_with_cloud_mask_files(
     # Check if zarr already exists
     for entry in tqdm(grib_files):
         try:
-            dataset = load_cloudmask_to_dataset(entry, temp_directory, region, calculate_osgb=False)
+            dataset = load_cloudmask_to_dataarray(entry, temp_directory, region, calculate_osgb=False)
             if dataset is not None:
                 try:
-                    save_dataset_to_zarr(
+                    save_dataarray_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
                         compressor_name="bz2",
@@ -314,12 +314,12 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
         try:
-            dataset, hrv_dataset = load_native_to_dataset(
+            dataset, hrv_dataset = load_native_to_dataarray(
                 entry, temp_directory, region, calculate_osgb=False
             )
             if dataset is not None and hrv_dataset is not None:
                 try:
-                    save_dataset_to_zarr(
+                    save_dataarray_to_zarr(
                         dataset,
                         zarr_path=zarr_path,
                         compressor_name="jpeg-xl",
@@ -327,7 +327,7 @@ def create_or_update_zarr_with_native_files(
                         y_size_per_chunk=768,
                         timesteps_per_chunk=temporal_chunk_size,
                     )
-                    save_dataset_to_zarr(
+                    save_dataarray_to_zarr(
                         hrv_dataset,
                         zarr_path=hrv_zarr_path,
                         compressor_name="jpeg-xl",
@@ -354,4 +354,4 @@ def pool_init(q):
 def native_wrapper(filename_and_area):
     """Puts the data-load-job into the global worker queue."""
     filename, area = filename_and_area
-    processed_queue.put(load_native_to_dataset(filename, area))
+    processed_queue.put(load_native_to_dataarray(filename, area))

@@ -110,7 +110,7 @@ import os
 # Conver -1 to NaN
 # Divide by 1023 to get 0 to 1
 # Rechunk to much larger ones
-from satip.utils import save_dataset_to_zarr
+from satip.utils import save_dataarray_to_zarr
 
 
 def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
@@ -146,7 +146,7 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
     # data_array = replace_osgb(data_array)
     print(data_array)
     for i in range(10, len(data_array["time"].values), 10):
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             data_array.isel(time=slice(i, i + 10)),
             zarr_path=new_zarr_path,
             compressor_name="jpeg-xl",
@@ -167,7 +167,7 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
     # data_array = replace_osgb(data_array)
     print(data_array)
     if not os.path.exists(new_zarr_path):
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             data_array.isel(time=slice(0, 10)),
             zarr_path=new_zarr_path,
             compressor_name="jpeg-xl",

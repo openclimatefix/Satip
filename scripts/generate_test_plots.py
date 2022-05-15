@@ -17,7 +17,7 @@ import rasterio
 import xarray as xr
 
 from satip import eumetsat
-from satip.utils import load_cloudmask_to_dataset, load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import load_cloudmask_to_dataarray, load_native_to_dataarray, save_dataarray_to_zarr
 
 
 def generate_test_plots():
@@ -113,15 +113,15 @@ def generate_test_plots():
 
     for area in ["UK", "RSS"]:
         # First do it with the cloud mask
-        cloudmask_dataset = load_cloudmask_to_dataset(
+        cloudmask_dataset = load_cloudmask_to_dataarray(
             Path(cloud_mask_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
-        rss_dataset, hrv_dataset = load_native_to_dataset(
+        rss_dataset, hrv_dataset = load_native_to_dataarray(
             Path(rss_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
 
         # Save to Zarrs, to then load them back
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             cloudmask_dataset,
             zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
             compressor_name="bz2",
@@ -129,7 +129,7 @@ def generate_test_plots():
         )
         del cloudmask_dataset
 
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             rss_dataset,
             zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
             compressor_name="jpeg-xl",
@@ -137,7 +137,7 @@ def generate_test_plots():
         )
         del rss_dataset
 
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             hrv_dataset,
             zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
             compressor_name="jpeg-xl",
