@@ -14,6 +14,7 @@ import numpy as np
 import pyresample
 import yaml
 
+
 def serialize_attrs(attrs: dict) -> dict:
     """Ensure each value of dict can be serialized.
 

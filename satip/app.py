@@ -13,10 +13,10 @@ from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 from satip.eumetsat import DownloadManager
 from satip.utils import (
+    collate_files_into_latest,
     filter_dataset_ids_on_current_files,
     move_older_files_to_different_location,
     save_native_to_netcdf,
-    collate_files_into_latest
 )
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
