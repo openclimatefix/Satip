@@ -22,14 +22,13 @@ import numcodecs
 import numpy as np
 import pandas as pd
 import xarray as xr
-from satpy import Scene
 import zarr
-
-from satip.serialize import serialize_attrs
+from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
+from satip.serialize import serialize_attrs
 
 logger = logging.getLogger(__name__)
 
@@ -616,7 +615,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     filesystem = fsspec.open(save_dir).fs
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
-    if not datetimes: # Empty list
+    if not datetimes:  # Empty list
         logger.debug(f"No datetimes to download")
         return []
     logger.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
@@ -678,11 +677,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
-                utc=True
+                utc=True,
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
+                date.split(".zarr.zip")[0].split("/")[-1],
+                format="%Y%m%d%H%M",
+                errors="ignore",
+                utc=True,
             )
         if file_time > history_time:
             # Move HRV and non-HRV to new place
@@ -702,11 +704,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
-                utc=True
+                utc=True,
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore", utc=True
+                date.split(".zarr.zip")[0].split("/")[-1],
+                format="%Y%m%d%H%M",
+                errors="ignore",
+                utc=True,
             )
         if file_time < history_time:
             # Move HRV and non-HRV to new place
@@ -723,18 +728,23 @@ def collate_files_into_latest(save_dir: str):
     """
     filesystem = fsspec.open(save_dir).fs
     hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_2*.zarr.zip"))
-    if not hrv_files: # Empty set of files, don't do anything
+    if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    hrv_files = ["zip:///::s3://"+str(f) for f in hrv_files]
-    dataset = xr.open_mfdataset(hrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
+    hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+    dataset = xr.open_mfdataset(
+        hrv_files, concat_dim="time", combine="nested", engine="zarr"
+    ).sortby("time")
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_latest.zarr.zip")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.zarr.zip"))
-    nonhrv_files = ["zip:///::s3://"+str(f) for f in nonhrv_files]
-    o_dataset = xr.open_mfdataset(nonhrv_files, concat_dim="time", combine='nested', engine='zarr').sortby("time")
+    nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+    o_dataset = xr.open_mfdataset(
+        nonhrv_files, concat_dim="time", combine="nested", engine="zarr"
+    ).sortby("time")
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/latest.zarr.zip")
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
+
 
 # Cell
 def set_up_logging(

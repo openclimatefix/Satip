@@ -17,7 +17,11 @@ import rasterio
 import xarray as xr
 
 from satip import eumetsat
-from satip.utils import load_cloudmask_to_dataarray, load_native_to_dataarray, save_dataarray_to_zarr
+from satip.utils import (
+    load_cloudmask_to_dataarray,
+    load_native_to_dataarray,
+    save_dataarray_to_zarr,
+)
 
 
 def generate_test_plots():

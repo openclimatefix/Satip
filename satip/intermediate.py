@@ -252,7 +252,9 @@ def create_or_update_zarr_with_cloud_mask_files(
     # Check if zarr already exists
     for entry in tqdm(grib_files):
         try:
-            dataarray = load_cloudmask_to_dataarray(entry, temp_directory, region, calculate_osgb=False)
+            dataarray = load_cloudmask_to_dataarray(
+                entry, temp_directory, region, calculate_osgb=False
+            )
             if dataarray is not None:
                 try:
                     save_dataarray_to_zarr(

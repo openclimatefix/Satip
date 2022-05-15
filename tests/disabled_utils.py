@@ -14,7 +14,11 @@ from pathlib import Path
 
 import xarray
 
-from satip.utils import load_cloudmask_to_dataarray, load_native_to_dataarray, save_dataarray_to_zarr
+from satip.utils import (
+    load_cloudmask_to_dataarray,
+    load_native_to_dataarray,
+    save_dataarray_to_zarr,
+)
 
 USER_KEY = os.environ.get("EUMETSAT_USER_KEY")
 USER_SECRET = os.environ.get("EUMETSAT_USER_SECRET")
