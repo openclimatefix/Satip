@@ -616,7 +616,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
-        logger.debug(f"No datetimes to download")
+        logger.debug("No datetimes to download")
         return []
     logger.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
 
