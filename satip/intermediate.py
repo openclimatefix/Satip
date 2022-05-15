@@ -85,11 +85,11 @@ def split_per_month(
                 compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
                     continue
-                dataset, hrv_dataset = load_native_to_dataarray(
+                dataarray, hrv_dataarray = load_native_to_dataarray(
                     compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
                 save_dataarray_to_zarr(
-                    dataset,
+                    dataarray,
                     zarr_path=month_zarr_path,
                     compressor_name="jpeg-xl",
                     zarr_mode="w",
@@ -98,7 +98,7 @@ def split_per_month(
                     timesteps_per_chunk=temporal_chunk_size,
                 )
                 save_dataarray_to_zarr(
-                    hrv_dataset,
+                    hrv_dataarray,
                     zarr_path=hrv_month_zarr_path,
                     compressor_name="jpeg-xl",
                     zarr_mode="w",
@@ -176,11 +176,11 @@ def cloudmask_split_per_month(
             if not zarr_exists:
                 # Inital zarr path before then appending
                 compressed_native_files = list(Path(month_directory).rglob("*.grb"))
-                dataset = load_cloudmask_to_dataarray(
+                dataarray = load_cloudmask_to_dataarray(
                     compressed_native_files[0], temp_directory, region, calculate_osgb=True
                 )
                 save_dataarray_to_zarr(
-                    dataset,
+                    dataarray,
                     zarr_path=month_zarr_path,
                     compressor_name="bz2",
                     x_size_per_chunk=spatial_chunk_size,
@@ -252,11 +252,11 @@ def create_or_update_zarr_with_cloud_mask_files(
     # Check if zarr already exists
     for entry in tqdm(grib_files):
         try:
-            dataset = load_cloudmask_to_dataarray(entry, temp_directory, region, calculate_osgb=False)
-            if dataset is not None:
+            dataarray = load_cloudmask_to_dataarray(entry, temp_directory, region, calculate_osgb=False)
+            if dataarray is not None:
                 try:
                     save_dataarray_to_zarr(
-                        dataset,
+                        dataarray,
                         zarr_path=zarr_path,
                         compressor_name="bz2",
                         x_size_per_chunk=spatial_chunk_size,
@@ -265,7 +265,7 @@ def create_or_update_zarr_with_cloud_mask_files(
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
-            del dataset
+            del dataarray
         except Exception as e:
             print(f"Failed with Exception with {e}")
 
@@ -314,13 +314,13 @@ def create_or_update_zarr_with_native_files(
     # Check if zarr already exists
     for entry in tqdm(compressed_native_files):
         try:
-            dataset, hrv_dataset = load_native_to_dataarray(
+            dataarray, hrv_dataarray = load_native_to_dataarray(
                 entry, temp_directory, region, calculate_osgb=False
             )
-            if dataset is not None and hrv_dataset is not None:
+            if dataarray is not None and hrv_dataarray is not None:
                 try:
                     save_dataarray_to_zarr(
-                        dataset,
+                        dataarray,
                         zarr_path=zarr_path,
                         compressor_name="jpeg-xl",
                         x_size_per_chunk=768,
@@ -328,7 +328,7 @@ def create_or_update_zarr_with_native_files(
                         timesteps_per_chunk=temporal_chunk_size,
                     )
                     save_dataarray_to_zarr(
-                        hrv_dataset,
+                        hrv_dataarray,
                         zarr_path=hrv_zarr_path,
                         compressor_name="jpeg-xl",
                         x_size_per_chunk=1536,
@@ -337,8 +337,8 @@ def create_or_update_zarr_with_native_files(
                     )
                 except Exception as e:
                     print(f"Failed with: {e}")
-            del dataset
-            del hrv_dataset
+            del dataarray
+            del hrv_dataarray
         except Exception as e:
             print(f"Failed with Exception with {e}")
 

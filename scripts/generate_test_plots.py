@@ -113,62 +113,62 @@ def generate_test_plots():
 
     for area in ["UK", "RSS"]:
         # First do it with the cloud mask
-        cloudmask_dataset = load_cloudmask_to_dataarray(
+        cloudmask_dataarray = load_cloudmask_to_dataarray(
             Path(cloud_mask_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
-        rss_dataset, hrv_dataset = load_native_to_dataarray(
+        rss_dataarray, hrv_dataarray = load_native_to_dataarray(
             Path(rss_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
 
         # Save to Zarrs, to then load them back
         save_dataarray_to_zarr(
-            cloudmask_dataset,
+            cloudmask_dataarray,
             zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
             compressor_name="bz2",
             zarr_mode="w",
         )
-        del cloudmask_dataset
+        del cloudmask_dataarray
 
         save_dataarray_to_zarr(
-            rss_dataset,
+            rss_dataarray,
             zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
             compressor_name="jpeg-xl",
             zarr_mode="w",
         )
-        del rss_dataset
+        del rss_dataarray
 
         save_dataarray_to_zarr(
-            hrv_dataset,
+            hrv_dataarray,
             zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
             compressor_name="jpeg-xl",
             zarr_mode="w",
         )
-        del hrv_dataset
+        del hrv_dataarray
 
         # Load them from Zarr to ensure its the same as the output from satip
-        cloudmask_dataset = (
+        cloudmask_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="cloud_mask")
         )
-        rss_dataset = (
+        rss_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="IR_016")
         )
-        hrv_dataset = (
+        hrv_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="HRV")
         )
 
-        print(cloudmask_dataset)
-        print(rss_dataset)
-        print(hrv_dataset)
+        print(cloudmask_dataarray)
+        print(rss_dataarray)
+        print(hrv_dataarray)
 
-        _plot_dataset(hrv_dataset, "hrv", area)
-        _plot_dataset(rss_dataset, "rss", area)
-        _plot_dataset(cloudmask_dataset, "cloud_mask", area)
+        _plot_dataset(hrv_dataarray, "hrv", area)
+        _plot_dataset(rss_dataarray, "rss", area)
+        _plot_dataset(cloudmask_dataarray, "cloud_mask", area)
 
 
 if __name__ == "__main__":
