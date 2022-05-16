@@ -19,5 +19,5 @@ def test_save_to_netcdf():
         runner.invoke(
             run, ["--api-key", user_key, "--api-secret", user_secret, "--save-dir", tmpdirname]
         )
-        native_files = list(glob.glob(os.path.join(tmpdirname, "*.nc")))
+        native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
