@@ -736,15 +736,15 @@ def collate_files_into_latest(save_dir: str):
         hrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
-    filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
-    filesystem.mv(f"{save_dir}/latest/hrv_tmp.zarr.zip",f"{save_dir}/latest/hrv_latest.zarr.zip")
-    logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.zarr.zip"))
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     o_dataset = xr.open_mfdataset(
         nonhrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
+    filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
+    filesystem.mv(f"{save_dir}/latest/hrv_tmp.zarr.zip",f"{save_dir}/latest/hrv_latest.zarr.zip")
+    logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
     filesystem.mv(f"{save_dir}/latest/tmp.zarr.zip",f"{save_dir}/latest/latest.zarr.zip")
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
