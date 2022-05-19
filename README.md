@@ -72,19 +72,19 @@ python satip/get_raw_eumetsat_data.py --user-key=<EUMETSAT API Key> --user-secre
 
 ## Running in Production
 
-The live service uses `app.py` as the entrypoint for running the live data download for OCF's forecasting service, and has a few configuration options.
+The live service uses `app.py` as the entrypoint for running the live data download for OCF's forecasting service, and has a few configuration options, configurable by command line argument or environment variable.
 
-`--api-key` is the EUMETSAT API key
+`--api-key` or `API_KEY` is the EUMETSAT API key
 
-`--api-secret` is the EUMETSAT API secret
+`--api-secret` or `API_SECRET` is the EUMETSAT API secret
 
-`--save-dir` is the top level directory to save the output files, a `latest` subfolder will be added to that directory to contain the latest data
+`--save-dir` or `SAVE_DIR` is the top level directory to save the output files, a `latest` subfolder will be added to that directory to contain the latest data
 
-`--history` is the amount of history timesteps to use in the `latest.zarr` files
+`--history` or `HISTORY` is the amount of history timesteps to use in the `latest.zarr` files
 
-`--db-url` is the URL to the database to save to when a run has finished
+`--db-url` or `DB_URL` is the URL to the database to save to when a run has finished
 
-`--use-rescaler` tells whether to rescale the satellite data to between 0 and 1 or not when saving to disk. Primarily used as backwards compatibility for the current production models, all new training and production Zarrs should use the rescaled data.
+`--use-rescaler` or `USE_RESCALER` tells whether to rescale the satellite data to between 0 and 1 or not when saving to disk. Primarily used as backwards compatibility for the current production models, all new training and production Zarrs should use the rescaled data.
 
 ## Testing
 
