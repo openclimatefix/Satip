@@ -318,6 +318,7 @@ def save_native_to_netcdf(
         "WV_073",
     ],
     save_dir: str = "./",
+        use_rescaler: bool = False
 ) -> None:
     """
     Saves native files to NetCDF for consumer
@@ -326,6 +327,7 @@ def save_native_to_netcdf(
         list_of_native_files: List of native files to convert into a single NetCDF file
         bands: Bands to save
         save_dir: Directory to save the netcdf files
+        use_rescaler: Whether to rescale between 0 and 1 or not
     """
 
     logger.info(f"Converting from native to netcdf in {save_dir}")
@@ -395,7 +397,13 @@ def save_native_to_netcdf(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
             attrs = serialize_attrs(hrv_dataarray.attrs)
-            hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
+            if use_rescaler:
+                hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
+            else:
+                hrv_dataarray = hrv_dataarray.reindex({"variable": ["HRV"]}).transpose(
+                    "time", "y_geostationary", "x_geostationary", "variable"
+                )
+                hrv_dataarray = hrv_dataarray.astype(np.float32)
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
@@ -427,7 +435,25 @@ def save_native_to_netcdf(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
         attrs = serialize_attrs(dataarray.attrs)
-        dataarray = scaler.rescale(dataarray)
+        if use_rescaler:
+            dataarray = scaler.rescale(dataarray)
+        else:
+            dataarray = dataarray.reindex({"variable": [
+                "IR_016",
+                "IR_039",
+                "IR_087",
+                "IR_097",
+                "IR_108",
+                "IR_120",
+                "IR_134",
+                "VIS006",
+                "VIS008",
+                "WV_062",
+                "WV_073",
+            ]}).transpose(
+                "time", "y_geostationary", "x_geostationary", "variable"
+            )
+            dataarray = dataarray.astype(np.float32)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
         dataset.attrs.update(attrs)
