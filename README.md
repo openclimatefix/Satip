@@ -70,6 +70,22 @@ python satip/get_raw_eumetsat_data.py --user-key=<EUMETSAT API Key> --user-secre
 `scripts/convert_native_to_zarr.py` converts EUMETSAT `.nat` files to Zarr datasets, using very mild lossy [JPEG-XL](https://en.wikipedia.org/wiki/JPEG_XL) compression. (JPEG-XL is the "new kid on the block" of image compression algorithms). JPEG-XL makes the files about a quarter the size of the equivalent `bz2` compressed files, whilst the images are visually indistinguishable. JPEG-XL cannot represent NaNs so NaNs. JPEG-XL understands float32 values in the range `[0, 1]`. NaNs are encoded as the value `0.025`. All "real" values are in the range `[0.075, 1]`. We leave a gap between "NaNs" and "real values" because there is very slight "ringing" around areas of constant value (see [this comment for more details](https://github.com/openclimatefix/Satip/issues/67#issuecomment-1036456502)). Use `satip.jpeg_xl_float_with_nans.JpegXlFloatWithNaNs` to decode the satellite data. This class will reconstruct the NaNs and rescale the data to the range `[0, 1]`.
 
 
+## Running in Production
+
+The live service uses `app.py` as the entrypoint for running the live data download for OCF's forecasting service, and has a few configuration options, configurable by command line argument or environment variable.
+
+`--api-key` or `API_KEY` is the EUMETSAT API key
+
+`--api-secret` or `API_SECRET` is the EUMETSAT API secret
+
+`--save-dir` or `SAVE_DIR` is the top level directory to save the output files, a `latest` subfolder will be added to that directory to contain the latest data
+
+`--history` or `HISTORY` is the amount of history timesteps to use in the `latest.zarr` files
+
+`--db-url` or `DB_URL` is the URL to the database to save to when a run has finished
+
+`--use-rescaler` or `USE_RESCALER` tells whether to rescale the satellite data to between 0 and 1 or not when saving to disk. Primarily used as backwards compatibility for the current production models, all new training and production Zarrs should use the rescaled data.
+
 ## Testing
 
 To run tests, simply run ```pytest .``` from the root of the repository. To generate the test plots, run ```python scripts/generate_test_plots.py```.
