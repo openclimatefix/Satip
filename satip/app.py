@@ -61,7 +61,14 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Database to save when this has run",
     type=click.STRING,
 )
-def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
+@click.option(
+    "--use-rescaler",
+    default=False,
+    envvar="USE_RESCALER",
+    help="Whether to rescale data to between 0 and 1 or not",
+    type=click.BOOL,
+)
+def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False):
     """Run main application
 
     Args:
@@ -70,6 +77,7 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         save_dir: Save directory
         history: History time
         db_url: URL of database
+        use_rescaler: Rescale data to between 0 and 1 or not
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
@@ -92,7 +100,7 @@ def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None):
         native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
 
         # Save to S3
-        save_native_to_netcdf(native_files, save_dir=save_dir)
+        save_native_to_netcdf(native_files, save_dir=save_dir, use_rescaler=use_rescaler)
 
         # Move around files into and out of latest
         move_older_files_to_different_location(
