@@ -1,6 +1,6 @@
 """Convert the older zarr files to newer JPEG-XL ones."""
-import os
 import glob
+import os
 from multiprocessing import Pool
 
 import numpy as np
