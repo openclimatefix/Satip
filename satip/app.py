@@ -68,7 +68,9 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Whether to rescale data to between 0 and 1 or not",
     type=click.BOOL,
 )
-def run(api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False):
+def run(
+    api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False
+):
     """Run main application
 
     Args:

@@ -318,7 +318,7 @@ def save_native_to_netcdf(
         "WV_073",
     ],
     save_dir: str = "./",
-        use_rescaler: bool = False
+    use_rescaler: bool = False,
 ) -> None:
     """
     Saves native files to NetCDF for consumer
@@ -438,21 +438,23 @@ def save_native_to_netcdf(
         if use_rescaler:
             dataarray = scaler.rescale(dataarray)
         else:
-            dataarray = dataarray.reindex({"variable": [
-                "IR_016",
-                "IR_039",
-                "IR_087",
-                "IR_097",
-                "IR_108",
-                "IR_120",
-                "IR_134",
-                "VIS006",
-                "VIS008",
-                "WV_062",
-                "WV_073",
-            ]}).transpose(
-                "time", "y_geostationary", "x_geostationary", "variable"
-            )
+            dataarray = dataarray.reindex(
+                {
+                    "variable": [
+                        "IR_016",
+                        "IR_039",
+                        "IR_087",
+                        "IR_097",
+                        "IR_108",
+                        "IR_120",
+                        "IR_134",
+                        "VIS006",
+                        "VIS008",
+                        "WV_062",
+                        "WV_073",
+                    ]
+                }
+            ).transpose("time", "y_geostationary", "x_geostationary", "variable")
             dataarray = dataarray.astype(np.float32)
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataset = dataarray.to_dataset(name="data")
