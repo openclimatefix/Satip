@@ -301,7 +301,7 @@ def convert_scene_to_dataarray(
     return dataarray
 
 
-def do_old_rescaling(
+def do_v15_rescaling(
     dataarray: xr.DataArray, mins: np.ndarray, maxs: np.ndarray, variable_order: list
 ) -> xr.DataArray:
     """
@@ -428,7 +428,7 @@ def save_native_to_netcdf(
             if use_rescaler:
                 hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
             else:
-                hrv_dataarray = do_old_rescaling(
+                hrv_dataarray = do_v15_rescaling(
                     hrv_dataarray,
                     variable_order=["HRV"],
                     maxs=np.array([103.90016]),
@@ -468,7 +468,7 @@ def save_native_to_netcdf(
         if use_rescaler:
             dataarray = scaler.rescale(dataarray)
         else:
-            dataarray = do_old_rescaling(
+            dataarray = do_v15_rescaling(
                 dataarray,
                 mins=np.array(
                     [
