@@ -316,7 +316,7 @@ def do_old_rescaling(
     Returns:
         Xarray DataArray
     """
-    ataarray = dataarray.reindex({"variable": variable_order}).transpose(
+    dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
     upper_bound = (2**10) - 1
