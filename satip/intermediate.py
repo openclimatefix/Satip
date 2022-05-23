@@ -157,14 +157,16 @@ def cloudmask_split_per_month(
 
     # Get year
     temp_directory = Path(temp_directory)
-    year_directories = os.listdir(directory)
+    year_directories = sorted(os.listdir(directory), reverse=True)
     print(year_directories)
     dirs = []
     zarrs = []
     for year in year_directories:
+        if year in not in ["2016", "2017", "2018", "2019", "2020", "2021", "2022"]:
+            continue
         if not os.path.isdir(os.path.join(directory, year)):
             continue
-        month_directories = os.listdir(os.path.join(directory, year))
+        month_directories = sorted(os.listdir(os.path.join(directory, year)), reverse=True)
         for month in month_directories:
             if not os.path.isdir(os.path.join(directory, year, month)):
                 continue
@@ -188,9 +190,8 @@ def cloudmask_split_per_month(
                     timesteps_per_chunk=temporal_chunk_size,
                     zarr_mode="w",
                 )
-    print(dirs)
-    print(zarrs)
-    pool = multiprocessing.Pool(processes=os.cpu_count())
+
+    pool = multiprocessing.Pool(processes=3)
     for _ in tqdm(
         pool.imap_unordered(
             _cloudmask_wrapper,
