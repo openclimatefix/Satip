@@ -162,7 +162,7 @@ def cloudmask_split_per_month(
     dirs = []
     zarrs = []
     for year in year_directories:
-        if year in not in ["2016", "2017", "2018", "2019", "2020", "2021", "2022"]:
+        if year not in ["2016", "2017", "2018", "2019", "2020", "2021", "2022"]:
             continue
         if not os.path.isdir(os.path.join(directory, year)):
             continue
