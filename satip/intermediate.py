@@ -298,6 +298,7 @@ def create_or_update_zarr_with_native_files(
     """
 
     # Satpy Scene doesn't do well with fsspec
+    print(f"Directory: {directory}")
     compressed_native_files = sorted(list(Path(directory).rglob("*.bz2")))
     if len(compressed_native_files) == 0:
         return

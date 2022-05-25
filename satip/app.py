@@ -96,6 +96,10 @@ def run(
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
+        if len(datasets) == 0:
+            logger.info("No files to download, exiting")
+            return
+
         download_manager.download_datasets(datasets)
 
         # 2. Load nat files to one Xarray Dataset
