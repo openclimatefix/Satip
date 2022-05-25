@@ -93,6 +93,9 @@ def run(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
             end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
         )
+        # Check if any RSS imagery is available, if not, fall back to 15 minutely data
+        if len(datasets) == 0:
+            logger.info("No RSS Imagery available, falling back to 15-minutely data")
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
