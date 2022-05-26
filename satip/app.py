@@ -16,7 +16,7 @@ from satip.utils import (
     collate_files_into_latest,
     filter_dataset_ids_on_current_files,
     move_older_files_to_different_location,
-    save_native_to_netcdf,
+    save_native_to_zarr,
 )
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
@@ -116,7 +116,7 @@ def run(
         native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
 
         # Save to S3
-        save_native_to_netcdf(native_files, save_dir=save_dir, use_rescaler=use_rescaler)
+        save_native_to_zarr(native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup)
 
         # Move around files into and out of latest
         move_older_files_to_different_location(
@@ -124,7 +124,7 @@ def run(
         )
 
         # Collate files into single NetCDF file
-        collate_files_into_latest(save_dir=save_dir)
+        collate_files_into_latest(save_dir=save_dir, using_backup=using_backup)
 
     # 4. update table to show when this data has been pulled
     if db_url is not None:

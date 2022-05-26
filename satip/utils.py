@@ -329,7 +329,7 @@ def do_v15_rescaling(
     return dataarray
 
 
-def save_native_to_netcdf(
+def save_native_to_zarr(
     list_of_native_files: list,
     bands: list = [
         "HRV",
@@ -347,6 +347,7 @@ def save_native_to_netcdf(
     ],
     save_dir: str = "./",
     use_rescaler: bool = False,
+        using_backup: bool = False
 ) -> None:
     """
     Saves native files to NetCDF for consumer
@@ -356,6 +357,7 @@ def save_native_to_netcdf(
         bands: Bands to save
         save_dir: Directory to save the netcdf files
         use_rescaler: Whether to rescale between 0 and 1 or not
+        using_backup: Whether the input data is the backup 15 minutely data or not
     """
 
     logger.info(f"Converting from native to netcdf in {save_dir}")
@@ -440,7 +442,7 @@ def save_native_to_netcdf(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-            save_file = os.path.join(save_dir, f"hrv_{now_time}.zarr.zip")
+            save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
             logger.info(f"Saving HRV netcdf in {save_file}")
             save_to_zarr_to_s3(hrv_dataset, save_file)
 
@@ -518,7 +520,7 @@ def save_native_to_netcdf(
         dataset = dataarray.to_dataset(name="data")
         dataset.attrs.update(attrs)
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-        save_file = os.path.join(save_dir, f"{now_time}.zarr.zip")
+        save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
         save_to_zarr_to_s3(dataset, save_file)
 
@@ -760,14 +762,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             continue
         if "hrv" in date:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
+                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True,
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1],
+                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True,
@@ -787,14 +789,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             continue
         if "hrv" in date:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
+                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True,
             )
         else:
             file_time = pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1],
+                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True,
@@ -804,16 +806,17 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
 
-def collate_files_into_latest(save_dir: str):
+def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     """
     Convert individual files into single latest file for HRV and non-HRV
 
     Args:
         save_dir: Directory where data is being saved
+        using_backup: Whether the input data is made up of the 15 minutely  backup data or not
 
     """
     filesystem = fsspec.open(save_dir).fs
-    hrv_files = list(filesystem.glob(f"{save_dir}/latest/hrv_2*.zarr.zip"))
+    hrv_files = list(filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_2*.zarr.zip"))
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
@@ -822,17 +825,17 @@ def collate_files_into_latest(save_dir: str):
         hrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
-    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/2*.zarr.zip"))
+    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip"))
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     o_dataset = xr.open_mfdataset(
         nonhrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
-    filesystem.mv(f"{save_dir}/latest/hrv_tmp.zarr.zip", f"{save_dir}/latest/hrv_latest.zarr.zip")
+    filesystem.mv(f"{save_dir}/latest/hrv_tmp.zarr.zip", f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_latest.zarr.zip")
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
-    filesystem.mv(f"{save_dir}/latest/tmp.zarr.zip", f"{save_dir}/latest/latest.zarr.zip")
+    filesystem.mv(f"{save_dir}/latest/tmp.zarr.zip", f"{save_dir}/latest/{'15_' if using_backup else ''}latest.zarr.zip")
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
 
 
