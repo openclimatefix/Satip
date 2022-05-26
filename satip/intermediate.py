@@ -99,15 +99,16 @@ def split_per_month(
                     y_size_per_chunk=768,
                     timesteps_per_chunk=temporal_chunk_size,
                 )
-                save_dataarray_to_zarr(
-                    hrv_dataarray,
-                    zarr_path=hrv_month_zarr_path,
-                    compressor_name="jpeg-xl",
-                    zarr_mode="w",
-                    x_size_per_chunk=1536,
-                    y_size_per_chunk=1536,
-                    timesteps_per_chunk=temporal_chunk_size,
-                )
+                if not os.path.exists(hrv_month_zarr_path):
+                    save_dataarray_to_zarr(
+                        hrv_dataarray,
+                        zarr_path=hrv_month_zarr_path,
+                        compressor_name="jpeg-xl",
+                        zarr_mode="w",
+                        x_size_per_chunk=1536,
+                        y_size_per_chunk=1536,
+                        timesteps_per_chunk=temporal_chunk_size,
+                    )
     pool = multiprocessing.Pool(processes=3)
     for d in tqdm(
         pool.imap_unordered(
