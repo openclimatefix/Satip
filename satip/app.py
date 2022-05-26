@@ -100,7 +100,7 @@ def run(
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
-                product_id="EO:EUM:DAT:MSG:HRSEVIRI"
+                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
             using_backup = True
         # Filter out ones that already exist
@@ -116,7 +116,9 @@ def run(
         native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
 
         # Save to S3
-        save_native_to_zarr(native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup)
+        save_native_to_zarr(
+            native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup
+        )
 
         # Move around files into and out of latest
         move_older_files_to_different_location(

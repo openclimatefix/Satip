@@ -347,7 +347,7 @@ def save_native_to_zarr(
     ],
     save_dir: str = "./",
     use_rescaler: bool = False,
-        using_backup: bool = False
+    using_backup: bool = False,
 ) -> None:
     """
     Saves native files to NetCDF for consumer
@@ -442,7 +442,9 @@ def save_native_to_zarr(
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-            save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
+            save_file = os.path.join(
+                save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip"
+            )
             logger.info(f"Saving HRV netcdf in {save_file}")
             save_to_zarr_to_s3(hrv_dataset, save_file)
 
@@ -816,7 +818,9 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
     """
     filesystem = fsspec.open(save_dir).fs
-    hrv_files = list(filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_2*.zarr.zip"))
+    hrv_files = list(
+        filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_2*.zarr.zip")
+    )
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
@@ -825,17 +829,25 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         hrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
-    nonhrv_files = list(filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip"))
+    nonhrv_files = list(
+        filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
+    )
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     o_dataset = xr.open_mfdataset(
         nonhrv_files, concat_dim="time", combine="nested", engine="zarr"
     ).sortby("time")
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
-    filesystem.mv(f"{save_dir}/latest/hrv_tmp.zarr.zip", f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_latest.zarr.zip")
+    filesystem.mv(
+        f"{save_dir}/latest/hrv_tmp.zarr.zip",
+        f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_latest.zarr.zip",
+    )
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
-    filesystem.mv(f"{save_dir}/latest/tmp.zarr.zip", f"{save_dir}/latest/{'15_' if using_backup else ''}latest.zarr.zip")
+    filesystem.mv(
+        f"{save_dir}/latest/tmp.zarr.zip",
+        f"{save_dir}/latest/{'15_' if using_backup else ''}latest.zarr.zip",
+    )
     logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
 
 
