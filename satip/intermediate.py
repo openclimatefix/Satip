@@ -82,6 +82,7 @@ def split_per_month(
             print(month_zarr_path)
             zarr_exists = os.path.exists(month_zarr_path)
             if not zarr_exists:
+                print(f"Making Zarr: {month_zarr_path}")
                 # Inital zarr path before then appending
                 compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
