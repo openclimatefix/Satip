@@ -83,6 +83,7 @@ def run(
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
+    using_backup = False
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
@@ -96,6 +97,12 @@ def run(
         # Check if any RSS imagery is available, if not, fall back to 15 minutely data
         if len(datasets) == 0:
             logger.info("No RSS Imagery available, falling back to 15-minutely data")
+            datasets = download_manager.identify_available_datasets(
+                start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
+                end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
+                product_id="EO:EUM:DAT:MSG:HRSEVIRI"
+            )
+            using_backup = True
         # Filter out ones that already exist
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
