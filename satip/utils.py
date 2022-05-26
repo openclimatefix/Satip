@@ -827,17 +827,21 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         return
     # Add S3 to beginning of each URL
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
-    dataset = xr.open_mfdataset(
-        hrv_files, concat_dim="time", combine="nested", engine="zarr"
-    ).sortby("time").drop_duplicates("time")
+    dataset = (
+        xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr")
+        .sortby("time")
+        .drop_duplicates("time")
+    )
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
     )
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
-    o_dataset = xr.open_mfdataset(
-        nonhrv_files, concat_dim="time", combine="nested", engine="zarr"
-    ).sortby("time").drop_duplicates("time")
+    o_dataset = (
+        xr.open_mfdataset(nonhrv_files, concat_dim="time", combine="nested", engine="zarr")
+        .sortby("time")
+        .drop_duplicates("time")
+    )
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
     filesystem.mv(
