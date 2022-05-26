@@ -716,7 +716,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     for date in finished_files:
         finished_datetimes.append(
             pd.to_datetime(
-                date.split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
+                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1], format="%Y%m%d%H%M", errors="ignore"
             )
         )
     if len(finished_datetimes) > 0:
