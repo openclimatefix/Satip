@@ -79,6 +79,7 @@ def split_per_month(
             dirs.append(month_directory)
             zarrs.append(month_zarr_path)
             hrv_zarrs.append(hrv_month_zarr_path)
+            print(month_zarr_path)
             zarr_exists = os.path.exists(month_zarr_path)
             if not zarr_exists:
                 # Inital zarr path before then appending
@@ -106,10 +107,8 @@ def split_per_month(
                     y_size_per_chunk=1536,
                     timesteps_per_chunk=temporal_chunk_size,
                 )
-    print(dirs)
-    print(zarrs)
-    pool = multiprocessing.Pool(processes=os.cpu_count())
-    for _ in tqdm(
+    pool = multiprocessing.Pool(processes=3)
+    for d in tqdm(
         pool.imap_unordered(
             _wrapper_create_or_update_xarr_with_native_files,
             zip(
@@ -123,7 +122,7 @@ def split_per_month(
             ),
         )
     ):
-        print("Month done")
+        print(f"Month {d} done")
 
 
 def _wrapper_create_or_update_xarr_with_native_files(args):
@@ -281,7 +280,7 @@ def create_or_update_zarr_with_native_files(
     region: str,
     spatial_chunk_size: int = 256,
     temporal_chunk_size: int = 1,
-) -> None:
+) -> str:
     """
     Creates or updates a zarr file with satellite native files
 
@@ -345,6 +344,7 @@ def create_or_update_zarr_with_native_files(
             del hrv_dataarray
         except Exception as e:
             print(f"Failed with Exception with {e}")
+    return directory
 
 
 # TODO: Not used in the repo, remove?
