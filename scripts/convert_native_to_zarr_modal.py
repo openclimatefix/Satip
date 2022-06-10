@@ -284,56 +284,107 @@ async def main():
                 filename = str(compressed_file.name).replace(".bz2", "")
                 print(filename)
                 byted_datas.append((data_bytes, filename))
-            if len(byted_datas) >= 100:
-                async with app.run():
-                    results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
-                    cleaned_results = []
-                    for r in results:
-                        try:
-                            hrv, dataarray, now_time = r
-                            cleaned_results.append((hrv, dataarray, now_time))
-                        except:
-                            continue
-                    for hrv, dataarray, now_time in cleaned_results:
-                        if hrv is None:
-                            continue
-                        save_file = os.path.join(
-                            "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
-                        )
-
-                        with open(save_file, "wb") as h:
-                            h.write(hrv)
-                        save_file = os.path.join(
-                            "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
-                        )
-                        with open(save_file, "wb") as w:
-                            w.write(dataarray)
-                    byted_datas = []
-
-        # To handle all the extras
-        async with app.run():
-            results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
-            cleaned_results = []
-            for r in results:
+            if len(byted_datas) >= 10:
                 try:
-                    hrv, dataarray, now_time = r
-                    cleaned_results.append((hrv, dataarray, now_time))
-                except:
-                    continue
-            for hrv, dataarray, now_time in cleaned_results:
-                if hrv is None:
-                    continue
-                save_file = os.path.join(
-                    "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
-                )
+                    async with app.run():
+                        results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                        cleaned_results = []
+                        for r in results:
+                            try:
+                                hrv, dataarray, now_time = r
+                                cleaned_results.append((hrv, dataarray, now_time))
+                            except:
+                                continue
+                        for hrv, dataarray, now_time in cleaned_results:
+                            if hrv is None:
+                                continue
+                            save_file = os.path.join(
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                            )
 
-                with open(save_file, "wb") as h:
-                    h.write(hrv)
-                save_file = os.path.join(
-                    "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
-                )
-                with open(save_file, "wb") as w:
-                    w.write(dataarray)
+                            with open(save_file, "wb") as h:
+                                h.write(hrv)
+                            save_file = os.path.join(
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                            )
+                            with open(save_file, "wb") as w:
+                                w.write(dataarray)
+                        byted_datas = []
+                except:
+                    async with app.run():
+                        results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                        cleaned_results = []
+                        for r in results:
+                            try:
+                                hrv, dataarray, now_time = r
+                                cleaned_results.append((hrv, dataarray, now_time))
+                            except:
+                                continue
+                        for hrv, dataarray, now_time in cleaned_results:
+                            if hrv is None:
+                                continue
+                            save_file = os.path.join(
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                            )
+
+                            with open(save_file, "wb") as h:
+                                h.write(hrv)
+                            save_file = os.path.join(
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                            )
+                            with open(save_file, "wb") as w:
+                                w.write(dataarray)
+                        byted_datas = []
+        try:
+            # To handle all the extras
+            async with app.run():
+                results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                cleaned_results = []
+                for r in results:
+                    try:
+                        hrv, dataarray, now_time = r
+                        cleaned_results.append((hrv, dataarray, now_time))
+                    except:
+                        continue
+                for hrv, dataarray, now_time in cleaned_results:
+                    if hrv is None:
+                        continue
+                    save_file = os.path.join(
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                    )
+
+                    with open(save_file, "wb") as h:
+                        h.write(hrv)
+                    save_file = os.path.join(
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                    )
+                    with open(save_file, "wb") as w:
+                        w.write(dataarray)
+        except:
+            # To handle all the extras
+            async with app.run():
+                results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                cleaned_results = []
+                for r in results:
+                    try:
+                        hrv, dataarray, now_time = r
+                        cleaned_results.append((hrv, dataarray, now_time))
+                    except:
+                        continue
+                for hrv, dataarray, now_time in cleaned_results:
+                    if hrv is None:
+                        continue
+                    save_file = os.path.join(
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                    )
+
+                    with open(save_file, "wb") as h:
+                        h.write(hrv)
+                    save_file = os.path.join(
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                    )
+                    with open(save_file, "wb") as w:
+                        w.write(dataarray)
 
 if __name__ == "__main__":
     asyncio.run(main())
