@@ -326,7 +326,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2**10) - 1
+    upper_bound = (2 ** 10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -447,7 +447,7 @@ def save_native_to_zarr(
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
-            hrv_dataarray = hrv_dataarray.chunk((1,512,512,1))
+            hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             del hrv_dataarray
             hrv_dataset.attrs.update(attrs)
@@ -530,7 +530,7 @@ def save_native_to_zarr(
                 ],
             )
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
-        dataarray = dataarray.chunk((1,256,256,1))
+        dataarray = dataarray.chunk((1, 256, 256, 1))
         dataset = dataarray.to_dataset(name="data")
         del dataarray
         dataset.attrs.update(attrs)
@@ -688,7 +688,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
 
     gc.collect()
     logger.info(f"Saving file to {filename}")
-    logger.info(f'nbytes in MB:  {dataset.nbytes / (1024 * 1024)}')
+    logger.info(f"nbytes in MB:  {dataset.nbytes / (1024 * 1024)}")
 
     with tempfile.TemporaryDirectory() as dir:
         # save locally
@@ -696,8 +696,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w")
 
-        logger.debug(f'Saved to temporary file {path}, '
-                     f'now pushing to {filename}')
+        logger.debug(f"Saved to temporary file {path}, " f"now pushing to {filename}")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
@@ -725,14 +724,14 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
     finished_files_not_latest = list(filesystem.glob(f"{save_dir}/*.zarr.zip"))
-    logger.info(f'Found {len(finished_files_not_latest)} already downloaded in data folder')
+    logger.info(f"Found {len(finished_files_not_latest)} already downloaded in data folder")
 
-    filesystem_latest = fsspec.open(save_dir + '/latest').fs
+    filesystem_latest = fsspec.open(save_dir + "/latest").fs
     finished_files_latest = list(filesystem_latest.glob(f"{save_dir}/latest/*.zarr.zip"))
-    logger.info(f'Found {len(finished_files_latest)} already downloaded in latest folder')
+    logger.info(f"Found {len(finished_files_latest)} already downloaded in latest folder")
 
-    finished_files = finished_files_not_latest+ finished_files_latest
-    logger.info(f'Found {len(finished_files)} already downloaded')
+    finished_files = finished_files_not_latest + finished_files_latest
+    logger.info(f"Found {len(finished_files)} already downloaded")
 
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
@@ -763,9 +762,9 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
             idx_to_remove.append(idx)
-            logger.debug(f'Will not be downloading file with {date=} as already downloaded')
+            logger.debug(f"Will not be downloading file with {date=} as already downloaded")
         else:
-            logger.debug(f'Will be downloading file with {date=}')
+            logger.debug(f"Will be downloading file with {date=}")
     logger.debug(
         f"Will be not be downloading {len(idx_to_remove)} files "
         f"as they have already been downloaded"
@@ -798,7 +797,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     # get datetimes of the finished files
 
     for date in finished_files:
-        logger.debug(f'Looking at file {date}')
+        logger.debug(f"Looking at file {date}")
         if "latest.zarr" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -816,19 +815,19 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time > history_time:
-            logger.debug('Moving file out of latest folder')
+            logger.debug("Moving file out of latest folder")
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
-            logger.debug('Removing file over 2 days over')
+            logger.debug("Removing file over 2 days over")
             filesystem.rm(date)
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
     logger.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
-        logger.debug(f'Looking at file {date}')
+        logger.debug(f"Looking at file {date}")
         if "latest" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -846,7 +845,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time < history_time:
-            logger.debug('Moving file out of latest folder')
+            logger.debug("Moving file out of latest folder")
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
