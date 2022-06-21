@@ -715,7 +715,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
-    finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
+    finished_files = list(filesystem.glob(f"{save_dir}/*.zarr.zip")) + list(filesystem.glob(f"{save_dir}/latest/*.zarr.zip"))
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
         logger.debug("No datetimes to download")
@@ -726,6 +726,8 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     # get datetimes of the finished files
     for date in finished_files:
+        if "latest" in date or "tmp" in date:
+            continue
         finished_datetimes.append(
             pd.to_datetime(
                 date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
