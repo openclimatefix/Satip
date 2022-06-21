@@ -444,6 +444,7 @@ def save_native_to_zarr(
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
+            hrv_dataarray = hrv_dataarray.chunk((1,512,512,1))
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
@@ -524,6 +525,7 @@ def save_native_to_zarr(
                 ],
             )
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+        dataarray = dataarray.chunk((1,256,256,1))
         dataset = dataarray.to_dataset(name="data")
         dataset.attrs.update(attrs)
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
