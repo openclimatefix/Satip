@@ -9,7 +9,7 @@ from click.testing import CliRunner
 
 from satip.app import run
 
-runner = CliRunner()
+runner = CliRunner() 
 
 
 def test_save_to_netcdf():  # noqa 103
