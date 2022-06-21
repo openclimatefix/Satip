@@ -431,6 +431,7 @@ def save_native_to_zarr(
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
+            del hrv_scene
             attrs = serialize_attrs(hrv_dataarray.attrs)
             if use_rescaler:
                 hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
@@ -474,6 +475,7 @@ def save_native_to_zarr(
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
+        del scene
         attrs = serialize_attrs(dataarray.attrs)
         if use_rescaler:
             dataarray = scaler.rescale(dataarray)
