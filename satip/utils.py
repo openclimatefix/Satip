@@ -677,13 +677,16 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
     1. Save in temp local dir
     2. upload to s3
     :param dataset: The Xarray Dataset to be save
-    :param filename: The s3 filname
+    :param filename: The s3 filename
     """
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.zarr.zip"
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w")
+
+        logger.debug(f'Saved to temporary file {path}, '
+                     f'now pushing to {filename}')
 
         # save to s3
         filesystem = fsspec.open(filename).fs
