@@ -11,7 +11,6 @@ Collection of helper functions and utilities around
 import datetime
 import logging
 import gc
-import sys
 import os
 import subprocess
 import tempfile
