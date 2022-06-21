@@ -818,7 +818,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     # get datetimes of the finished files
     for date in finished_files:
         logger.debug(f'Looking at file {date}')
-        if "latest.zarr" in date or "tmp" in date:
+        if "latest" in date or "tmp" in date:
             continue
         if "hrv" in date:
             file_time = pd.to_datetime(
