@@ -785,7 +785,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     logger.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
 
     # get datetimes of the finished files
+
     for date in finished_files:
+        logger.debug(f'Looking at file {date}')
         if "latest.zarr" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -803,16 +805,19 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time > history_time:
+            logger.debug('Moving file out of latest folder')
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
+            logger.debug('Removing file over 2 days over')
             filesystem.rm(date)
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
     logger.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
+        logger.debug(f'Looking at file {date}')
         if "latest.zarr" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -830,6 +835,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time < history_time:
+            logger.debug('Moving file out of latest folder')
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
