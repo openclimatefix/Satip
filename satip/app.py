@@ -110,7 +110,7 @@ def run(
             logger.info("No files to download, exiting")
             return
 
-        download_manager.download_datasets(datasets)
+        download_manager.download_datasets(datasets, product_id="EO:EUM:DAT:MSG:HRSEVIRI" if using_backup else "EO:EUM:DAT:MSG:MSG15-RSS")
 
         # 2. Load nat files to one Xarray Dataset
         native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
