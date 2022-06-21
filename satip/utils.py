@@ -853,7 +853,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
     filesystem.mv(
         f"{save_dir}/latest/hrv_tmp.zarr.zip",
-        f"{save_dir}/latest/hrv_latest.zarr{'_15' if using_backup else ''}.zip",
+        f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip",
     )
     logger.info(f"Collating HRV into {save_dir}/latest/hrv_latest.zarr.zip")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
