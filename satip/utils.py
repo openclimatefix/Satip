@@ -10,6 +10,8 @@ Collection of helper functions and utilities around
 
 import datetime
 import logging
+import gc
+import sys
 import os
 import subprocess
 import tempfile
@@ -683,6 +685,11 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
     :param dataset: The Xarray Dataset to be save
     :param filename: The s3 filename
     """
+
+    gc.collect()
+    logger.info(f"Saving file to {filename}")
+    logger.info(f'nbytes in MB:  {dataset.nbytes / (1024 * 1024)}')
+
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.zarr.zip"
@@ -718,6 +725,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
     finished_files = list(filesystem.glob(f"{save_dir}/*.zarr.zip")) + list(filesystem.glob(f"{save_dir}/latest/*.zarr.zip"))
+
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
         logger.debug("No datetimes to download")
