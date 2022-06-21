@@ -251,7 +251,12 @@ def convert_scene_to_dataarray(
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
     if area != "RSS":
-        scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
+        try:
+            scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
+        except NotImplementedError:
+            # 15 minutely data by default doesn't work for some reason, have to resample it
+            scene = scene.resample("msg_seviri_rss_1km" if band == "HRV" else "msg_seviri_rss_3km")
+            scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
 
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
