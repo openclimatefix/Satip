@@ -724,7 +724,15 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
-    finished_files = list(filesystem.glob(f"{save_dir}/*.zarr.zip")) + list(filesystem.glob(f"{save_dir}/latest/*.zarr.zip"))
+    finished_files_not_latest = list(filesystem.glob(f"{save_dir}/*.zarr.zip"))
+    logger.info(f'Found {len(finished_files_not_latest)} already downloaded in data folder')
+
+    filesystem_latest = fsspec.open(save_dir + '/latest').fs
+    finished_files_latest = list(filesystem_latest.glob(f"{save_dir}/latest/*.zarr.zip"))
+    logger.info(f'Found {len(finished_files_latest)} already downloaded in latest folder')
+
+    finished_files = finished_files_not_latest+ finished_files_latest
+    logger.info(f'Found {len(finished_files)} already downloaded')
 
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
@@ -736,7 +744,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     # get datetimes of the finished files
     for date in finished_files:
-        if "latest" in date or "tmp" in date:
+        if "latest.zarr" in date or "latest_15.zarr" in date or "tmp" in date:
             continue
         finished_datetimes.append(
             pd.to_datetime(
@@ -755,6 +763,9 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
             idx_to_remove.append(idx)
+            logger.debug(f'Will not be downloading file with {date=} as already downloaded')
+        else:
+            logger.debug(f'Will be downloading file with {date=}')
     logger.debug(
         f"Will be not be downloading {len(idx_to_remove)} files "
         f"as they have already been downloaded"
