@@ -692,14 +692,17 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.zarr.zip"
+        encoding = {'data': {"dtype": "int16"}}
         with zarr.ZipStore(path) as store:
-            dataset.to_zarr(store, compute=True, mode="w")
+            dataset.to_zarr(store, compute=True, mode="w", encoding=encoding)
 
         logger.debug(f"Saved to temporary file {path}, " f"now pushing to {filename}")
 
         # save to s3
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
+
+
 
 
 def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
