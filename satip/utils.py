@@ -18,6 +18,7 @@ import warnings
 import psutil
 from pathlib import Path
 from typing import Any, Tuple
+import multiprocessing as mp
 
 import fsspec
 import numcodecs
@@ -339,6 +340,148 @@ def do_v15_rescaling(
     return dataarray
 
 
+
+def get_dataset_from_scene(filename: str, hrv_scaler,  use_rescaler: bool, save_dir, using_backup):
+    """
+    Returns the Xarray dataset from the filename
+    """
+    hrv_scene = Scene(filenames={"seviri_l1b_native": [filename]})
+    hrv_scene.load(
+        [
+            "HRV",
+        ],
+        generate=False
+    )
+
+    logger.info(f"After loading HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
+        hrv_scene, band="HRV", area="UK", calculate_osgb=True
+    )
+    logger.info(f"After converting HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    del hrv_scene
+    attrs = serialize_attrs(hrv_dataarray.attrs)
+    if use_rescaler:
+        hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
+    else:
+        hrv_dataarray = do_v15_rescaling(
+            hrv_dataarray,
+            variable_order=["HRV"],
+            maxs=np.array([103.90016]),
+            mins=np.array([-1.2278595]),
+        )
+    hrv_dataarray = hrv_dataarray.transpose(
+        "time", "y_geostationary", "x_geostationary", "variable"
+    )
+    logger.info(f"AFter HRV Rescaling Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
+    hrv_dataset = hrv_dataarray.to_dataset(name="data")
+    hrv_dataset.attrs.update(attrs)
+    logger.info(f"After HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+    save_file = os.path.join(
+        save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip"
+    )
+    logger.info(f"Saving HRV netcdf in {save_file}")
+    logger.info(f"At start of HRV Saving Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    save_to_zarr_to_s3(hrv_dataset, save_file)
+    del hrv_dataset
+    gc.collect()
+    logger.info(f"At end of HRV Saving Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+
+
+def get_nonhrv_dataset_from_scene(filename: str, scaler,  use_rescaler: bool, save_dir, using_backup):
+    """
+    Returns the Xarray dataset from the filename
+    """
+    scene = Scene(filenames={"seviri_l1b_native": [filename]})
+    scene.load(
+        [
+            "IR_016",
+            "IR_039",
+            "IR_087",
+            "IR_097",
+            "IR_108",
+            "IR_120",
+            "IR_134",
+            "VIS006",
+            "VIS008",
+            "WV_062",
+            "WV_073",
+        ],
+        generate=False
+    )
+    logger.info(f"After loading non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    dataarray: xr.DataArray = convert_scene_to_dataarray(
+        scene, band="IR_016", area="UK", calculate_osgb=True
+    )
+    logger.info(f"After non-HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    del scene
+    attrs = serialize_attrs(dataarray.attrs)
+    if use_rescaler:
+        dataarray = scaler.rescale(dataarray)
+    else:
+        dataarray = do_v15_rescaling(
+            dataarray,
+            mins=np.array(
+                [
+                    -2.5118103,
+                    -64.83977,
+                    63.404694,
+                    2.844452,
+                    199.10002,
+                    -17.254883,
+                    -26.29155,
+                    -1.1009827,
+                    -2.4184198,
+                    199.57048,
+                    198.95093,
+                ]
+            ),
+            maxs=np.array(
+                [
+                    69.60857,
+                    339.15588,
+                    340.26526,
+                    317.86752,
+                    313.2767,
+                    315.99194,
+                    274.82297,
+                    93.786545,
+                    101.34922,
+                    249.91806,
+                    286.96323,
+                ]
+            ),
+            variable_order=[
+                "IR_016",
+                "IR_039",
+                "IR_087",
+                "IR_097",
+                "IR_108",
+                "IR_120",
+                "IR_134",
+                "VIS006",
+                "VIS008",
+                "WV_062",
+                "WV_073",
+            ],
+        )
+    dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+    dataarray = dataarray.chunk((1, 256, 256, 1))
+    dataset = dataarray.to_dataset(name="data")
+    logger.info(f"After non-HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    del dataarray
+    dataset.attrs.update(attrs)
+    logger.info(f"After Del Return List Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+    save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
+    logger.info(f"Saving non-HRV netcdf in {save_file}")
+    logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    save_to_zarr_to_s3(dataset, save_file)
+    del dataset
+    gc.collect()
+    logger.info(f"After saving non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+
 def save_native_to_zarr(
     list_of_native_files: list,
     bands: list = [
@@ -426,133 +569,18 @@ def save_native_to_zarr(
 
         if "HRV" in bands:
             logger.debug("Processing HRV")
-
-            hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
-            hrv_scene.load(
-                [
-                    "HRV",
-                ],
-                generate=False
-            )
-
-            logger.info(f"After loading HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
-                hrv_scene, band="HRV", area="UK", calculate_osgb=True
-            )
-            logger.info(f"After converting HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            del hrv_scene
-            attrs = serialize_attrs(hrv_dataarray.attrs)
-            if use_rescaler:
-                hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
-            else:
-                hrv_dataarray = do_v15_rescaling(
-                    hrv_dataarray,
-                    variable_order=["HRV"],
-                    maxs=np.array([103.90016]),
-                    mins=np.array([-1.2278595]),
-                )
-            hrv_dataarray = hrv_dataarray.transpose(
-                "time", "y_geostationary", "x_geostationary", "variable"
-            )
-            logger.info(f"AFter HRV Rescaling Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
-            hrv_dataset = hrv_dataarray.to_dataset(name="data")
-            del hrv_dataarray
-            logger.info(f"AFter HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            hrv_dataset.attrs.update(attrs)
-            now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-            save_file = os.path.join(
-                save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip"
-            )
-            logger.info(f"Saving HRV netcdf in {save_file}")
-            logger.info(f"At start of HRV Saving Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            save_to_zarr_to_s3(hrv_dataset, save_file)
+            logger.info(f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+            proc = mp.Process(target=get_dataset_from_scene, args=(f,hrv_scaler, use_rescaler, save_dir, using_backup))
+            proc.start()
+            proc.join()
+            logger.info(f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
         logger.debug("Processing non-HRV")
-        scene = Scene(filenames={"seviri_l1b_native": [f]})
-        scene.load(
-            [
-                "IR_016",
-                "IR_039",
-                "IR_087",
-                "IR_097",
-                "IR_108",
-                "IR_120",
-                "IR_134",
-                "VIS006",
-                "VIS008",
-                "WV_062",
-                "WV_073",
-            ],
-            generate=False
-        )
-        logger.info(f"After loading non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-        dataarray: xr.DataArray = convert_scene_to_dataarray(
-            scene, band="IR_016", area="UK", calculate_osgb=True
-        )
-        logger.info(f"After non-HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-        del scene
-        attrs = serialize_attrs(dataarray.attrs)
-        if use_rescaler:
-            dataarray = scaler.rescale(dataarray)
-        else:
-            dataarray = do_v15_rescaling(
-                dataarray,
-                mins=np.array(
-                    [
-                        -2.5118103,
-                        -64.83977,
-                        63.404694,
-                        2.844452,
-                        199.10002,
-                        -17.254883,
-                        -26.29155,
-                        -1.1009827,
-                        -2.4184198,
-                        199.57048,
-                        198.95093,
-                    ]
-                ),
-                maxs=np.array(
-                    [
-                        69.60857,
-                        339.15588,
-                        340.26526,
-                        317.86752,
-                        313.2767,
-                        315.99194,
-                        274.82297,
-                        93.786545,
-                        101.34922,
-                        249.91806,
-                        286.96323,
-                    ]
-                ),
-                variable_order=[
-                    "IR_016",
-                    "IR_039",
-                    "IR_087",
-                    "IR_097",
-                    "IR_108",
-                    "IR_120",
-                    "IR_134",
-                    "VIS006",
-                    "VIS008",
-                    "WV_062",
-                    "WV_073",
-                ],
-            )
-        dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
-        dataarray = dataarray.chunk((1, 256, 256, 1))
-        dataset = dataarray.to_dataset(name="data")
-        logger.info(f"After non-HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-        del dataarray
-        dataset.attrs.update(attrs)
-        now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
-        save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
-        logger.info(f"Saving non-HRV netcdf in {save_file}")
-        logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-        save_to_zarr_to_s3(dataset, save_file)
+        logger.info(f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+        proc = mp.Process(target=get_nonhrv_dataset_from_scene, args=(f,scaler, use_rescaler, save_dir, using_backup))
+        proc.start()
+        proc.join()
+        logger.info(f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
 
 def save_dataarray_to_zarr(
