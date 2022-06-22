@@ -434,6 +434,7 @@ def save_native_to_zarr(
                 ],
                 generate=False
             )
+
             logger.info(f"After loading HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True

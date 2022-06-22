@@ -1,7 +1,10 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
+import dask
+dask.config.set(num_workers=1)
 import logging
 import os
+os.environ["PYTROLL_CHUNK_SIZE"] = "512"
 import tempfile
 from typing import Optional
 import psutil
