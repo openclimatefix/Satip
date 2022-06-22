@@ -431,7 +431,8 @@ def save_native_to_zarr(
             hrv_scene.load(
                 [
                     "HRV",
-                ]
+                ],
+                generate=False
             )
             logger.info(f"After loading HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
@@ -481,7 +482,8 @@ def save_native_to_zarr(
                 "VIS008",
                 "WV_062",
                 "WV_073",
-            ]
+            ],
+            generate=False
         )
         logger.info(f"After loading non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         dataarray: xr.DataArray = convert_scene_to_dataarray(
