@@ -15,6 +15,7 @@ import os
 import subprocess
 import tempfile
 import warnings
+import psutil
 from pathlib import Path
 from typing import Any, Tuple
 
@@ -251,14 +252,16 @@ def convert_scene_to_dataarray(
     """
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
+    logger.info(f"Start of conversion Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
     if area != "RSS":
         try:
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
         except NotImplementedError:
             # 15 minutely data by default doesn't work for some reason, have to resample it
             scene = scene.resample("msg_seviri_rss_1km" if band == "HRV" else "msg_seviri_rss_3km")
+            logger.info(f"After Resample Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-
+    logger.info(f"After Crop Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
     data_attrs = {}
@@ -269,6 +272,7 @@ def convert_scene_to_dataarray(
             data_attrs[new_name] = scene[channel].attrs[attr]
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
+    logger.info(f"After to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
     # Lat and Lon are the same for all the channels now
     if calculate_osgb:
@@ -290,7 +294,7 @@ def convert_scene_to_dataarray(
 
     for name in ["x", "y"]:
         dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
-
+    logger.info(f"After OSGB Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
     # Round to the nearest 5 minutes
     dataarray.attrs.update(data_attrs)
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
@@ -303,7 +307,7 @@ def convert_scene_to_dataarray(
 
     del dataarray["crs"]
     del scene
-
+    logger.info(f"End of conversion Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
     return dataarray
 
 
@@ -429,9 +433,11 @@ def save_native_to_zarr(
                     "HRV",
                 ]
             )
+            logger.info(f"After loading HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
                 hrv_scene, band="HRV", area="UK", calculate_osgb=True
             )
+            logger.info(f"After converting HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             del hrv_scene
             attrs = serialize_attrs(hrv_dataarray.attrs)
             if use_rescaler:
@@ -446,15 +452,18 @@ def save_native_to_zarr(
             hrv_dataarray = hrv_dataarray.transpose(
                 "time", "y_geostationary", "x_geostationary", "variable"
             )
+            logger.info(f"AFter HRV Rescaling Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
             hrv_dataset = hrv_dataarray.to_dataset(name="data")
             del hrv_dataarray
+            logger.info(f"AFter HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             hrv_dataset.attrs.update(attrs)
             now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
             save_file = os.path.join(
                 save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip"
             )
             logger.info(f"Saving HRV netcdf in {save_file}")
+            logger.info(f"At start of HRV Saving Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
             save_to_zarr_to_s3(hrv_dataset, save_file)
 
         logger.debug("Processing non-HRV")
@@ -474,9 +483,11 @@ def save_native_to_zarr(
                 "WV_073",
             ]
         )
+        logger.info(f"After loading non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
+        logger.info(f"After non-HRV to DataArray Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         del scene
         attrs = serialize_attrs(dataarray.attrs)
         if use_rescaler:
@@ -531,11 +542,13 @@ def save_native_to_zarr(
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
         dataarray = dataarray.chunk((1, 256, 256, 1))
         dataset = dataarray.to_dataset(name="data")
+        logger.info(f"After non-HRV to Dataset Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         del dataarray
         dataset.attrs.update(attrs)
         now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
         save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
         logger.info(f"Saving non-HRV netcdf in {save_file}")
+        logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         save_to_zarr_to_s3(dataset, save_file)
 
 
@@ -693,11 +706,12 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         # save locally
         path = f"{dir}/temp.zarr.zip"
         encoding = {'data': {"dtype": "int16"}}
+        logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w", encoding=encoding)
 
         logger.debug(f"Saved to temporary file {path}, " f"now pushing to {filename}")
-
+        logger.info(f"Finished writing Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
         # save to s3
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
