@@ -12,13 +12,15 @@ import datetime
 import logging
 import gc
 import os
+import shutil
 import subprocess
 import tempfile
 import warnings
 import psutil
 from pathlib import Path
 from typing import Any, Tuple
-import multiprocessing as mp
+from zipfile import ZipFile
+import glob
 
 import fsspec
 import numcodecs
@@ -345,7 +347,10 @@ def get_dataset_from_scene(filename: str, hrv_scaler,  use_rescaler: bool, save_
     """
     Returns the Xarray dataset from the filename
     """
-    hrv_scene = Scene(filenames={"seviri_l1b_native": [filename]})
+    if ".nat" in filename:
+        hrv_scene = load_native_from_zip(filename)
+    else:
+        hrv_scene = load_hrit_from_zip(filename, sections=list(range(16, 25)))
     hrv_scene.load(
         [
             "HRV",
@@ -393,7 +398,10 @@ def get_nonhrv_dataset_from_scene(filename: str, scaler,  use_rescaler: bool, sa
     """
     Returns the Xarray dataset from the filename
     """
-    scene = Scene(filenames={"seviri_l1b_native": [filename]})
+    if ".nat" in filename:
+        scene = load_native_from_zip(filename)
+    else:
+        scene = load_hrit_from_zip(filename, sections=list(range(6,9)))
     scene.load(
         [
             "IR_016",
@@ -485,7 +493,28 @@ def get_nonhrv_dataset_from_scene(filename: str, scaler,  use_rescaler: bool, sa
 
 def load_hrit_from_zip(filename: str, sections: list) -> Scene:
     """Load HRIT Zip from Data Tailor to Scene for use downstream tasks"""
-    pass
+    if os.path.exists("temp_hrit"):
+        try:
+            shutil.rmtree("temp_hrit/")
+        except:
+            print("Can't remove temp_hrit")
+    with ZipFile(filename, 'r') as zipObj:
+        # Extract all the contents of zip file in current directory
+        zipObj.extractall(path="temp_hrit")
+    the_files = []
+    for f in list(glob.glob("temp_hrit/*")):
+        if "PRO" in f or "EPI" in f:
+            the_files.append(f)
+        for segment in [f"-0000{str(i).zfill(2)}" for i in sections]:
+            if segment in f:
+                the_files.append(f)
+    scene = Scene(filenames=the_files, reader="seviri_l1b_hrit")
+    return scene
+
+def load_native_from_zip(filename: str) -> Scene:
+    """Load native file"""
+    scene = Scene(filenames={"seviri_l1b_native": [filename]})
+    return scene
 
 def save_native_to_zarr(
     list_of_native_files: list,
