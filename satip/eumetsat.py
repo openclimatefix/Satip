@@ -11,20 +11,19 @@ Usage example:
 """
 
 import datetime
+import fnmatch
 import json
 import logging
 import os
 import re
+import shutil
 import time
 import urllib
 import zipfile
 from io import BytesIO
 from urllib.error import HTTPError
-import eumdac
-import fnmatch
-import shutil
-import time
 
+import eumdac
 import requests
 
 from satip import utils
@@ -95,11 +94,11 @@ def _request_access_token(user_key, user_secret):
 
 
 def query_data_products(
-        start_date: str = "2020-01-01",
-        end_date: str = "2020-01-02",
-        start_index: int = 0,
-        num_features: int = 10_000,
-        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+    start_date: str = "2020-01-01",
+    end_date: str = "2020-01-02",
+    start_index: int = 0,
+    num_features: int = 10_000,
+    product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
 ) -> requests.models.Response:
     """Queries the EUMETSAT-API for the specified product and date-range.
 
@@ -139,7 +138,7 @@ def query_data_products(
 
 
 def identify_available_datasets(
-        start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", log=None
+    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", log=None
 ):
     """Identifies available datasets from the EUMETSAT data API
 
@@ -210,10 +209,10 @@ def dataset_id_to_link(collection_id, data_id, access_token):
         str containing the URL for the dataset request.
     """
     return (
-            "https://api.eumetsat.int/data/download/collections/"
-            + f"{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
-            + "?access_token="
-            + access_token
+        "https://api.eumetsat.int/data/download/collections/"
+        + f"{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
+        + "?access_token="
+        + access_token
     )
 
 
@@ -224,11 +223,11 @@ class DownloadManager:  # noqa: D205
     """
 
     def __init__(
-            self,
-            user_key: str,
-            user_secret: str,
-            data_dir: str,
-            logger_name="EUMETSAT Download",
+        self,
+        user_key: str,
+        user_secret: str,
+        data_dir: str,
+        logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
 
@@ -316,7 +315,7 @@ class DownloadManager:  # noqa: D205
         return
 
     def download_date_range(
-            self, start_date: str, end_date: str, product_id="EO:EUM:DAT:MSG:MSG15-RSS"
+        self, start_date: str, end_date: str, product_id="EO:EUM:DAT:MSG:MSG15-RSS"
     ):
         """Downloads a date-range-specific dataset from the EUMETSAT API
 
@@ -363,13 +362,13 @@ class DownloadManager:  # noqa: D205
                 self.logger.exception(f"Error downloading dataset with id {dataset_id}")
 
     def download_tailored_date_range(
-            self,
-            start_date: str,
-            end_date: str,
-            product_id="EO:EUM:DAT:MSG:MSG15-RSS",
-            roi: str = "united_kingdom",
-            file_format: str = "hrit",
-            projection: str = "geographic",
+        self,
+        start_date: str,
+        end_date: str,
+        product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = "united_kingdom",
+        file_format: str = "hrit",
+        projection: str = "geographic",
     ):
         """Downloads a set of tailored datasets from the EUMETSAT API
 
@@ -391,12 +390,12 @@ class DownloadManager:  # noqa: D205
         )
 
     def download_tailored_datasets(
-            self,
-            datasets,
-            product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
-            roi: str = None,
-            file_format: str = "hrit",
-            projection: str = None,
+        self,
+        datasets,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = None,
+        file_format: str = "hrit",
+        projection: str = None,
     ):
         """
         Query the data tailor service and write the requested ROI data to disk
@@ -439,12 +438,12 @@ class DownloadManager:  # noqa: D205
                 )
 
     def _download_single_tailored_dataset(
-            self,
-            dataset_id,
-            product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
-            roi: str = None,
-            file_format: str = "hrit",
-            projection: str = None,
+        self,
+        dataset_id,
+        product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS",
+        roi: str = None,
+        file_format: str = "hrit",
+        projection: str = None,
     ) -> None:
         """
         Download a single tailored dataset
@@ -476,32 +475,37 @@ class DownloadManager:  # noqa: D205
         if tailor_id == SEVIRI:  # Also do HRV
             self.request_access_token()
             datatailor = eumdac.DataTailor(self.access_token)
-            output_name_hrv = create_and_download_datatailor_data(datatailor=datatailor,
-                                                                  dataset_id=dataset_link,
-                                                                  tailor_id=SEVIRI_HRV,
-                                                                  roi=roi,
-                                                                  file_format=file_format,
-                                                                  projection=projection)
+            output_name_hrv = create_and_download_datatailor_data(
+                datatailor=datatailor,
+                dataset_id=dataset_link,
+                tailor_id=SEVIRI_HRV,
+                roi=roi,
+                file_format=file_format,
+                projection=projection,
+            )
         else:
             output_name_hrv = None
         self.request_access_token()
         datatailor = eumdac.DataTailor(self.access_token)
-        output_name = create_and_download_datatailor_data(datatailor=datatailor,
-                                                          dataset_id=dataset_link,
-                                                          tailor_id=tailor_id,
-                                                          roi=roi,
-                                                          file_format=file_format,
-                                                          projection=projection)
+        output_name = create_and_download_datatailor_data(
+            datatailor=datatailor,
+            dataset_id=dataset_link,
+            tailor_id=tailor_id,
+            roi=roi,
+            file_format=file_format,
+            projection=projection,
+        )
 
 
-
-def create_and_download_datatailor_data(datatailor,
-                                        dataset_id,
-                                        tailor_id: str = "HRSEVIRI",
-                                        roi: str = None,
-                                        file_format: str = "hrit",
-                                        projection: str = None,
-                                        compression: dict = {'format': 'zip'}):
+def create_and_download_datatailor_data(
+    datatailor,
+    dataset_id,
+    tailor_id: str = "HRSEVIRI",
+    roi: str = None,
+    file_format: str = "hrit",
+    projection: str = None,
+    compression: dict = {"format": "zip"},
+):
     """
     Create and download a single data tailor call
     """
@@ -510,7 +514,7 @@ def create_and_download_datatailor_data(datatailor,
         format=file_format,
         projection=projection,
         roi=roi,
-        compression=compression
+        compression=compression,
     )
     customisation = datatailor.new_customisation(dataset_id, chain=chain)
     status = "QUEUED"
@@ -524,7 +528,7 @@ def create_and_download_datatailor_data(datatailor,
         if "DONE" in status:
             logger.info(f"SUCCESS")
             break
-        elif "ERROR" in status or 'KILLED' in status:
+        elif "ERROR" in status or "KILLED" in status:
             logger.info(f"UNSUCCESS, exiting")
             break
         elif "QUEUED" in status:
@@ -536,11 +540,12 @@ def create_and_download_datatailor_data(datatailor,
             logger.info(f"INACTIVE, doubling status polling time to {sleep_time} (max 2.5 mins)")
         time.sleep(sleep_time)
 
-    out, = fnmatch.filter(customisation.outputs, '*')
+    (out,) = fnmatch.filter(customisation.outputs, "*")
     jobID = customisation._id
     logger.info(f"Downloading outputs from Data Tailor job {jobID}")
-    with customisation.stream_output(out, ) as stream, \
-            open(stream.name, mode='wb') as fdst:
+    with customisation.stream_output(
+        out,
+    ) as stream, open(stream.name, mode="wb") as fdst:
         shutil.copyfileobj(stream, fdst)
     logger.info(f"Deleting job {jobID} from Data Tailor storage")
     customisation.delete()
