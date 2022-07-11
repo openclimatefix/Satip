@@ -99,6 +99,7 @@ def run(
         history: History time
         db_url: URL of database
         use_rescaler: Rescale data to between 0 and 1 or not
+        start_time: Start time in UTC ISO Format
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
