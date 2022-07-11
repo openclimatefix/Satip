@@ -1,15 +1,22 @@
-import os
 import asyncio
-import modal.aio
-import pandas as pd
-import zarr
+import os
 import time
 from pathlib import Path
+
+import modal.aio
 import numpy as np
+import pandas as pd
+import zarr
+
+from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-from satip.eumetsat import DownloadManager
-from satip.eumetsat import eumetsat_filename_to_datetime
-app = modal.aio.AioApp(image=modal.Conda().conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"]).pip_install(["satip"]))
+
+app = modal.aio.AioApp(
+    image=modal.Conda()
+    .conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"])
+    .pip_install(["satip"])
+)
+
 
 def decompress(full_bzip_filename, temp_pth) -> str:
     """
@@ -23,6 +30,7 @@ def decompress(full_bzip_filename, temp_pth) -> str:
         The full native filename to the decompressed file
     """
     import subprocess
+
     base_bzip_filename = os.path.basename(full_bzip_filename)
     base_nat_filename = os.path.splitext(base_bzip_filename)[0]
     full_nat_filename = os.path.join(temp_pth, base_nat_filename)
@@ -36,28 +44,32 @@ def decompress(full_bzip_filename, temp_pth) -> str:
     process.check_returncode()
     return full_nat_filename
 
+
 @app.function()
 async def f(compressed_bytearray_and_filename):
-    import tempfile
-    from pathlib import Path
     import bz2
-    import pandas as pd
     import glob
-    import numpy as np
-    import zarr
+    import tempfile
     import time
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+    import xarray as xr
+    import zarr
+    from satpy import Scene
+
+    from satip.eumetsat import DownloadManager
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs
-    from satip.eumetsat import DownloadManager
     from satip.utils import convert_scene_to_dataarray
-    import xarray as xr
-    from satpy import Scene
+
     start = time.time()
     with tempfile.TemporaryDirectory() as tmpdir:
         compressed_bytearray, filename = compressed_bytearray_and_filename
         # Write compressed bytearray to disk uncompressed
-        with open(os.path.join(tmpdir, filename), 'wb') as file:
+        with open(os.path.join(tmpdir, filename), "wb") as file:
             file.write(bz2.decompress(compressed_bytearray))
             print(f"Finished writing {filename}")
         del compressed_bytearray
@@ -128,11 +140,11 @@ async def f(compressed_bytearray_and_filename):
         now_time = pd.Timestamp(hrv_dataarray["time"].values[0]).strftime("%Y%m%d%H%M")
 
         # Save out
-        hrv_save_file = os.path.join(
-            tmpdir, f"hrv_{now_time}.zarr.zip"
-        )
+        hrv_save_file = os.path.join(tmpdir, f"hrv_{now_time}.zarr.zip")
 
-        hrv_dataarray = hrv_dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+        hrv_dataarray = hrv_dataarray.transpose(
+            "time", "y_geostationary", "x_geostationary", "variable"
+        )
 
         # Number of timesteps, x and y size per chunk, and channels (all 12)
         chunks = (
@@ -193,10 +205,7 @@ async def f(compressed_bytearray_and_filename):
         dataarray = scaler.rescale(dataarray)
         dataarray.attrs.update(attrs)
 
-
-        save_file = os.path.join(
-            tmpdir, f"{now_time}.zarr.zip"
-        )
+        save_file = os.path.join(tmpdir, f"{now_time}.zarr.zip")
 
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
@@ -245,6 +254,7 @@ async def f(compressed_bytearray_and_filename):
                 print(f"Returning {now_time} in {end - start} seconds")
                 return hrv_bytes, nonhrv_bytes, now_time
 
+
 async def main():
     directory = "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/native/"
     year_directories = sorted(os.listdir(directory), reverse=True)
@@ -269,7 +279,12 @@ async def main():
             continue
         new_compressed_files = []
         for filepath in compressed_native_files:
-            if os.path.exists(os.path.join("/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",f"{pd.Timestamp(eumetsat_filename_to_datetime(filepath.name)).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip")):
+            if os.path.exists(
+                os.path.join(
+                    "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                    f"{pd.Timestamp(eumetsat_filename_to_datetime(filepath.name)).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
+                )
+            ):
                 print("Skipping Time")
                 continue
             else:
@@ -287,7 +302,9 @@ async def main():
             if len(byted_datas) >= 10:
                 try:
                     async with app.run():
-                        results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                        results = await asyncio.gather(
+                            *[f(data_pack) for data_pack in byted_datas], return_exceptions=True
+                        )
                         cleaned_results = []
                         for r in results:
                             try:
@@ -299,20 +316,24 @@ async def main():
                             if hrv is None:
                                 continue
                             save_file = os.path.join(
-                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                                f"hrv_{now_time}.zarr.zip",
                             )
 
                             with open(save_file, "wb") as h:
                                 h.write(hrv)
                             save_file = os.path.join(
-                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                                f"{now_time}.zarr.zip",
                             )
                             with open(save_file, "wb") as w:
                                 w.write(dataarray)
                         byted_datas = []
                 except:
                     async with app.run():
-                        results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                        results = await asyncio.gather(
+                            *[f(data_pack) for data_pack in byted_datas], return_exceptions=True
+                        )
                         cleaned_results = []
                         for r in results:
                             try:
@@ -324,13 +345,15 @@ async def main():
                             if hrv is None:
                                 continue
                             save_file = os.path.join(
-                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                                f"hrv_{now_time}.zarr.zip",
                             )
 
                             with open(save_file, "wb") as h:
                                 h.write(hrv)
                             save_file = os.path.join(
-                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                                "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                                f"{now_time}.zarr.zip",
                             )
                             with open(save_file, "wb") as w:
                                 w.write(dataarray)
@@ -338,7 +361,9 @@ async def main():
         try:
             # To handle all the extras
             async with app.run():
-                results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                results = await asyncio.gather(
+                    *[f(data_pack) for data_pack in byted_datas], return_exceptions=True
+                )
                 cleaned_results = []
                 for r in results:
                     try:
@@ -350,20 +375,24 @@ async def main():
                     if hrv is None:
                         continue
                     save_file = os.path.join(
-                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                        f"hrv_{now_time}.zarr.zip",
                     )
 
                     with open(save_file, "wb") as h:
                         h.write(hrv)
                     save_file = os.path.join(
-                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                        f"{now_time}.zarr.zip",
                     )
                     with open(save_file, "wb") as w:
                         w.write(dataarray)
         except:
             # To handle all the extras
             async with app.run():
-                results = await asyncio.gather(*[f(data_pack) for data_pack in byted_datas], return_exceptions=True)
+                results = await asyncio.gather(
+                    *[f(data_pack) for data_pack in byted_datas], return_exceptions=True
+                )
                 cleaned_results = []
                 for r in results:
                     try:
@@ -375,16 +404,19 @@ async def main():
                     if hrv is None:
                         continue
                     save_file = os.path.join(
-                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"hrv_{now_time}.zarr.zip"
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                        f"hrv_{now_time}.zarr.zip",
                     )
 
                     with open(save_file, "wb") as h:
                         h.write(hrv)
                     save_file = os.path.join(
-                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/", f"{now_time}.zarr.zip"
+                        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v5/",
+                        f"{now_time}.zarr.zip",
                     )
                     with open(save_file, "wb") as w:
                         w.write(dataarray)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
