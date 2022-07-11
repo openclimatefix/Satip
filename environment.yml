@@ -19,3 +19,4 @@ pip:
   # The conda version of imagecodecs doesn't currently include libjxl,
   # which is required for JPEG-XL compression. So we must install using pip:
   - imagecodecs
+  - eumdac
