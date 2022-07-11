@@ -14,6 +14,7 @@ from satip.app import run
 runner = CliRunner()
 
 
+@freeze_time("2022-06-28 12:00:00")  # Date with RSS imagery
 def test_save_to_netcdf():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
@@ -29,6 +30,8 @@ def test_save_to_netcdf():  # noqa 103
                 tmpdirname,
                 "--use-rescaler",
                 False,
+                "--start-time",
+                datetime.datetime.utcnow().isoformat(),
             ],
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
@@ -59,6 +62,7 @@ def save_datatailor_to_disk():  # noqa 103
         assert len(native_files) > 0
 
 
+@freeze_time("2022-06-28 12:00:00")  # Date with RSS imagery
 def test_save_to_netcdf_rescaled():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
@@ -74,6 +78,8 @@ def test_save_to_netcdf_rescaled():  # noqa 103
                 tmpdirname,
                 "--use-rescaler",
                 True,
+                "--start-time",
+                datetime.datetime.utcnow().isoformat(),
             ],
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
