@@ -1,9 +1,11 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
 import dask
+
 dask.config.set(num_workers=1)
 import logging
 import os
+
 os.environ["PYTROLL_CHUNK_SIZE"] = "512"
 import tempfile
 from typing import Optional
@@ -73,7 +75,7 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     type=click.BOOL,
 )
 def run(
-    api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False
+        api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False
 ):
     """Run main application
 
@@ -115,11 +117,15 @@ def run(
         if len(datasets) == 0:
             logger.info("No files to download, exiting")
             return
-
-        download_manager.download_datasets(
-            datasets,
-            product_id="EO:EUM:DAT:MSG:HRSEVIRI" if using_backup else "EO:EUM:DAT:MSG:MSG15-RSS",
-        )
+        if using_backup:
+            download_manager.download_tailored_datasets(datasets,
+                                                        product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                                                        )
+        else:
+            download_manager.download_datasets(
+                datasets,
+                product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+            )
         logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
         # 2. Load nat files to one Xarray Dataset

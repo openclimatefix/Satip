@@ -482,6 +482,11 @@ def get_nonhrv_dataset_from_scene(filename: str, scaler,  use_rescaler: bool, sa
     gc.collect()
     logger.info(f"After saving non-HRV Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
+
+def load_hrit_from_zip(filename: str, sections: list) -> Scene:
+    """Load HRIT Zip from Data Tailor to Scene for use downstream tasks"""
+    pass
+
 def save_native_to_zarr(
     list_of_native_files: list,
     bands: list = [
@@ -570,16 +575,12 @@ def save_native_to_zarr(
         if "HRV" in bands:
             logger.debug("Processing HRV")
             logger.info(f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-            proc = mp.Process(target=get_dataset_from_scene, args=(f,hrv_scaler, use_rescaler, save_dir, using_backup))
-            proc.start()
-            proc.join()
+            get_dataset_from_scene(f,hrv_scaler, use_rescaler, save_dir, using_backup)
             logger.info(f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
         logger.debug("Processing non-HRV")
         logger.info(f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
-        proc = mp.Process(target=get_nonhrv_dataset_from_scene, args=(f,scaler, use_rescaler, save_dir, using_backup))
-        proc.start()
-        proc.join()
+        get_nonhrv_dataset_from_scene(f,scaler, use_rescaler, save_dir, using_backup)
         logger.info(f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
 
