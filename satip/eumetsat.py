@@ -473,8 +473,9 @@ class DownloadManager:  # noqa: D205
 
         dataset_link = dataset_id_to_link(product_id, dataset_id, access_token=self.access_token)
         if tailor_id == SEVIRI:  # Also do HRV
-            self.request_access_token()
-            datatailor = eumdac.DataTailor(self.access_token)
+            credentials = (self.user_key, self.user_secret)
+            token = eumdac.AccessToken(credentials)
+            datatailor = eumdac.DataTailor(token)
             output_name_hrv = create_and_download_datatailor_data(
                 datatailor=datatailor,
                 dataset_id=dataset_link,
@@ -485,8 +486,9 @@ class DownloadManager:  # noqa: D205
             )
         else:
             output_name_hrv = None
-        self.request_access_token()
-        datatailor = eumdac.DataTailor(self.access_token)
+        credentials = (self.user_key, self.user_secret)
+        token = eumdac.AccessToken(credentials)
+        datatailor = eumdac.DataTailor(token)
         output_name = create_and_download_datatailor_data(
             datatailor=datatailor,
             dataset_id=dataset_link,

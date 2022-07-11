@@ -42,34 +42,6 @@ def generate_test_plots():
         logger_name="Plotting_test",
     )
 
-    def _plot_tailored(input_name: str) -> None:
-        """Plots the results of a download of tailored datasets."""
-        geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tif")))
-        image = rasterio.open(geotiff_files[0])
-        plt.imshow(image.read(1))
-        plt.title(f"Tailored {input_name}")
-        plt.savefig(os.path.join(os.getcwd(), f"tailored_{input_name}.png"), dpi=300)
-        plt.cla()
-        plt.clf()
-        os.remove(geotiff_files[0])
-
-    # Then tailored ones: Download for the tailored date-range and plot.
-    download_manager.download_tailored_date_range(
-        start_date="2020-06-01 11:59:00",
-        end_date="2020-06-01 12:02:00",
-        file_format="geotiff",
-        product_id=CLOUD_ID,
-    )
-    # _plot_tailored("cloud_mask")
-
-    download_manager.download_tailored_date_range(
-        start_date="2020-06-01 11:59:00",
-        end_date="2020-06-01 12:00:00",
-        file_format="geotiff",
-        product_id=RSS_ID,
-    )
-    # _plot_tailored("rss")
-
     # Get 1 RSS native file and 1 cloud mask file
     download_manager.download_date_range(
         start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", product_id=RSS_ID
