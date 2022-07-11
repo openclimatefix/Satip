@@ -75,8 +75,14 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Whether to rescale data to between 0 and 1 or not",
     type=click.BOOL,
 )
+@click.option(
+    "--start-time",
+    default=pd.Timestamp.utcnow().isoformat(),
+    help="Start time, defaults to the current UTC time",
+    type=click.STRING,
+)
 def run(
-    api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False
+    api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False , start_time: str = pd.Timestamp.utcnow().isoformat(),
 ):
     """Run main application
 
@@ -96,10 +102,12 @@ def run(
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        start_date = pd.Timestamp.utcnow() - pd.Timedelta(history)
+        start_date = pd.Timestamp.fromisoformat(start_time) - pd.Timedelta(history)
+        logger.info(start_date)
+        logger.info(start_time)
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
+            end_date=pd.Timestamp.fromisoformat(start_time),
         )
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -109,7 +117,7 @@ def run(
             logger.info("No RSS Imagery available, falling back to 15-minutely data")
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                end_date=pd.Timestamp.utcnow().strftime("%Y-%m-%d-%H-%M-%S"),
+                end_date=pd.Timestamp.fromisoformat(start_time),
                 product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
             using_backup = True
@@ -137,8 +145,8 @@ def run(
         )
 
         # 2. Load nat files to one Xarray Dataset
-        native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
-
+        native_files = list(glob.glob(os.path.join(tmpdir, "*.nat"))) if using_backup else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
+        print(native_files)
         # Save to S3
         save_native_to_zarr(
             native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup

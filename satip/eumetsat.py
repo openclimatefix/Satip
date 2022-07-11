@@ -154,7 +154,7 @@ def identify_available_datasets(
     Returns:
         JSON-formatted response from the request
     """
-    logger.debug(
+    logger.info(
         f"Identifying which dataset are available for " f"{start_date=} {end_date=} {product_id=}"
     )
 

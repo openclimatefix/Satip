@@ -635,25 +635,45 @@ def save_native_to_zarr(
     for f in list_of_native_files:
 
         logger.debug(f"Processing {f}")
+        if "EPCT" in f:
+            logger.debug("Processing HRIT file")
+            if "HRV" in f:
+                logger.debug("Processing HRV")
+                logger.info(
+                    f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
+                get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
+                logger.info(
+                    f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
+            else:
+                logger.debug("Processing non-HRV")
+                logger.info(
+                    f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
+                get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
+                logger.info(
+                    f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
+        else:
+            if "HRV" in bands:
+                logger.debug("Processing HRV")
+                logger.info(
+                    f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
+                get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
+                logger.info(
+                    f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                )
 
-        if "HRV" in bands:
-            logger.debug("Processing HRV")
+            logger.debug("Processing non-HRV")
             logger.info(
-                f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
-            get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
+            get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
             logger.info(
-                f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
-
-        logger.debug("Processing non-HRV")
-        logger.info(
-            f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
-        get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
-        logger.info(
-            f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
 
 
 def save_dataarray_to_zarr(
