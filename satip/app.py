@@ -82,7 +82,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     type=click.STRING,
 )
 def run(
-    api_key, api_secret, save_dir, history, db_url: Optional[str] = None, use_rescaler: bool = False , start_time: str = pd.Timestamp.utcnow().isoformat(),
+    api_key,
+    api_secret,
+    save_dir,
+    history,
+    db_url: Optional[str] = None,
+    use_rescaler: bool = False,
+    start_time: str = pd.Timestamp.utcnow().isoformat(),
 ):
     """Run main application
 
@@ -145,7 +151,11 @@ def run(
         )
 
         # 2. Load nat files to one Xarray Dataset
-        native_files = list(glob.glob(os.path.join(tmpdir, "*.nat"))) if using_backup else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
+        native_files = (
+            list(glob.glob(os.path.join(tmpdir, "*.nat")))
+            if using_backup
+            else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
+        )
         print(native_files)
         # Save to S3
         save_native_to_zarr(
