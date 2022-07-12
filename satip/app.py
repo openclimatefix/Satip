@@ -1,23 +1,24 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
+import glob
+import logging
+import os
+import tempfile
+from typing import Optional
+
+import click
+import pandas as pd
+import psutil
+from nowcasting_datamodel.connection import DatabaseConnection
+from nowcasting_datamodel.models.base import Base_Forecast
+from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
+
+from satip.eumetsat import DownloadManager
 from satip.utils import (
     collate_files_into_latest,
     filter_dataset_ids_on_current_files,
     move_older_files_to_different_location,
     save_native_to_zarr,
 )
-from satip.eumetsat import DownloadManager
-from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
-from nowcasting_datamodel.models.base import Base_Forecast
-from nowcasting_datamodel.connection import DatabaseConnection
-import psutil
-import pandas as pd
-import click
-from typing import Optional
-import tempfile
-import os
-import logging
-import glob
-
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
