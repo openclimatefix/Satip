@@ -134,13 +134,15 @@ def run(
         )
         datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
+
         if len(datasets) == 0:
             logger.info("No files to download, exiting")
             return
         if using_backup:
+
             download_manager.download_tailored_datasets(
                 datasets,
-                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                product_id='EO:EUM:DAT:MSG:HRSEVIRI',
             )
         else:
             download_manager.download_datasets(
