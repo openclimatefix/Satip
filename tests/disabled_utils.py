@@ -89,6 +89,9 @@ class TestSatipUtils(unittest.TestCase):
         zarr_path = os.path.join(os.getcwd(), "tmp.zarr")
 
         save_dataarray_to_zarr(
-            rss_dataarray, zarr_path=zarr_path, compressor_name="bz2", zarr_mode="w",
+            rss_dataarray,
+            zarr_path=zarr_path,
+            compressor_name="bz2",
+            zarr_mode="w",
         )
         self.assertEqual(1, len(list(glob.glob(zarr_path))))

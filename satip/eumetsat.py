@@ -222,7 +222,11 @@ class DownloadManager:  # noqa: D205
     """
 
     def __init__(
-        self, user_key: str, user_secret: str, data_dir: str, logger_name="EUMETSAT Download",
+        self,
+        user_key: str,
+        user_secret: str,
+        data_dir: str,
+        logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
 
@@ -540,9 +544,9 @@ class DownloadManager:  # noqa: D205
         (out,) = fnmatch.filter(customisation.outputs, "*")
         jobID = customisation._id
         logger.info(f"Downloading outputs from Data Tailor job {jobID}")
-        with customisation.stream_output(out,) as stream, open(
-            os.path.join(self.data_dir, stream.name), mode="wb"
-        ) as fdst:
+        with customisation.stream_output(
+            out,
+        ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
             shutil.copyfileobj(stream, fdst)
         logger.info(f"Deleting job {jobID} from Data Tailor storage")
         customisation.delete()

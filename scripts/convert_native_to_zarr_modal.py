@@ -126,7 +126,9 @@ async def f(compressed_bytearray_and_filename):
         )
         hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
         hrv_scene.load(
-            ["HRV", ]
+            [
+                "HRV",
+            ]
         )
         hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
             hrv_scene, band="HRV", area="RSS", calculate_osgb=False
@@ -162,7 +164,10 @@ async def f(compressed_bytearray_and_filename):
             "a": {"append_dim": "time"},
             "w": {
                 "encoding": {
-                    "data": {"compressor": compression_algo, "chunks": chunks, },
+                    "data": {
+                        "compressor": compression_algo,
+                        "chunks": chunks,
+                    },
                     "time": {"units": "nanoseconds since 1970-01-01"},
                 }
             },
@@ -222,7 +227,10 @@ async def f(compressed_bytearray_and_filename):
             "a": {"append_dim": "time"},
             "w": {
                 "encoding": {
-                    "data": {"compressor": compression_algo, "chunks": chunks, },
+                    "data": {
+                        "compressor": compression_algo,
+                        "chunks": chunks,
+                    },
                     "time": {"units": "nanoseconds since 1970-01-01"},
                 }
             },

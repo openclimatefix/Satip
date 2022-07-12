@@ -162,7 +162,9 @@ def load_native_to_dataarray(
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene.load(
-        ["HRV", ]
+        [
+            "HRV",
+        ]
     )
     scene.load(
         [
@@ -220,7 +222,9 @@ def load_cloudmask_to_dataarray(
     """
     scene = Scene(filenames={"seviri_l2_grib": [filename]})
     scene.load(
-        ["cloud_mask", ]
+        [
+            "cloud_mask",
+        ]
     )
     try:
         # Selected bounds empirically that have no NaN values from off disk image,
@@ -291,7 +295,8 @@ def convert_scene_to_dataarray(
         osgb_x, osgb_y = lat_lon_to_osgb(lat, lon)
         # Assign x_osgb and y_osgb and set some attributes
         dataarray = dataarray.assign_coords(
-            x_osgb=(("y", "x"), np.float32(osgb_x)), y_osgb=(("y", "x"), np.float32(osgb_y)),
+            x_osgb=(("y", "x"), np.float32(osgb_x)),
+            y_osgb=(("y", "x"), np.float32(osgb_y)),
         )
         for name in ["x_osgb", "y_osgb"]:
             dataarray[name].attrs = {
@@ -366,7 +371,10 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
         logger.info(f"Loading HRIT {filename}")
         hrv_scene = load_hrit_from_zip(filename, sections=list(range(16, 25)))
     hrv_scene.load(
-        ["HRV", ], generate=False,
+        [
+            "HRV",
+        ],
+        generate=False,
     )
 
     logger.info(
@@ -738,7 +746,10 @@ def save_dataarray_to_zarr(
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
-                "data": {"compressor": compression_algo, "chunks": chunks, },
+                "data": {
+                    "compressor": compression_algo,
+                    "chunks": chunks,
+                },
                 "time": {"units": "nanoseconds since 1970-01-01"},
             }
         },
@@ -1054,7 +1065,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
 
 # Cell
-def set_up_logging(name: str, main_logging_level: str = "DEBUG",) -> logging.Logger:
+def set_up_logging(
+    name: str,
+    main_logging_level: str = "DEBUG",
+) -> logging.Logger:
     """`set_up_logging` initialises and configures a custom logger for `satip`.
 
     The custom logger's logging level of the file and

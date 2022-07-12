@@ -138,11 +138,13 @@ def run(
         if using_backup:
 
             download_manager.download_tailored_datasets(
-                datasets, product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                datasets,
+                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
         else:
             download_manager.download_datasets(
-                datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+                datasets,
+                product_id="EO:EUM:DAT:MSG:MSG15-RSS",
             )
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"

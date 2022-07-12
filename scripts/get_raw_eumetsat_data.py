@@ -85,7 +85,11 @@ def _validate_date(ctx, param, value):
     type=float,
 )
 @click.option(
-    "--number_of_processes", "--np", default=4, prompt="Number of processes to use", type=int,
+    "--number_of_processes",
+    "--np",
+    default=4,
+    prompt="Number of processes to use",
+    type=int,
 )
 @click.option(
     "--product",

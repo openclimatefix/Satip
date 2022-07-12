@@ -137,7 +137,12 @@ def download_eumetsat_data(
         if number_of_processes > 0:
             pool = multiprocessing.Pool(processes=number_of_processes)
             for _ in pool.imap_unordered(
-                _download_time_range, zip(reversed(times_to_use), repeat(product_id), repeat(dm),),
+                _download_time_range,
+                zip(
+                    reversed(times_to_use),
+                    repeat(product_id),
+                    repeat(dm),
+                ),
             ):
                 # As soon as a day is done, start doing sanity checks and moving it along
                 _sanity_check_files_and_move_to_directory(
@@ -168,14 +173,18 @@ def _download_time_range(
         try:
             time.sleep(np.random.randint(0, 600))
             download_manager.download_date_range(
-                format_dt_str(start_time), format_dt_str(end_time), product_id=product_id,
+                format_dt_str(start_time),
+                format_dt_str(end_time),
+                product_id=product_id,
             )
             complete = True
         except requests.exceptions.ConnectionError:
             # Retry again after 10 minutes, should then continue working if intermittent
             time.sleep(600)
             download_manager.download_date_range(
-                format_dt_str(start_time), format_dt_str(end_time), product_id=product_id,
+                format_dt_str(start_time),
+                format_dt_str(end_time),
+                product_id=product_id,
             )
             complete = True
         except Exception as e:
@@ -305,7 +314,10 @@ def _process_rss_images(
 
 
 def _determine_datetimes_to_download_files(
-    directory: str, start_date: datetime, end_date: datetime, product_id: str,
+    directory: str,
+    start_date: datetime,
+    end_date: datetime,
+    product_id: str,
 ) -> List[Tuple[datetime, datetime]]:
     """
     Checks the given directory, and sub-directories, for all downloaded files.

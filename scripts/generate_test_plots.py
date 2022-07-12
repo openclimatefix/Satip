@@ -67,7 +67,11 @@ def generate_test_plots():
         if area == "UK":
             ax = plt.axes(projection=ccrs.OSGB())
             dataset.plot.pcolormesh(
-                ax=ax, transform=ccrs.OSGB(), x="x_osgb", y="y_osgb", add_colorbar=True,
+                ax=ax,
+                transform=ccrs.OSGB(),
+                x="x_osgb",
+                y="y_osgb",
+                add_colorbar=True,
             )
         else:
             ax = plt.axes(projection=ccrs.Geostationary(central_longitude=9.5))
