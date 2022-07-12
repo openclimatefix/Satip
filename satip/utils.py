@@ -321,7 +321,8 @@ def convert_scene_to_dataarray(
     del dataarray["crs"]
     del scene
     logger.info(
-        f"End of conversion Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+        f"End of conversion Memory in use: "
+        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
     )
     return dataarray
 
