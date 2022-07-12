@@ -157,7 +157,7 @@ def run(
             if using_backup
             else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
         )
-        print(native_files)
+        logger.info(native_files)
         # Save to S3
         save_native_to_zarr(
             native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup

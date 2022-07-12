@@ -359,8 +359,10 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     Returns the Xarray dataset from the filename
     """
     if ".nat" in filename:
+        logger.info(f"Loading Native {filename}")
         hrv_scene = load_native_from_zip(filename)
     else:
+        logger.info(f"Loading HRIT {filename}")
         hrv_scene = load_hrit_from_zip(filename, sections=list(range(16, 25)))
     hrv_scene.load(
         [
@@ -582,7 +584,7 @@ def save_native_to_zarr(
         using_backup: Whether the input data is the backup 15 minutely data or not
     """
 
-    logger.info(f"Converting from native to netcdf in {save_dir}")
+    logger.info(f"Converting from {'HRIT' if using_backup else 'native'} to zarr in {save_dir}")
 
     scaler = ScaleToZeroToOne(
         mins=np.array(
