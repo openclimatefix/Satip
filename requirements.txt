@@ -16,3 +16,4 @@ s3fs
 nowcasting_datamodel>=0.0.36
 h5netcdf
 psutil
+eumdac
