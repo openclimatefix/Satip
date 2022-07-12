@@ -154,7 +154,7 @@ def run(
         # 2. Load nat files to one Xarray Dataset
         native_files = (
             list(glob.glob(os.path.join(tmpdir, "*.nat")))
-            if using_backup
+            if not using_backup
             else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
         )
         logger.info(native_files)

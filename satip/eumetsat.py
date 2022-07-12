@@ -302,7 +302,7 @@ class DownloadManager:  # noqa: D205
             data_link: Url link for the relevant dataset
         """
 
-        logger.debug(f"Downloading one file {data_link}")
+        logger.info(f"Downloading one file {data_link}")
 
         params = {"access_token": self.access_token}
 
@@ -345,6 +345,7 @@ class DownloadManager:  # noqa: D205
             return
 
         for dataset_id in dataset_ids:
+            logger.info(f"Downloading: {dataset_id}")
             dataset_link = dataset_id_to_link(
                 product_id, dataset_id, access_token=self.access_token
             )
