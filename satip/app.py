@@ -113,6 +113,9 @@ def run(
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
+        logger.info(
+            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+        )
         # Check if any RSS imagery is available, if not, fall back to 15 minutely data
         if len(datasets) == 0:
             logger.info("No RSS Imagery available, falling back to 15-minutely data")

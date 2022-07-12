@@ -345,7 +345,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2 ** 10) - 1
+    upper_bound = (2**10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
