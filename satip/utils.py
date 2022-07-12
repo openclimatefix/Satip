@@ -162,7 +162,7 @@ def load_native_to_dataarray(
     scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene = Scene(filenames={"seviri_l1b_native": [decompressed_filename]})
     hrv_scene.load(
-        ["HRV",]
+        ["HRV", ]
     )
     scene.load(
         [
@@ -220,7 +220,7 @@ def load_cloudmask_to_dataarray(
     """
     scene = Scene(filenames={"seviri_l2_grib": [filename]})
     scene.load(
-        ["cloud_mask",]
+        ["cloud_mask", ]
     )
     try:
         # Selected bounds empirically that have no NaN values from off disk image,
@@ -360,7 +360,7 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
         logger.info(f"Loading HRIT {filename}")
         hrv_scene = load_hrit_from_zip(filename, sections=list(range(16, 25)))
     hrv_scene.load(
-        ["HRV",], generate=False,
+        ["HRV", ], generate=False,
     )
 
     logger.info(
@@ -634,20 +634,24 @@ def save_native_to_zarr(
             if "HRV" in f:
                 logger.debug("Processing HRV")
                 logger.info(
-                    f"Start HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                    f"Start HRV process Memory in use: "
+                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
                 get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
                 logger.info(
-                    f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                    f"After HRV process ends Memory in use: "
+                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
             else:
                 logger.debug("Processing non-HRV")
                 logger.info(
-                    f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                    f"STart non-HRV process Memory in use: "
+                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
                 get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
                 logger.info(
-                    f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                    f"After non-HRV process ends Memory in use: "
+                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
         else:
             if "HRV" in bands:
@@ -657,16 +661,19 @@ def save_native_to_zarr(
                 )
                 get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
                 logger.info(
-                    f"After HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                    f"After HRV process ends Memory in use: "
+                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
 
             logger.debug("Processing non-HRV")
             logger.info(
-                f"STart non-HRV process Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                f"STart non-HRV process Memory in use: "
+                f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
             get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
             logger.info(
-                f"After non-HRV process ends Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+                f"After non-HRV process ends Memory in use: "
+                f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
 
 
@@ -716,7 +723,7 @@ def save_dataarray_to_zarr(
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
-                "data": {"compressor": compression_algo, "chunks": chunks,},
+                "data": {"compressor": compression_algo, "chunks": chunks, },
                 "time": {"units": "nanoseconds since 1970-01-01"},
             }
         },
