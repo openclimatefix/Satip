@@ -121,8 +121,7 @@ def _replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     print(dataarray)
     # Assign x_osgb and y_osgb and set some attributes
     dataarray = dataarray.assign_coords(
-        x_osgb=(("y", "x"), np.float32(osgb_x)),
-        y_osgb=(("y", "x"), np.float32(osgb_y)),
+        x_osgb=(("y", "x"), np.float32(osgb_x)), y_osgb=(("y", "x"), np.float32(osgb_y)),
     )
     for name in ["x_osgb", "y_osgb"]:
         dataarray[name].attrs = {

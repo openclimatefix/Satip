@@ -18,10 +18,7 @@ from satip.intermediate import cloudmask_split_per_month
     prompt="The location for the non-HRV Zarr file",
 )
 @click.option(
-    "--temp_directory",
-    "-temp",
-    default="/mnt/ramdisk/",
-    prompt="Where to store temp directory",
+    "--temp_directory", "-temp", default="/mnt/ramdisk/", prompt="Where to store temp directory",
 )
 @click.option(
     "--region",
