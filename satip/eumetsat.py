@@ -12,7 +12,6 @@ Usage example:
 
 import datetime
 import fnmatch
-import json
 import logging
 import os
 import re
@@ -530,10 +529,10 @@ class DownloadManager:  # noqa: D205
             logger.info(f"ID: {customisation._id} Status: {status}")
 
             if "DONE" == status:
-                logger.info(f"SUCCESS")
+                logger.info("SUCCESS")
                 break
             elif "ERROR" in status or "KILLED" in status:
-                logger.info(f"UNSUCCESS, exiting")
+                logger.info("UNSUCCESS, exiting")
                 break
             time.sleep(sleep_time)
 
