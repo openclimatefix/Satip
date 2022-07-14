@@ -5,7 +5,6 @@ import logging
 import os
 import tempfile
 from typing import Optional
-
 import click
 import pandas as pd
 import psutil
@@ -105,12 +104,12 @@ def run(
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        start_date = pd.Timestamp(start_time) - pd.Timedelta(history)
+        start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
         logger.info(start_date)
         logger.info(start_time)
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=pd.Timestamp(start_time),
+            end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
         )
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -123,7 +122,7 @@ def run(
             logger.info("No RSS Imagery available, falling back to 15-minutely data")
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                end_date=pd.Timestamp(start_time),
+                end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
                 product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
             using_backup = True
