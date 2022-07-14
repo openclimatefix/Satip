@@ -1,4 +1,5 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
+import datetime
 import glob
 import logging
 import os
@@ -71,7 +72,8 @@ logging.getLogger(__name__).setLevel(logging.INFO)
 )
 @click.option(
     "--start-time",
-    default=pd.Timestamp.utcnow().isoformat(),
+    envvar="START_TIME",
+    default=pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     help="Start time, defaults to the current UTC time",
     type=click.STRING,
 )
@@ -82,7 +84,7 @@ def run(
     history,
     db_url: Optional[str] = None,
     use_rescaler: bool = False,
-    start_time: str = pd.Timestamp.utcnow().isoformat(),
+    start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
 ):
     """Run main application
 
@@ -103,12 +105,12 @@ def run(
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        start_date = pd.Timestamp.fromisoformat(start_time) - pd.Timedelta(history)
+        start_date = pd.Timestamp(start_time) - pd.Timedelta(history)
         logger.info(start_date)
         logger.info(start_time)
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=pd.Timestamp.fromisoformat(start_time),
+            end_date=pd.Timestamp(start_time),
         )
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -121,7 +123,7 @@ def run(
             logger.info("No RSS Imagery available, falling back to 15-minutely data")
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                end_date=pd.Timestamp.fromisoformat(start_time),
+                end_date=pd.Timestamp(start_time),
                 product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
             using_backup = True
