@@ -164,13 +164,13 @@ def identify_available_datasets(
     if log:
         log.info(f"Found {len(num_total_results)} EUMETSAT dataset files")
 
-    if num_total_results < 10_000:
+    if num_total_results < 500:
         return r_json["features"]
 
     datasets = r_json["features"]
 
     # need to loop in batches of 10_000 until all results are found
-    extra_loops_needed = num_total_results // 10_000
+    extra_loops_needed = num_total_results // 500
 
     new_end_date = datasets[-1]["properties"]["date"].split("/")[1]
 
@@ -178,7 +178,7 @@ def identify_available_datasets(
 
         # ensure the last loop we only get the remaining assets
         if i + 1 < extra_loops_needed:
-            num_features = 10_000
+            num_features = 500
         else:
             num_features = num_total_results - len(datasets)
 
