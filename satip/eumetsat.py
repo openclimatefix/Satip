@@ -436,6 +436,8 @@ class DownloadManager:  # noqa: D205
                     file_format=file_format,
                     projection=projection,
                 )
+        # Clean up the rest
+        self.cleanup_datatailor()
 
     def _download_single_tailored_dataset(
         self,
@@ -476,11 +478,9 @@ class DownloadManager:  # noqa: D205
         if tailor_id == SEVIRI:  # Also do HRV
             credentials = (self.user_key, self.user_secret)
             token = eumdac.AccessToken(credentials)
-            datatailor = eumdac.DataTailor(token)
             datastore = eumdac.DataStore(token)
             product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
             self.create_and_download_datatailor_data(
-                datatailor=datatailor,
                 dataset_id=product_id,
                 tailor_id=SEVIRI_HRV,
                 roi=roi,
@@ -489,11 +489,9 @@ class DownloadManager:  # noqa: D205
             )
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
-        datatailor = eumdac.DataTailor(token)
         datastore = eumdac.DataStore(token)
         product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
         self.create_and_download_datatailor_data(
-            datatailor=datatailor,
             dataset_id=product_id,
             tailor_id=tailor_id,
             roi=roi,
@@ -501,9 +499,18 @@ class DownloadManager:  # noqa: D205
             projection=projection,
         )
 
+    def cleanup_datatailor(self):
+        """Remove all Data Tailor runs"""
+        credentials = (self.user_key, self.user_secret)
+        token = eumdac.AccessToken(credentials)
+        datatailor = eumdac.DataTailor(token)
+        for customisation in datatailor.customisations:
+            if customisation.status == 'DONE' or 'FAILED':
+                logger.debug(f'Delete completed customisation {customisation} from {customisation.creation_time}.')
+                customisation.delete()
+
     def create_and_download_datatailor_data(
         self,
-        datatailor,
         dataset_id,
         tailor_id: str = "HRSEVIRI",
         roi: str = None,
@@ -521,7 +528,7 @@ class DownloadManager:  # noqa: D205
             roi=roi,
             compression=compression,
         )
-
+        datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
         customisation = datatailor.new_customisation(dataset_id, chain=chain)
         sleep_time = 5  # seconds
         logger.info(customisation)
