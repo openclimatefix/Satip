@@ -18,8 +18,6 @@ def f(datasets):
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs
     from satip.utils import convert_scene_to_dataarray
-    import xarray as xr
-    from satpy import Scene
 
     with tempfile.TemporaryDirectory() as tmpdir:
         datasets = [datasets]
