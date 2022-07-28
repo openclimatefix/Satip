@@ -9,7 +9,6 @@ import tempfile
 import pandas as pd
 import glob
 import numpy as np
-import zarr
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne
 from satip.serialize import serialize_attrs
@@ -188,7 +187,6 @@ def create_dummy_zarr(datasets, base_path):
     )
     # ds = xr.Dataset({"data": ("x_geostationary", dummies_x, "y_geostationary", dummies_y, "time", dummies_y, "variable", dummies_v)})
     # ds.attrs = first_data["data"].attrs
-    print(ds)
     hrv_dummies = dask.array.zeros((len(datasets), 4176, 5568, 1), chunks=(1,4176,5568,1), dtype="float32")
     hrv_ds = xr.Dataset(
         data_vars=dict(data=(["time", "y_geostationary", "x_geostationary", "variable"], hrv_dummies)),
@@ -200,7 +198,6 @@ def create_dummy_zarr(datasets, base_path):
             time=timestamps
         )
     )
-    print(hrv_ds)
 
     compression_algos = {
         "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
