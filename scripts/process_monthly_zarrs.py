@@ -224,6 +224,7 @@ def create_dummy_zarr(datasets, base_path):
     )
     # ds = xr.Dataset({"data": ("x_geostationary", dummies_x, "y_geostationary", dummies_y, "time", dummies_y, "variable", dummies_v)})
     # ds.attrs = first_data["data"].attrs
+    print(ds)
     hrv_dummies = dask.array.zeros(
         (len(datasets), 4176, 5568, 1), chunks=(1, 4176, 5568, 1), dtype="float32"
     )
