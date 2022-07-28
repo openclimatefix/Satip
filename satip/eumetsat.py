@@ -505,8 +505,10 @@ class DownloadManager:  # noqa: D205
         token = eumdac.AccessToken(credentials)
         datatailor = eumdac.DataTailor(token)
         for customisation in datatailor.customisations:
-            if customisation.status == 'DONE' or 'FAILED':
-                logger.debug(f'Delete completed customisation {customisation} from {customisation.creation_time}.')
+            if customisation.status == "DONE" or "FAILED":
+                logger.debug(
+                    f"Delete completed customisation {customisation} from {customisation.creation_time}."
+                )
                 customisation.delete()
 
     def create_and_download_datatailor_data(

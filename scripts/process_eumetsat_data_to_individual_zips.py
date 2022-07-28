@@ -1,19 +1,24 @@
-import os
 import multiprocessing as mp
+import os
+
 from tqdm import tqdm
 
+
 def f(datasets):
-    import tempfile
-    import pandas as pd
     import glob
+    import tempfile
+
     import numpy as np
+    import pandas as pd
+    import xarray as xr
     import zarr
+    from satpy import Scene
+
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs
     from satip.utils import convert_scene_to_dataarray
-    import xarray as xr
-    from satpy import Scene
+
     with tempfile.TemporaryDirectory() as tmpdir:
         datasets = [datasets]
         api_key = os.environ["SAT_API_KEY"]
@@ -94,11 +99,11 @@ def f(datasets):
         now_time = pd.Timestamp(hrv_dataarray["time"].values[0]).strftime("%Y%m%d%H%M")
 
         # Save out
-        hrv_save_file = os.path.join(
-            tmpdir, f"hrv_{now_time}.zarr.zip"
-        )
+        hrv_save_file = os.path.join(tmpdir, f"hrv_{now_time}.zarr.zip")
 
-        hrv_dataarray = hrv_dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
+        hrv_dataarray = hrv_dataarray.transpose(
+            "time", "y_geostationary", "x_geostationary", "variable"
+        )
 
         # Number of timesteps, x and y size per chunk, and channels (all 12)
         chunks = (
@@ -154,10 +159,7 @@ def f(datasets):
         dataarray = scaler.rescale(dataarray)
         dataarray.attrs.update(attrs)
 
-
-        save_file = os.path.join(
-            tmpdir, f"{now_time}.zarr.zip"
-        )
+        save_file = os.path.join(tmpdir, f"{now_time}.zarr.zip")
 
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
@@ -212,21 +214,20 @@ def f(datasets):
 
 
 if __name__ == "__main__":
-    import pandas as pd
-    import zarr
     import time
     from itertools import repeat
+
     import numpy as np
+    import pandas as pd
+    import zarr
+
+    from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-    from satip.eumetsat import DownloadManager
-    from satip.eumetsat import eumetsat_filename_to_datetime
 
     date_range = pd.date_range(start="2017-01-01 00:00", end="2022-06-30 00:00", freq="1D")
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
-    download_manager = DownloadManager(
-        user_key=api_key, user_secret=api_secret, data_dir="./"
-    )
+    download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
     for date in date_range:
         start_date = pd.Timestamp(date) - pd.Timedelta("1D")
         end_date = pd.Timestamp(date) + pd.Timedelta("1min")
@@ -240,15 +241,25 @@ if __name__ == "__main__":
         tmp_datasets = []
         for dataset in datasets:
             try:
-                if os.path.exists(os.path.join("/home/jacob/drive/",
-                                               f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip")):
+                if os.path.exists(
+                    os.path.join(
+                        "/home/jacob/drive/",
+                        f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
+                    )
+                ):
                     print(
-                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}")
+                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}"
+                    )
                     continue
-                if os.path.exists(os.path.join("/home/jacob/drive/",
-                                               f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip")):
+                if os.path.exists(
+                    os.path.join(
+                        "/home/jacob/drive/",
+                        f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
+                    )
+                ):
                     print(
-                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}")
+                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}"
+                    )
                     continue
             except AttributeError:
                 continue
@@ -261,15 +272,10 @@ if __name__ == "__main__":
         for hrv, dataarray, now_time in tqdm(pool.imap_unordered(f, datasets)):
             if hrv is None:
                 continue
-            save_file = os.path.join(
-                "/home/jacob/drive/", f"hrv_{now_time}.zarr.zip"
-            )
+            save_file = os.path.join("/home/jacob/drive/", f"hrv_{now_time}.zarr.zip")
 
             with open(save_file, "wb") as h:
                 h.write(hrv)
-            save_file = os.path.join(
-                "/home/jacob/drive/", f"{now_time}.zarr.zip"
-            )
+            save_file = os.path.join("/home/jacob/drive/", f"{now_time}.zarr.zip")
             with open(save_file, "wb") as w:
                 w.write(dataarray)
-
