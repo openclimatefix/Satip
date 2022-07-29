@@ -1,47 +1,62 @@
-import glob
+import multiprocessing as mp
+
+try:
+   mp.set_start_method('spawn', force=True)
+except RuntimeError:
+   pass
+
 import logging
 import multiprocessing as mp
 import os
-import tempfile
 from itertools import repeat
 
 import dask
 import numpy as np
 import pandas as pd
 import xarray as xr
-from satpy import Scene
 from tqdm import tqdm
 
 from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-from satip.scale_to_zero_to_one import ScaleToZeroToOne
-from satip.serialize import serialize_attrs
-from satip.utils import convert_scene_to_dataarray
 
-logging.disable(logging.DEBUG)
-logging.disable(logging.INFO)
-
-import warnings
-
-warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def func(datasets_and_tuples_and_return_data):
-    datasets, hrv_tuple, non_hrv_tuple, return_data = datasets_and_tuples_and_return_data
+
+    import glob
+    import tempfile
+
+    import numpy as np
+    import pandas as pd
+    import xarray as xr
+    from satpy import Scene
+    import logging
+
+    from satip.scale_to_zero_to_one import ScaleToZeroToOne
+    from satip.serialize import serialize_attrs
+    from satip.utils import convert_scene_to_dataarray
+    logging.disable(logging.DEBUG)
+    logging.disable(logging.INFO)
+
+    import warnings
+
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+    process_dataset, hrv_data, non_hrv_data, return_data = datasets_and_tuples_and_return_data
     with tempfile.TemporaryDirectory() as tmpdir:
-        datasets = [datasets]
+        process_dataset = [process_dataset]
         api_key = os.environ["SAT_API_KEY"]
         api_secret = os.environ["SAT_API_SECRET"]
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
-        download_manager.download_datasets(datasets)
+        download_manager.download_datasets(process_dataset)
         # 2. Load nat files to one Xarray Dataset
-        f = list(glob.glob(os.path.join(tmpdir, "*.nat")))
-        if len(f) == 0:
+        tmp_filename = list(glob.glob(os.path.join(tmpdir, "*.nat")))
+        if len(tmp_filename) == 0:
             return None, None, None
         else:
-            f = f[0]
+            tmp_filename = tmp_filename[0]
 
         scaler = ScaleToZeroToOne(
             mins=np.array(
@@ -88,17 +103,18 @@ def func(datasets_and_tuples_and_return_data):
                 "WV_073",
             ],
         )
+        """
         hrv_scaler = ScaleToZeroToOne(
             variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
         )
-        hrv_scene = Scene(filenames={"seviri_l1b_native": [f]})
-        hrv_scene.load(
+        data_scene = Scene(filenames={"seviri_l1b_native": [tmp_filename]})
+        data_scene.load(
             [
                 "HRV",
             ]
         )
         hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
-            hrv_scene, band="HRV", area="RSS", calculate_osgb=False
+            data_scene, band="HRV", area="RSS", calculate_osgb=False
         )
         attrs = serialize_attrs(hrv_dataarray.attrs)
         hrv_dataarray = hrv_scaler.rescale(hrv_dataarray)
@@ -111,8 +127,27 @@ def func(datasets_and_tuples_and_return_data):
         )
 
         hrv_dataset = hrv_dataarray.to_dataset(name="data")
-        scene = Scene(filenames={"seviri_l1b_native": [f]})
-        scene.load(
+        y_coord_dataarray = xr.DataArray(
+            data=np.expand_dims(hrv_dataarray.coords["y_geostationary"].values, 0),
+            coords=dict(
+                y_geostationary=hrv_dataarray.coords["y_geostationary"].values,
+                time=hrv_dataarray["time"].values
+            ),
+            dims=["time", "y_geostationary"],
+        )
+        x_coord_dataarray = xr.DataArray(
+            data=np.expand_dims(hrv_dataarray.coords["x_geostationary"].values, 0),
+            coords=dict(
+                x_geostationary=hrv_dataarray.coords["x_geostationary"].values,
+                time=hrv_dataarray["time"].values
+            ),
+            dims=["time", "x_geostationary"],
+        )
+        hrv_dataset["y_geostationary_coordinates"] = y_coord_dataarray
+        hrv_dataset["x_geostationary_coordinates"] = x_coord_dataarray
+        """
+        data_scene = Scene(filenames={"seviri_l1b_native": [tmp_filename]})
+        data_scene.load(
             [
                 "IR_016",
                 "IR_039",
@@ -127,60 +162,80 @@ def func(datasets_and_tuples_and_return_data):
                 "WV_073",
             ]
         )
-        # print("Loaded Non-HRV")
         dataarray: xr.DataArray = convert_scene_to_dataarray(
-            scene, band="IR_016", area="RSS", calculate_osgb=False
+            data_scene, band="IR_016", area="RSS", calculate_osgb=False
         )
         attrs = serialize_attrs(dataarray.attrs)
         dataarray = scaler.rescale(dataarray)
         dataarray.attrs.update(attrs)
+        now_time = pd.Timestamp(dataarray["time"].values[0]).strftime("%Y%m%d%H%M")
 
         dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
 
         dataset = dataarray.to_dataset(name="data")
 
         if return_data:
-            return hrv_dataset, dataset, now_time
+            print(f"Returning {now_time}")
+            return None, dataset, now_time
         else:
+            print(f"Writing {now_time}")
             # Write into the monthly Zarr file
             # Write non-HRV
             write_region(
                 dataset,
-                path=non_hrv_tuple[0],
-                times=non_hrv_tuple[1],
-                x=non_hrv_tuple[2],
-                y=non_hrv_tuple[3],
+                path=non_hrv_data[0],
+                times=non_hrv_data[1],
+                x=non_hrv_data[2],
+                y=non_hrv_data[3],
+                hrv=False
             )
-            write_region(
-                hrv_dataset, path=hrv_tuple[0], times=hrv_tuple[1], x=hrv_tuple[2], y=hrv_tuple[3]
-            )
+            #write_region(
+            #    hrv_dataset, path=hrv_data[0], times=hrv_data[1], x=hrv_data[2], y=hrv_data[3], hrv=True
+            #)
 
 
-def write_region(data, path, x, y, times):
-    if len(data.coords["x_geostationary"].values) == 5568:  # Flip should work?
-        print("Flipping X")
-        data = data.isel(x_geostationary=slice(None, None, -1))
-    elif len(data.coords["x_geostationary"].values) == 5570:  # Need to trim off 2 pixels
-        data = data.isel(x_geostationary=slice(0, 5568))
+def write_region(data, path, x, y, times, hrv=False):
+    if hrv:
+        if len(data.coords["x_geostationary"].values) == 5570:  # Need to trim off 2 pixels
+            data = data.isel(x_geostationary=slice(0, 5568))
+    else:
+        try:
+            assert np.isclose(data.coords["x_geostationary"][:10].values, x[:10], atol=1e-1).all()
+            assert np.isclose(data.coords["x_geostationary"][-10:].values, x[-10:], atol=1e-1).all()
+        except:
+            data = data.isel(x_geostationary=slice(None, None, -1))
+            assert np.isclose(data.coords["x_geostationary"][:10].values, x[:10], atol=1e-1).all()
+            assert np.isclose(data.coords["x_geostationary"][-10:].values, x[-10:], atol=1e-1).all()
+        try:
+            assert np.isclose(data.coords["y_geostationary"][:10].values, y[:10], atol=1e-1).all()
+            assert np.isclose(data.coords["y_geostationary"][-10:].values, y[-10:], atol=1e-1).all()
+        except:
+            data = data.isel(y_geostationary=slice(None, None, -1))
+            assert np.isclose(data.coords["y_geostationary"][:10].values, y[:10], atol=1e-1).all()
+            assert np.isclose(data.coords["y_geostationary"][-10:].values, y[-10:], atol=1e-1).all()
 
     # Quick checks on coordinates
-    assert np.isclose(data.coords["x_geostationary"][:10].values, x[:10]).all()
-    assert np.isclose(data.coords["y_geostationary"][:10].values, y[:10]).all()
-    assert np.isclose(data.coords["y_geostationary"][-10:].values, y[-10:]).all()
-    assert np.isclose(data.coords["x_geostationary"][-10:].values, x[-10:]).all()
-
     # Write to where index of the time is, so get i from there
     # times is the times values for the thing, so get the index here
-    i = np.argmin(np.abs(times - data["time"][0]))
-    data.to_zarr(
-        path,
-        region={
-            "time": slice(i, i + 1),
-            "y_geostationary": slice(0, 4176),
-            "x_geostationary": slice(0, len(data.coords["x_geostationary"].values)),
-            "variable": slice(0, 1),
-        },
-    )
+    i = np.argmin(np.abs(times - data["time"].values[0]))
+    if hrv:
+        data.to_zarr(
+            path,
+            region={
+                "time": slice(i, i + 1),
+                "y_geostationary": slice(0, 4176),
+                "x_geostationary": slice(0, 5568),
+                "variable": slice(0, 1),
+            },
+        )
+        print(f"Finished HRV writing: {i}")
+    else:
+        for j, variable in enumerate(
+                data.coords["variable"].values):  # JPEGXL only can take a single channel image at this time
+            data.isel(variable=[j]).to_zarr(path, region={"time": slice(i, i + 1), "y_geostationary": slice(0, 1392),
+                                                          "x_geostationary": slice(0, 3712),
+                                                          "variable": slice(j, j + 1)})
+        print(f"Finished non-HRV writing: {i}")
     data.close()
 
 
@@ -191,7 +246,7 @@ def create_dummy_zarr(datasets, base_path):
         base_path,
         pd.Timestamp(eumetsat_filename_to_datetime(datasets[0]["id"]))
         .round("5 min")
-        .strftime("%Y%m")
+        .strftime("%Y%U")
         + ".zarr",
     )
     hrv_path = os.path.join(
@@ -199,7 +254,7 @@ def create_dummy_zarr(datasets, base_path):
         "hrv_"
         + pd.Timestamp(eumetsat_filename_to_datetime(datasets[0]["id"]))
         .round("5 min")
-        .strftime("%Y%m")
+        .strftime("%Y%U")
         + ".zarr",
     )
     for dataset in datasets:
@@ -225,12 +280,21 @@ def create_dummy_zarr(datasets, base_path):
     # ds = xr.Dataset({"data": ("x_geostationary", dummies_x, "y_geostationary", dummies_y, "time", dummies_y, "variable", dummies_v)})
     # ds.attrs = first_data["data"].attrs
     print(ds)
+    """
     hrv_dummies = dask.array.zeros(
         (len(datasets), 4176, 5568, 1), chunks=(1, 4176, 5568, 1), dtype="float32"
     )
+    y_choord_dummies = dask.array.zeros(
+        (len(datasets), 4176), chunks=(1, 4176), dtype="float32"
+    )
+    x_choord_dummies = dask.array.zeros(
+        (len(datasets), 5568), chunks=(1, 5568), dtype="float32"
+    )
     hrv_ds = xr.Dataset(
         data_vars=dict(
-            data=(["time", "y_geostationary", "x_geostationary", "variable"], hrv_dummies)
+            data=(["time", "y_geostationary", "x_geostationary", "variable"], hrv_dummies),
+            y_geostationary_coordinates=(["time", "y_geostationary"], y_choord_dummies),
+            x_geostationary_coordinates = (["time", "x_geostationary"], x_choord_dummies),
         ),
         attrs=hrv["data"].attrs,
         coords=dict(
@@ -242,6 +306,8 @@ def create_dummy_zarr(datasets, base_path):
             time=timestamps,
         ),
     )
+    print(hrv_ds)
+    """
 
     compression_algos = {
         "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
@@ -262,26 +328,49 @@ def create_dummy_zarr(datasets, base_path):
 
     extra_kwargs = zarr_mode_to_extra_kwargs["w"]
 
-    ds.to_zarr(non_hrv_path, compute=False, **extra_kwargs, consolidated=True)
-    hrv_ds.to_zarr(hrv_path, compute=False, **extra_kwargs, consolidated=True)
+    ds.to_zarr(non_hrv_path, compute=False, **extra_kwargs, consolidated=True, mode="w")
+
+    hrv_zarr_mode_to_extra_kwargs = {
+        "a": {"append_dim": "time"},
+        "w": {
+            "encoding": {
+                "data": {
+                    "compressor": compression_algo,
+                },
+                "time": {"units": "nanoseconds since 1970-01-01"},
+            }
+        },
+    }
+    extra_kwargs = hrv_zarr_mode_to_extra_kwargs["w"]
+
+    #hrv_ds.to_zarr(hrv_path, compute=False, **extra_kwargs, consolidated=True, mode="w")
+    print(f"Finished writing {non_hrv_path}, {hrv_path}")
 
     return (
-        hrv_path,
-        hrv_ds["time"].values,
-        hrv_ds["x_geostationary"].values,
-        hrv_ds["y_geostationary"].values,
+        hrv_path, None, None, None
+        #hrv_ds["time"].values,
+        #hrv_ds["x_geostationary"].values,
+        #hrv_ds["y_geostationary"].values,
     ), (non_hrv_path, ds["time"].values, ds["x_geostationary"].values, ds["y_geostationary"].values)
 
 
 if __name__ == "__main__":
 
-    date_range = pd.date_range(start="2011-01-01 00:00", end="2019-01-01 00:00", freq="1M")
+
+    logging.disable(logging.DEBUG)
+    logging.disable(logging.INFO)
+
+    import warnings
+
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+    date_range = pd.date_range(start="2011-01-01 00:00", end="2022-01-01 00:00", freq="4W")
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
     download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
     first = True
     for date in date_range[::-1]:
-        start_date = pd.Timestamp(date) - pd.Timedelta("1M")
+        start_date = pd.Timestamp(date) - pd.Timedelta("4W")
         end_date = pd.Timestamp(date) + pd.Timedelta("1min")
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
@@ -290,48 +379,18 @@ if __name__ == "__main__":
         print(len(datasets))
         if len(datasets) == 0:
             continue
-        tmp_datasets = []
-        for dataset in datasets:
-            try:
-                if os.path.exists(
-                    os.path.join(
-                        "/mnt/storage_ssd_4tb/EUMETSAT_Zarr/",
-                        f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
-                    )
-                ):
-                    print(
-                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}"
-                    )
-                    continue
-                if os.path.exists(
-                    os.path.join(
-                        "/home/jacob/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-                        f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
-                    )
-                ):
-                    print(
-                        f"Skipping Time {pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}"
-                    )
-                    continue
-            except AttributeError as e:
-                print(e)
-                continue
-            tmp_datasets.append(dataset)
-        if len(tmp_datasets) == 0:
-            continue
         # tmp_datasets = datasets
-        print(f"Num datasets left: {len(tmp_datasets)}")
+        print(f"Num datasets left: {len(datasets)}")
         # Get a single example for filling in the Zarr dataset
         hrv_tuple, non_hrv_tuple = create_dummy_zarr(
-            datasets, "/mnt/storage_ssd_4tb/EUMETSAT_Zarr/"
+            datasets, "/mnt/storage_ssd_4tb/EUMETSAT_Zarr_monthly/"
         )
         # Now map datasets to f
-        pool = mp.Pool(processes=48)
-        first = False
+        pool = mp.Pool(processes=16)
         for _ in tqdm(
             pool.imap_unordered(
                 func, zip(datasets, repeat(hrv_tuple), repeat(non_hrv_tuple), repeat(False))
             ),
-            total=len(datasets),
+            total=len(datasets)
         ):
             continue
