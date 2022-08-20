@@ -1,9 +1,9 @@
 import multiprocessing as mp
 
 try:
-   mp.set_start_method('spawn', force=True)
+    mp.set_start_method("spawn", force=True)
 except RuntimeError:
-   pass
+    pass
 
 import logging
 import multiprocessing as mp
@@ -20,21 +20,21 @@ from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 
 
-
 def func(datasets_and_tuples_and_return_data):
 
     import glob
+    import logging
     import tempfile
 
     import numpy as np
     import pandas as pd
     import xarray as xr
     from satpy import Scene
-    import logging
 
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs
     from satip.utils import convert_scene_to_dataarray
+
     logging.disable(logging.DEBUG)
     logging.disable(logging.INFO)
 
@@ -187,11 +187,11 @@ def func(datasets_and_tuples_and_return_data):
                 times=non_hrv_data[1],
                 x=non_hrv_data[2],
                 y=non_hrv_data[3],
-                hrv=False
+                hrv=False,
             )
-            #write_region(
+            # write_region(
             #    hrv_dataset, path=hrv_data[0], times=hrv_data[1], x=hrv_data[2], y=hrv_data[3], hrv=True
-            #)
+            # )
 
 
 def write_region(data, path, x, y, times, hrv=False):
@@ -231,10 +231,17 @@ def write_region(data, path, x, y, times, hrv=False):
         print(f"Finished HRV writing: {i}")
     else:
         for j, variable in enumerate(
-                data.coords["variable"].values):  # JPEGXL only can take a single channel image at this time
-            data.isel(variable=[j]).to_zarr(path, region={"time": slice(i, i + 1), "y_geostationary": slice(0, 1392),
-                                                          "x_geostationary": slice(0, 3712),
-                                                          "variable": slice(j, j + 1)})
+            data.coords["variable"].values
+        ):  # JPEGXL only can take a single channel image at this time
+            data.isel(variable=[j]).to_zarr(
+                path,
+                region={
+                    "time": slice(i, i + 1),
+                    "y_geostationary": slice(0, 1392),
+                    "x_geostationary": slice(0, 3712),
+                    "variable": slice(j, j + 1),
+                },
+            )
         print(f"Finished non-HRV writing: {i}")
     data.close()
 
@@ -343,19 +350,21 @@ def create_dummy_zarr(datasets, base_path):
     }
     extra_kwargs = hrv_zarr_mode_to_extra_kwargs["w"]
 
-    #hrv_ds.to_zarr(hrv_path, compute=False, **extra_kwargs, consolidated=True, mode="w")
+    # hrv_ds.to_zarr(hrv_path, compute=False, **extra_kwargs, consolidated=True, mode="w")
     print(f"Finished writing {non_hrv_path}, {hrv_path}")
 
     return (
-        hrv_path, None, None, None
-        #hrv_ds["time"].values,
-        #hrv_ds["x_geostationary"].values,
-        #hrv_ds["y_geostationary"].values,
+        hrv_path,
+        None,
+        None,
+        None
+        # hrv_ds["time"].values,
+        # hrv_ds["x_geostationary"].values,
+        # hrv_ds["y_geostationary"].values,
     ), (non_hrv_path, ds["time"].values, ds["x_geostationary"].values, ds["y_geostationary"].values)
 
 
 if __name__ == "__main__":
-
 
     logging.disable(logging.DEBUG)
     logging.disable(logging.INFO)
@@ -391,6 +400,6 @@ if __name__ == "__main__":
             pool.imap_unordered(
                 func, zip(datasets, repeat(hrv_tuple), repeat(non_hrv_tuple), repeat(False))
             ),
-            total=len(datasets)
+            total=len(datasets),
         ):
             continue
