@@ -1,23 +1,23 @@
-import os
-
-import multiprocessing as mp
-from tqdm import tqdm
-import logging
-from satip.eumetsat import DownloadManager
-from satip.eumetsat import eumetsat_filename_to_datetime
-import tempfile
-import pandas as pd
 import glob
+import logging
+import multiprocessing as mp
+import os
+import tempfile
+from itertools import repeat
+
+import dask
 import numpy as np
+import pandas as pd
+import xarray as xr
 import zarr
+from satpy import Scene
+from tqdm import tqdm
+
+from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne
 from satip.serialize import serialize_attrs
 from satip.utils import convert_scene_to_dataarray
-import xarray as xr
-import dask
-from satpy import Scene
-from itertools import repeat
 
 logging.disable(logging.DEBUG)
 logging.disable(logging.INFO)
