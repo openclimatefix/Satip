@@ -1,20 +1,23 @@
-import os
 import multiprocessing as mp
+import os
+
 from tqdm import tqdm
 
 
 def f(datasets):
-    import tempfile
-    import pandas as pd
     import glob
+    import tempfile
+
     import numpy as np
+    import pandas as pd
+    import xarray as xr
     import zarr
+    from satpy import Scene
+
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs
     from satip.utils import convert_scene_to_dataarray
-    import xarray as xr
-    from satpy import Scene
 
     with tempfile.TemporaryDirectory() as tmpdir:
         datasets = [datasets]
@@ -211,14 +214,15 @@ def f(datasets):
 
 
 if __name__ == "__main__":
-    import pandas as pd
-    import zarr
     import time
     from itertools import repeat
+
     import numpy as np
+    import pandas as pd
+    import zarr
+
+    from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-    from satip.eumetsat import DownloadManager
-    from satip.eumetsat import eumetsat_filename_to_datetime
 
     date_range = pd.date_range(start="2017-01-01 00:00", end="2022-06-30 00:00", freq="1D")
     api_key = os.environ["SAT_API_KEY"]
