@@ -512,7 +512,7 @@ class DownloadManager:  # noqa: D205
             if customisation.status == "DONE" or "FAILED":
                 logger.debug(
                     f"Delete completed customisation {customisation} "
-                    "from {customisation.creation_time}."
+                    f"from {customisation.creation_time}."
                 )
                 customisation.delete()
 
