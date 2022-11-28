@@ -493,15 +493,15 @@ class DownloadManager:  # noqa: D205
         product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
         try:
             self.create_and_download_datatailor_data(
-            dataset_id=product_id,
-            tailor_id=tailor_id,
-            roi=roi,
-            file_format=file_format,
-            projection=projection,
-        )
+                dataset_id=product_id,
+                tailor_id=tailor_id,
+                roi=roi,
+                file_format=file_format,
+                projection=projection,
+            )
         except Exception as e:
-          self.cleanup_datatailor()
-          raise e
+            self.cleanup_datatailor()
+            raise e
 
     def cleanup_datatailor(self):
         """Remove all Data Tailor runs"""
