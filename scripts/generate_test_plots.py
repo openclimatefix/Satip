@@ -17,7 +17,11 @@ import rasterio
 import xarray as xr
 
 from satip import eumetsat
-from satip.utils import load_cloudmask_to_dataset, load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import (
+    load_cloudmask_to_dataarray,
+    load_native_to_dataarray,
+    save_dataarray_to_zarr,
+)
 
 
 def generate_test_plots():
@@ -37,34 +41,6 @@ def generate_test_plots():
         data_dir=os.getcwd(),
         logger_name="Plotting_test",
     )
-
-    def _plot_tailored(input_name: str) -> None:
-        """Plots the results of a download of tailored datasets."""
-        geotiff_files = list(glob.glob(os.path.join(os.getcwd(), "*.tif")))
-        image = rasterio.open(geotiff_files[0])
-        plt.imshow(image.read(1))
-        plt.title(f"Tailored {input_name}")
-        plt.savefig(os.path.join(os.getcwd(), f"tailored_{input_name}.png"), dpi=300)
-        plt.cla()
-        plt.clf()
-        os.remove(geotiff_files[0])
-
-    # Then tailored ones: Download for the tailored date-range and plot.
-    download_manager.download_tailored_date_range(
-        start_date="2020-06-01 11:59:00",
-        end_date="2020-06-01 12:02:00",
-        file_format="geotiff",
-        product_id=CLOUD_ID,
-    )
-    # _plot_tailored("cloud_mask")
-
-    download_manager.download_tailored_date_range(
-        start_date="2020-06-01 11:59:00",
-        end_date="2020-06-01 12:00:00",
-        file_format="geotiff",
-        product_id=RSS_ID,
-    )
-    # _plot_tailored("rss")
 
     # Get 1 RSS native file and 1 cloud mask file
     download_manager.download_date_range(
@@ -113,62 +89,62 @@ def generate_test_plots():
 
     for area in ["UK", "RSS"]:
         # First do it with the cloud mask
-        cloudmask_dataset = load_cloudmask_to_dataset(
+        cloudmask_dataarray = load_cloudmask_to_dataarray(
             Path(cloud_mask_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
-        rss_dataset, hrv_dataset = load_native_to_dataset(
+        rss_dataarray, hrv_dataarray = load_native_to_dataarray(
             Path(rss_filenames[0]), temp_directory=Path(os.getcwd()), area=area
         )
 
         # Save to Zarrs, to then load them back
-        save_dataset_to_zarr(
-            cloudmask_dataset,
+        save_dataarray_to_zarr(
+            cloudmask_dataarray,
             zarr_path=os.path.join(os.getcwd(), "cloud.zarr"),
             compressor_name="bz2",
             zarr_mode="w",
         )
-        del cloudmask_dataset
+        del cloudmask_dataarray
 
-        save_dataset_to_zarr(
-            rss_dataset,
+        save_dataarray_to_zarr(
+            rss_dataarray,
             zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
             compressor_name="jpeg-xl",
             zarr_mode="w",
         )
-        del rss_dataset
+        del rss_dataarray
 
-        save_dataset_to_zarr(
-            hrv_dataset,
+        save_dataarray_to_zarr(
+            hrv_dataarray,
             zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
             compressor_name="jpeg-xl",
             zarr_mode="w",
         )
-        del hrv_dataset
+        del hrv_dataarray
 
         # Load them from Zarr to ensure its the same as the output from satip
-        cloudmask_dataset = (
+        cloudmask_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "cloud.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="cloud_mask")
         )
-        rss_dataset = (
+        rss_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "rss.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="IR_016")
         )
-        hrv_dataset = (
+        hrv_dataarray = (
             xr.open_zarr(os.path.join(os.getcwd(), "hrv.zarr"), consolidated=True)["data"]
             .isel(time=0)
             .sel(variable="HRV")
         )
 
-        print(cloudmask_dataset)
-        print(rss_dataset)
-        print(hrv_dataset)
+        print(cloudmask_dataarray)
+        print(rss_dataarray)
+        print(hrv_dataarray)
 
-        _plot_dataset(hrv_dataset, "hrv", area)
-        _plot_dataset(rss_dataset, "rss", area)
-        _plot_dataset(cloudmask_dataset, "cloud_mask", area)
+        _plot_dataset(hrv_dataarray, "hrv", area)
+        _plot_dataset(rss_dataarray, "rss", area)
+        _plot_dataset(cloudmask_dataarray, "cloud_mask", area)
 
 
 if __name__ == "__main__":

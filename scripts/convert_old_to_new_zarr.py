@@ -1,14 +1,17 @@
-"""Convert the older zarr files to newer JPEG-XL ones"""
+"""Convert the older zarr files to newer JPEG-XL ones."""
 import glob
+import os
+from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
+from satip.utils import save_dataarray_to_zarr
+
 
 def drop_duplicate_times(data_array: xr.DataArray, class_name: str, time_dim: str) -> xr.DataArray:
-    """
-    Drop duplicate times in data array
+    """Drop duplicate times in data array.
 
     Args:
         data_array: main data
@@ -21,7 +24,6 @@ def drop_duplicate_times(data_array: xr.DataArray, class_name: str, time_dim: st
     # If there are any duplicated init_times then drop the duplicated init_times:
     time = pd.DatetimeIndex(data_array[time_dim])
     if not time.is_unique:
-        n_duplicates = time.duplicated().sum()
         data_array = data_array.drop_duplicates(dim=time_dim)
 
     return data_array
@@ -30,8 +32,7 @@ def drop_duplicate_times(data_array: xr.DataArray, class_name: str, time_dim: st
 def drop_non_monotonic_increasing(
     data_array: xr.DataArray, class_name: str, time_dim: str
 ) -> xr.DataArray:
-    """
-    Drop non monotonically increasing time steps
+    """Drop non monotonically increasing time steps.
 
     Args:
         data_array: main data
@@ -94,26 +95,24 @@ def dedupe_time_coords(dataset: xr.Dataset) -> xr.Dataset:
 
 hrv_names = list(
     glob.glob(
-        "/mnt/storage_ssd_8tb/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v3/hrv_rss_eumetsat_zarr*"
+        "/mnt/storage_ssd_8tb/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v3/hrv_rss_eumetsat_zarr*"  # noqa 501
     )
 )
 non_hrv_names = list(
     glob.glob(
-        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/rss_eumetsat_zarr*"
+        "/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v2/rss_eumetsat_zarr*"  # noqa 501
     )
 )
-
-import os
 
 # Renamed to data
 # Convert to float32
 # Conver -1 to NaN
 # Divide by 1023 to get 0 to 1
 # Rechunk to much larger ones
-from satip.utils import save_dataset_to_zarr
 
 
-def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
+# Todo: This function is not called in the current script. Can we remove it?
+def _replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     osgb_x = dataarray["x_osgb"].compute()
     osgb_y = dataarray["y_osgb"].compute()
     print(osgb_y)
@@ -136,17 +135,17 @@ def replace_osgb(dataarray: xr.DataArray) -> xr.DataArray:
     return dataarray
 
 
-def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
+def _convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
     data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    # data_array = replace_osgb(data_array)
+    # data_array = _replace_osgb(data_array)
     print(data_array)
     for i in range(10, len(data_array["time"].values), 10):
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             data_array.isel(time=slice(i, i + 10)),
             zarr_path=new_zarr_path,
             compressor_name="jpeg-xl",
@@ -157,17 +156,20 @@ def convert_to_new_format(dataset: xr.Dataset, hrv: bool = False, new_zarr_path:
         )
 
 
-def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
+# TODO: I feel this could be lumped together with the function above.
+# The whole difference seems to be in the zarr_mode, and that can be
+# achieved via zarr_mode = "a" if os.path.exists(new_zarr_path) else "w".
+def _convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr_path: str = ""):
     data_array = dataset["data"]
     data_array = data_array.astype(np.float32)
     data_array = data_array.where(data_array >= -0.5)  # Negative will be NaN
     data_array /= 1023
     data_array = data_array.clip(min=0, max=1)
     data_array["time"] = data_array.coords["time"].dt.round("5 min").values
-    # data_array = replace_osgb(data_array)
+    # data_array = _replace_osgb(data_array)
     print(data_array)
     if not os.path.exists(new_zarr_path):
-        save_dataset_to_zarr(
+        save_dataarray_to_zarr(
             data_array.isel(time=slice(0, 10)),
             zarr_path=new_zarr_path,
             compressor_name="jpeg-xl",
@@ -178,25 +180,33 @@ def convert_to_new_format_start(dataset: xr.Dataset, hrv: bool = False, new_zarr
         )
 
 
-from multiprocessing import Pool
-
 pool = Pool(processes=8)
 
 
 def fix_hrv(non_name):
+    """Convert old HRV-files to the new format.
+
+    Please note that this function only tackles the start of the old data.
+    There is another function called fix_hrv_full below, which does the rest.
+    """
     new_path = non_name.replace("v3", "v4")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
     dataset = dedupe_time_coords(dataset)
-    convert_to_new_format_start(dataset, hrv=True, new_zarr_path=new_path)
+    _convert_to_new_format_start(dataset, hrv=True, new_zarr_path=new_path)
 
 
 def fix_non_hrv(non_name):
+    """Convert old non-HRV-files to the new format.
+
+    Please note that this function only tackles the start of the old data.
+    There is another function called fix_hrv_full below, which does the rest.
+    """
     new_path = non_name.replace("v2", "v3")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
     dataset = dedupe_time_coords(dataset)
-    convert_to_new_format_start(dataset, hrv=False, new_zarr_path=new_path)
+    _convert_to_new_format_start(dataset, hrv=False, new_zarr_path=new_path)
 
 
 for _ in pool.imap_unordered(fix_non_hrv, non_hrv_names):
@@ -207,19 +217,29 @@ for _ in pool.imap_unordered(fix_hrv, hrv_names):
 
 
 def fix_hrv_full(non_name):
+    """Convert old HRV-files to the new format.
+
+    Please note that this function only tackles everything BUT the start of the old data.
+    There is another function called fix_hrv above, which sets up the start.
+    """
     new_path = non_name.replace("v3", "v4")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
     dataset = dedupe_time_coords(dataset)
-    convert_to_new_format(dataset, hrv=True, new_zarr_path=new_path)
+    _convert_to_new_format(dataset, hrv=True, new_zarr_path=new_path)
 
 
 def fix_non_hrv_full(non_name):
+    """Convert old HRV-files to the new format.
+
+    Please note that this function only tackles everything BUT the start of the old data.
+    There is another function called fix_hrv above, which sets up the start.
+    """
     new_path = non_name.replace("v2", "v3")
     print(new_path)
     dataset = xr.open_zarr(non_name, consolidated=True)
     dataset = dedupe_time_coords(dataset)
-    convert_to_new_format(dataset, hrv=False, new_zarr_path=new_path)
+    _convert_to_new_format(dataset, hrv=False, new_zarr_path=new_path)
 
 
 for _ in pool.imap_unordered(fix_hrv_full, hrv_names):

@@ -14,7 +14,11 @@ from pathlib import Path
 
 import xarray
 
-from satip.utils import load_cloudmask_to_dataset, load_native_to_dataset, save_dataset_to_zarr
+from satip.utils import (
+    load_cloudmask_to_dataarray,
+    load_native_to_dataarray,
+    save_dataarray_to_zarr,
+)
 
 USER_KEY = os.environ.get("EUMETSAT_USER_KEY")
 USER_SECRET = os.environ.get("EUMETSAT_USER_SECRET")
@@ -58,34 +62,34 @@ class TestSatipUtils(unittest.TestCase):
 
         return super().setUp()
 
-    def test_load_cloudmask_to_dataset(self):  # noqa D102
+    def test_load_cloudmask_to_dataarray(self):  # noqa D102
         for area in ["UK", "RSS"]:
-            cloudmask_dataset = load_cloudmask_to_dataset(
+            cloudmask_dataarray = load_cloudmask_to_dataarray(
                 Path(self.cloud_mask_filename), temp_directory=Path(os.getcwd()), area=area
             )
-            self.assertEqual(type(cloudmask_dataset), xarray.DataArray)
+            self.assertEqual(type(cloudmask_dataarray), xarray.DataArray)
 
-    def test_load_native_to_dataset(self):  # noqa D102
+    def test_load_native_to_dataarray(self):  # noqa D102
         for area in ["UK", "RSS"]:
-            rss_dataset, hrv_dataset = load_native_to_dataset(
+            rss_dataarray, hrv_dataarray = load_native_to_dataarray(
                 Path(self.rss_filename), temp_directory=Path(os.getcwd()), area=area
             )
-            self.assertEqual(type(rss_dataset), xarray.DataArray)
-            self.assertEqual(type(hrv_dataset), xarray.DataArray)
+            self.assertEqual(type(rss_dataarray), xarray.DataArray)
+            self.assertEqual(type(hrv_dataarray), xarray.DataArray)
 
-    def test_save_dataset_to_zarr(self):  # noqa D102
+    def test_save_dataarray_to_zarr(self):  # noqa D102
         # The following is a bit ugly, but since we do not want to lump two tests into one
-        # test function but save_dataset_to_zarr depends on a dataset being loaded,
-        # we have to reload the dataset here. This means that this test can theoretically
+        # test function but save_dataarray_to_zarr depends on a dataarray being loaded,
+        # we have to reload the dataarray here. This means that this test can theoretically
         # fail for two reasons: Either the data-loading failed, or the data-saving failed.
-        rss_dataset, _ = load_native_to_dataset(
+        rss_dataarray, _ = load_native_to_dataarray(
             Path(self.rss_filename), temp_directory=Path(os.getcwd()), area="UK"
         )
 
         zarr_path = os.path.join(os.getcwd(), "tmp.zarr")
 
-        save_dataset_to_zarr(
-            rss_dataset,
+        save_dataarray_to_zarr(
+            rss_dataarray,
             zarr_path=zarr_path,
             compressor_name="bz2",
             zarr_mode="w",
