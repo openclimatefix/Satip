@@ -511,7 +511,8 @@ class DownloadManager:  # noqa: D205
         for customisation in datatailor.customisations:
             if customisation.status == "DONE" or "FAILED":
                 logger.debug(
-                    f"Delete completed customisation {customisation} from {customisation.creation_time}."
+                    f"Delete completed customisation {customisation} "
+                    "from {customisation.creation_time}."
                 )
                 customisation.delete()
 
