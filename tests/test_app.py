@@ -58,6 +58,7 @@ def test_save_to_netcdf_now():  # noqa 103
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
 
+
 def test_cleanup_now():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
@@ -74,7 +75,7 @@ def test_cleanup_now():  # noqa 103
                 "--use-rescaler",
                 False,
                 "--cleanup",
-                True
+                True,
             ],
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
