@@ -92,7 +92,7 @@ def run(
     db_url: Optional[str] = None,
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
-        cleanup: bool = False
+    cleanup: bool = False,
 ):
     """Run main application
 
