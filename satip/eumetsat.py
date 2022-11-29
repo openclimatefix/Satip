@@ -558,8 +558,8 @@ class DownloadManager:  # noqa: D205
             out,
         ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
             shutil.copyfileobj(stream, fdst)
-        logger.info(f"Deleting job {jobID} from Data Tailor storage")
-        customisation.delete()
+        # logger.info(f"Deleting job {jobID} from Data Tailor storage")
+        # Remove because failing last customisation.delete()
         return fdst
 
 
