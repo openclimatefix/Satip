@@ -436,8 +436,6 @@ class DownloadManager:  # noqa: D205
                     file_format=file_format,
                     projection=projection,
                 )
-        # Clean up the rest
-        self.cleanup_datatailor()
 
     def _download_single_tailored_dataset(
         self,
