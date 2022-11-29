@@ -77,6 +77,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Start time, defaults to the current UTC time",
     type=click.STRING,
 )
+@click.option(
+    "--cleanup",
+    envvar="CLEANUP",
+    default=False,
+    help="Run Data Tailor Cleanup and exit",
+    type=click.BOOL,
+)
 def run(
     api_key,
     api_secret,
@@ -85,6 +92,7 @@ def run(
     db_url: Optional[str] = None,
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
+        cleanup: bool = False
 ):
     """Run main application
 
@@ -96,6 +104,7 @@ def run(
         db_url: URL of database
         use_rescaler: Rescale data to between 0 and 1 or not
         start_time: Start time in UTC ISO Format
+        cleanup: Cleanup Data Tailor
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
@@ -105,6 +114,10 @@ def run(
         download_manager = DownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
+        if cleanup:
+            logger.info("Running Data Tailor Cleanup")
+            download_manager.cleanup_datatailor()
+            return
         start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
         logger.info(start_date)
         logger.info(start_time)
