@@ -581,7 +581,6 @@ class DownloadManager:  # noqa: D205
             jobID = customisation._id
             logger.info(f"Downloading outputs from Data Tailor job {jobID}")
 
-            self.data_dir = "."
             with customisation.stream_output(
                 out,
             ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
