@@ -24,8 +24,10 @@ from urllib.error import HTTPError
 
 import eumdac
 import requests
+import fsspec
 
 from satip import utils
+from satip.data_store import dateset_it_to_filename
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +228,7 @@ class DownloadManager:  # noqa: D205
         user_key: str,
         user_secret: str,
         data_dir: str,
+        native_file_dir:str,
         logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
@@ -240,6 +243,7 @@ class DownloadManager:  # noqa: D205
             user_key: EUMETSAT API key
             user_secret: EUMETSAT API secret
             data_dir: Path to the directory where the satellite data will be saved
+            native_file_dir: this is where the native files are saved
             log_fp: Filepath where the logs will be stored
 
         Returns:
@@ -259,6 +263,7 @@ class DownloadManager:  # noqa: D205
 
         # Configuring the data directory
         self.data_dir = data_dir
+        self.native_file_dir = native_file_dir
 
         if not os.path.exists(self.data_dir):
             try:
@@ -417,25 +422,48 @@ class DownloadManager:  # noqa: D205
             return
 
         for dataset_id in dataset_ids:
-            # Download the raw data
-            try:
-                self._download_single_tailored_dataset(
-                    dataset_id,
-                    product_id=product_id,
-                    roi=roi,
-                    file_format=file_format,
-                    projection=projection,
-                )
-            except Exception:
-                self.logger.info("The EUMETSAT access token has been refreshed")
-                self.request_access_token()
-                self._download_single_tailored_dataset(
-                    dataset_id,
-                    product_id=product_id,
-                    roi=roi,
-                    file_format=file_format,
-                    projection=projection,
-                )
+
+            # check data store, if its there use this instead
+            data_store_filename_remote = dateset_it_to_filename(dataset_id, self.native_file_dir)
+            data_store_filename_local = dateset_it_to_filename(dataset_id, self.data_dir)
+
+            fs = fsspec.open(data_store_filename_remote).fs
+            if fs.exists(data_store_filename_remote):
+
+                # copy to 'data_dir'
+                self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
+                fs.get(data_store_filename_remote, data_store_filename_local)
+
+            else:
+                self.logger.debug(f'{data_store_filename_remote} does not exist')
+
+                # Download the raw data
+                try:
+                    fdst = self._download_single_tailored_dataset(
+                        dataset_id,
+                        product_id=product_id,
+                        roi=roi,
+                        file_format=file_format,
+                        projection=projection,
+                    )
+                except Exception:
+                    self.logger.info("The EUMETSAT access token has been refreshed")
+                    self.request_access_token()
+                    fdst = self._download_single_tailored_dataset(
+                        dataset_id,
+                        product_id=product_id,
+                        roi=roi,
+                        file_format=file_format,
+                        projection=projection,
+                    )
+
+                # save to data store
+                self.logger.debug(f'Copying file from {fdst} to {data_store_filename_remote}')
+                fs = fsspec.open(fdst).fs
+                fs.get(fdst, data_store_filename_remote)
+
+
+
 
     def _download_single_tailored_dataset(
         self,
@@ -444,7 +472,7 @@ class DownloadManager:  # noqa: D205
         roi: str = None,
         file_format: str = "hrit",
         projection: str = None,
-    ) -> None:
+    ) -> str:
         """
         Download a single tailored dataset
 
@@ -454,6 +482,8 @@ class DownloadManager:  # noqa: D205
             roi: Region of Interest for the area, if None, then no cropping is done
             file_format: File format of the output, defaults to 'geotiff'
             projection: Projection for the output, defaults to native projection of 'geographic'
+
+        return string where the dataset has been saved
         """
 
         SEVIRI = "HRSEVIRI"
@@ -478,7 +508,7 @@ class DownloadManager:  # noqa: D205
             token = eumdac.AccessToken(credentials)
             datastore = eumdac.DataStore(token)
             product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-            self.create_and_download_datatailor_data(
+            fdst = self.create_and_download_datatailor_data(
                 dataset_id=product_id,
                 tailor_id=SEVIRI_HRV,
                 roi=roi,
@@ -489,13 +519,15 @@ class DownloadManager:  # noqa: D205
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
         product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-        self.create_and_download_datatailor_data(
+        fdst = self.create_and_download_datatailor_data(
             dataset_id=product_id,
             tailor_id=tailor_id,
             roi=roi,
             file_format=file_format,
             projection=projection,
         )
+
+        return fdst
 
     def cleanup_datatailor(self):
         """Remove all Data Tailor runs"""

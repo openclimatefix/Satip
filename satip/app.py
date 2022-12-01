@@ -49,6 +49,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     type=click.STRING,
 )
 @click.option(
+    "--save-dir-native",
+    default="./raw",
+    envvar="SAVE_DIR_NATIVE",
+    help="Where to save the zarr files",
+    type=click.STRING,
+)
+@click.option(
     "--history",
     default="60 minutes",
     envvar="HISTORY",
@@ -87,6 +94,7 @@ def run(
     api_key,
     api_secret,
     save_dir,
+    save_dir_native,
     history,
     db_url: Optional[str] = None,
     use_rescaler: bool = False,
@@ -99,6 +107,7 @@ def run(
         api_key: API Key for EUMETSAT
         api_secret: Secret for EUMETSAT
         save_dir: Save directory
+        save_dir_native: where the native files are saved
         history: History time
         db_url: URL of database
         use_rescaler: Rescale data to between 0 and 1 or not
@@ -111,7 +120,7 @@ def run(
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
-            user_key=api_key, user_secret=api_secret, data_dir=tmpdir
+            user_key=api_key, user_secret=api_secret, data_dir=tmpdir, native_file_dir=save_dir_native
         )
         if cleanup:
             logger.info("Running Data Tailor Cleanup")
