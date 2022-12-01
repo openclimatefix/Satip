@@ -228,7 +228,7 @@ class DownloadManager:  # noqa: D205
         user_key: str,
         user_secret: str,
         data_dir: str,
-        native_file_dir:str,
+        native_file_dir: str,
         logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
@@ -442,7 +442,6 @@ class DownloadManager:  # noqa: D205
                     projection=projection,
                 )
 
-
     def _download_single_tailored_dataset(
         self,
         dataset_id,
@@ -484,19 +483,22 @@ class DownloadManager:  # noqa: D205
         if tailor_id == SEVIRI:  # Also do HRV
 
             # check data store, if its there use this instead
-            data_store_filename_remote = dateset_it_to_filename(dataset_id, tailor_id, self.native_file_dir)
+            data_store_filename_remote = dateset_it_to_filename(
+                dataset_id, tailor_id, self.native_file_dir
+            )
             data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
 
             fs = fsspec.open(data_store_filename_remote).fs
             if fs.exists(data_store_filename_remote):
 
                 # copy to 'data_dir'
-                self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
+                self.logger.debug(
+                    f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
+                )
                 fs.get(data_store_filename_remote, data_store_filename_local)
 
             else:
-                self.logger.debug(f'{data_store_filename_remote} does not exist')
-
+                self.logger.debug(f"{data_store_filename_remote} does not exist")
 
                 credentials = (self.user_key, self.user_secret)
                 token = eumdac.AccessToken(credentials)
@@ -512,7 +514,7 @@ class DownloadManager:  # noqa: D205
 
                 # save to native file dir
                 # save to data store
-                self.logger.debug(f'Copying file from {fdst} to {data_store_filename_remote}')
+                self.logger.debug(f"Copying file from {fdst} to {data_store_filename_remote}")
                 fs = fsspec.open(fdst).fs
                 fs.get(fdst, data_store_filename_remote)
 
@@ -557,18 +559,22 @@ class DownloadManager:  # noqa: D205
         """
 
         # check data store, if its there use this instead
-        data_store_filename_remote = dateset_it_to_filename(dataset_id, tailor_id, self.native_file_dir)
+        data_store_filename_remote = dateset_it_to_filename(
+            dataset_id, tailor_id, self.native_file_dir
+        )
         data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
 
         fs = fsspec.open(data_store_filename_remote).fs
         if fs.exists(data_store_filename_remote):
 
             # copy to 'data_dir'
-            self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
+            self.logger.debug(
+                f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
+            )
             fs.get(data_store_filename_remote, data_store_filename_local)
 
         else:
-            self.logger.debug(f'{data_store_filename_remote} does not exist, so will download it')
+            self.logger.debug(f"{data_store_filename_remote} does not exist, so will download it")
 
             chain = eumdac.tailor_models.Chain(
                 product=tailor_id,
@@ -600,21 +606,24 @@ class DownloadManager:  # noqa: D205
             (out,) = fnmatch.filter(customisation.outputs, "*")
             jobID = customisation._id
             logger.info(f"Downloading outputs from Data Tailor job {jobID}")
+
+            self.data_dir = "."
             with customisation.stream_output(
                 out,
             ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
                 filename = os.path.join(self.data_dir, stream.name)
                 shutil.copyfileobj(stream, fdst)
-                logger.debug(f'Saved file to {filename}')
-            try:
-                logger.info(f"Deleting job {jobID} from Data Tailor storage")
-                customisation.delete()
+                logger.debug(f"Saved file to {filename}")
 
                 # save to native file dir
                 # save to data store
-                self.logger.debug(f'Copying file from {filename} to {data_store_filename_remote}')
+                self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
                 fs = fsspec.open(filename).fs
                 fs.get(fdst, data_store_filename_remote)
+
+            try:
+                logger.info(f"Deleting job {jobID} from Data Tailor storage")
+                customisation.delete()
 
             except Exception as e:
                 logger.info(f"Failed deleting customization {jobID}")
