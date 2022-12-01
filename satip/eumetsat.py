@@ -23,8 +23,8 @@ from io import BytesIO
 from urllib.error import HTTPError
 
 import eumdac
-import requests
 import fsspec
+import requests
 
 from satip import utils
 from satip.data_store import dateset_it_to_filename
