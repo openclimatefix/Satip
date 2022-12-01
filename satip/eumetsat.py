@@ -228,7 +228,7 @@ class DownloadManager:  # noqa: D205
         user_key: str,
         user_secret: str,
         data_dir: str,
-        native_file_dir: str,
+        native_file_dir: str = '.',
         logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
