@@ -482,42 +482,17 @@ class DownloadManager:  # noqa: D205
 
         if tailor_id == SEVIRI:  # Also do HRV
 
-            # check data store, if its there use this instead
-            data_store_filename_remote = dateset_it_to_filename(
-                dataset_id, tailor_id, self.native_file_dir
+            credentials = (self.user_key, self.user_secret)
+            token = eumdac.AccessToken(credentials)
+            datastore = eumdac.DataStore(token)
+            product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
+            fdst = self.create_and_download_datatailor_data(
+                dataset_id=product_id,
+                tailor_id=SEVIRI_HRV,
+                roi=roi,
+                file_format=file_format,
+                projection=projection,
             )
-            data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
-
-            fs = fsspec.open(data_store_filename_remote).fs
-            logger.debug(f"Looking if {data_store_filename_remote} exists")
-            if fs.exists(data_store_filename_remote):
-
-                # copy to 'data_dir'
-                self.logger.debug(
-                    f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
-                )
-                fs.get(data_store_filename_remote, data_store_filename_local)
-
-            else:
-                self.logger.debug(f"{data_store_filename_remote} does not exist")
-
-                credentials = (self.user_key, self.user_secret)
-                token = eumdac.AccessToken(credentials)
-                datastore = eumdac.DataStore(token)
-                product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-                fdst = self.create_and_download_datatailor_data(
-                    dataset_id=product_id,
-                    tailor_id=SEVIRI_HRV,
-                    roi=roi,
-                    file_format=file_format,
-                    projection=projection,
-                )
-
-                # save to native file dir
-                # save to data store
-                self.logger.debug(f"Copying file from {fdst} to {data_store_filename_remote}")
-                fs = fsspec.open(fdst).fs
-                fs.get(fdst, data_store_filename_remote)
 
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
