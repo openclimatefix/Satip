@@ -350,7 +350,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2 ** 10) - 1
+    upper_bound = (2**10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -1022,7 +1022,7 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
     hrv_filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
 
-    logger.debug(f'Checking {hrv_filename} and or {filename} exists')
+    logger.debug(f"Checking {hrv_filename} and or {filename} exists")
 
     if fsspec.open(hrv_filename).fs.exists(hrv_filename) and fsspec.open(filename).fs.exists(
         filename
