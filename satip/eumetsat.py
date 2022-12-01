@@ -489,7 +489,7 @@ class DownloadManager:  # noqa: D205
             data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
 
             fs = fsspec.open(data_store_filename_remote).fs
-            logger.debug(f'Looking if {data_store_filename_remote} exists')
+            logger.debug(f"Looking if {data_store_filename_remote} exists")
             if fs.exists(data_store_filename_remote):
 
                 # copy to 'data_dir'
