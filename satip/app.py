@@ -14,6 +14,7 @@ from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 from satip.eumetsat import DownloadManager
 from satip.utils import (
+    check_both_final_files_exists,
     collate_files_into_latest,
     filter_dataset_ids_on_current_files,
     move_older_files_to_different_location,
@@ -155,7 +156,11 @@ def run(
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
-        datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
+
+        # if both final files don't exists, then we should make sure we run the whole process
+        if check_both_final_files_exists(save_dir=save_dir, using_backup=using_backup):
+            logger.debug("filtering ....")
+            datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
 
         if len(datasets) == 0:

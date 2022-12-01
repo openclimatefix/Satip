@@ -449,7 +449,7 @@ class DownloadManager:  # noqa: D205
         roi: str = None,
         file_format: str = "hrit",
         projection: str = None,
-    ) -> str:
+    ):
         """
         Download a single tailored dataset
 
@@ -486,7 +486,7 @@ class DownloadManager:  # noqa: D205
             token = eumdac.AccessToken(credentials)
             datastore = eumdac.DataStore(token)
             product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-            fdst = self.create_and_download_datatailor_data(
+            self.create_and_download_datatailor_data(
                 dataset_id=product_id,
                 tailor_id=SEVIRI_HRV,
                 roi=roi,
@@ -498,15 +498,13 @@ class DownloadManager:  # noqa: D205
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
         product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-        fdst = self.create_and_download_datatailor_data(
+        self.create_and_download_datatailor_data(
             dataset_id=product_id,
             tailor_id=tailor_id,
             roi=roi,
             file_format=file_format,
             projection=projection,
         )
-
-        return fdst
 
     def cleanup_datatailor(self):
         """Remove all Data Tailor runs"""
@@ -583,7 +581,6 @@ class DownloadManager:  # noqa: D205
             jobID = customisation._id
             logger.info(f"Downloading outputs from Data Tailor job {jobID}")
 
-            self.data_dir = "."
             with customisation.stream_output(
                 out,
             ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
@@ -604,8 +601,6 @@ class DownloadManager:  # noqa: D205
             except Exception as e:
                 logger.info(f"Failed deleting customization {jobID}")
                 logger.warning(e)
-
-            return filename
 
 
 def get_filesize_megabytes(filename):

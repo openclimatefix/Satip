@@ -1017,6 +1017,23 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
 
+def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
+    """Check that both final finles exists"""
+    hrv_filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
+    filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
+
+    logger.debug(f"Checking {hrv_filename} and or {filename} exists")
+
+    if fsspec.open(hrv_filename).fs.exists(hrv_filename) and fsspec.open(filename).fs.exists(
+        filename
+    ):
+        logger.debug(f"Both {hrv_filename} and {filename} exists")
+        return True
+    else:
+        logger.debug(f"Either {hrv_filename} or {filename} dont exists")
+        return False
+
+
 def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     """
     Convert individual files into single latest file for HRV and non-HRV
@@ -1033,6 +1050,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
+    # hrv files
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     dataset = (
         xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr")
@@ -1043,6 +1061,8 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
     )
+
+    # non hrv files
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     o_dataset = (
         xr.open_mfdataset(nonhrv_files, concat_dim="time", combine="nested", engine="zarr")
@@ -1050,6 +1070,8 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
+
+    # rename
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
     filesystem.mv(
         f"{save_dir}/latest/hrv_tmp.zarr.zip",
