@@ -120,7 +120,10 @@ def run(
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
-            user_key=api_key, user_secret=api_secret, data_dir=tmpdir, native_file_dir=save_dir_native
+            user_key=api_key,
+            user_secret=api_secret,
+            data_dir=tmpdir,
+            native_file_dir=save_dir_native,
         )
         if cleanup:
             logger.info("Running Data Tailor Cleanup")
