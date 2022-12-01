@@ -489,6 +489,7 @@ class DownloadManager:  # noqa: D205
             data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
 
             fs = fsspec.open(data_store_filename_remote).fs
+            logger.debug(f'Looking if {data_store_filename_remote} exists')
             if fs.exists(data_store_filename_remote):
 
                 # copy to 'data_dir'
@@ -618,8 +619,9 @@ class DownloadManager:  # noqa: D205
                 # save to native file dir
                 # save to data store
                 self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
-                fs = fsspec.open(filename).fs
-                fs.get(fdst, data_store_filename_remote)
+                fs = fsspec.open(data_store_filename_remote).fs
+                fs.put(filename, data_store_filename_remote)
+                self.logger.debug(f"Copied file from {filename} to {data_store_filename_remote}")
 
             try:
                 logger.info(f"Deleting job {jobID} from Data Tailor storage")
