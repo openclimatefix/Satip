@@ -20,7 +20,7 @@ from satip.utils import (
     save_native_to_zarr,
 )
 
-logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
+logging.basicConfig(format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
 logger = logging.getLogger(__name__)
 logging.getLogger(__name__).setLevel(logging.INFO)
@@ -45,6 +45,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     "--save-dir",
     default="./",
     envvar="SAVE_DIR",
+    help="Where to save the zarr files",
+    type=click.STRING,
+)
+@click.option(
+    "--save-dir-native",
+    default="./raw",
+    envvar="SAVE_DIR_NATIVE",
     help="Where to save the zarr files",
     type=click.STRING,
 )
@@ -87,6 +94,7 @@ def run(
     api_key,
     api_secret,
     save_dir,
+    save_dir_native,
     history,
     db_url: Optional[str] = None,
     use_rescaler: bool = False,
@@ -99,6 +107,7 @@ def run(
         api_key: API Key for EUMETSAT
         api_secret: Secret for EUMETSAT
         save_dir: Save directory
+        save_dir_native: where the native files are saved
         history: History time
         db_url: URL of database
         use_rescaler: Rescale data to between 0 and 1 or not
@@ -111,7 +120,10 @@ def run(
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
-            user_key=api_key, user_secret=api_secret, data_dir=tmpdir
+            user_key=api_key,
+            user_secret=api_secret,
+            data_dir=tmpdir,
+            native_file_dir=save_dir_native,
         )
         if cleanup:
             logger.info("Running Data Tailor Cleanup")

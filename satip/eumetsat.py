@@ -23,9 +23,11 @@ from io import BytesIO
 from urllib.error import HTTPError
 
 import eumdac
+import fsspec
 import requests
 
 from satip import utils
+from satip.data_store import dateset_it_to_filename
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +228,7 @@ class DownloadManager:  # noqa: D205
         user_key: str,
         user_secret: str,
         data_dir: str,
+        native_file_dir: str = ".",
         logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
@@ -240,6 +243,7 @@ class DownloadManager:  # noqa: D205
             user_key: EUMETSAT API key
             user_secret: EUMETSAT API secret
             data_dir: Path to the directory where the satellite data will be saved
+            native_file_dir: this is where the native files are saved
             log_fp: Filepath where the logs will be stored
 
         Returns:
@@ -259,6 +263,7 @@ class DownloadManager:  # noqa: D205
 
         # Configuring the data directory
         self.data_dir = data_dir
+        self.native_file_dir = native_file_dir
 
         if not os.path.exists(self.data_dir):
             try:
@@ -444,7 +449,7 @@ class DownloadManager:  # noqa: D205
         roi: str = None,
         file_format: str = "hrit",
         projection: str = None,
-    ) -> None:
+    ) -> str:
         """
         Download a single tailored dataset
 
@@ -454,6 +459,8 @@ class DownloadManager:  # noqa: D205
             roi: Region of Interest for the area, if None, then no cropping is done
             file_format: File format of the output, defaults to 'geotiff'
             projection: Projection for the output, defaults to native projection of 'geographic'
+
+        return string where the dataset has been saved
         """
 
         SEVIRI = "HRSEVIRI"
@@ -474,28 +481,32 @@ class DownloadManager:  # noqa: D205
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
         if tailor_id == SEVIRI:  # Also do HRV
+
             credentials = (self.user_key, self.user_secret)
             token = eumdac.AccessToken(credentials)
             datastore = eumdac.DataStore(token)
             product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-            self.create_and_download_datatailor_data(
+            fdst = self.create_and_download_datatailor_data(
                 dataset_id=product_id,
                 tailor_id=SEVIRI_HRV,
                 roi=roi,
                 file_format=file_format,
                 projection=projection,
             )
+
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
         product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-        self.create_and_download_datatailor_data(
+        fdst = self.create_and_download_datatailor_data(
             dataset_id=product_id,
             tailor_id=tailor_id,
             roi=roi,
             file_format=file_format,
             projection=projection,
         )
+
+        return fdst
 
     def cleanup_datatailor(self):
         """Remove all Data Tailor runs"""
@@ -522,47 +533,79 @@ class DownloadManager:  # noqa: D205
         """
         Create and download a single data tailor call
         """
-        chain = eumdac.tailor_models.Chain(
-            product=tailor_id,
-            format=file_format,
-            projection=projection,
-            roi=roi,
-            compression=compression,
+
+        # check data store, if its there use this instead
+        data_store_filename_remote = dateset_it_to_filename(
+            dataset_id, tailor_id, self.native_file_dir
         )
-        datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
-        customisation = datatailor.new_customisation(dataset_id, chain=chain)
-        sleep_time = 5  # seconds
-        logger.info(customisation)
-        # Customisation Loop
-        status = datatailor.get_customisation(customisation._id).status
-        while status != "DONE":
+        data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
+
+        fs = fsspec.open(data_store_filename_remote).fs
+        if fs.exists(data_store_filename_remote):
+
+            # copy to 'data_dir'
+            self.logger.debug(
+                f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
+            )
+            fs.get(data_store_filename_remote, data_store_filename_local)
+
+        else:
+            self.logger.debug(f"{data_store_filename_remote} does not exist, so will download it")
+
+            chain = eumdac.tailor_models.Chain(
+                product=tailor_id,
+                format=file_format,
+                projection=projection,
+                roi=roi,
+                compression=compression,
+            )
+            datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
+            customisation = datatailor.new_customisation(dataset_id, chain=chain)
+            sleep_time = 5  # seconds
+            logger.info(customisation)
+            # Customisation Loop
             status = datatailor.get_customisation(customisation._id).status
-            # Get the status of the ongoing customisation
-            logger.info(f"ID: {customisation._id} Status: {status}")
+            while status != "DONE":
+                status = datatailor.get_customisation(customisation._id).status
+                # Get the status of the ongoing customisation
+                logger.info(f"ID: {customisation._id} Status: {status}")
 
-            if "DONE" == status:
-                logger.info("SUCCESS")
-                break
-            elif "ERROR" in status or "KILLED" in status:
-                logger.info("UNSUCCESS, exiting")
-                break
-            time.sleep(sleep_time)
+                if "DONE" == status:
+                    logger.info("SUCCESS")
+                    break
+                elif "ERROR" in status or "KILLED" in status:
+                    logger.info("UNSUCCESS, exiting")
+                    break
+                time.sleep(sleep_time)
 
-        customisation = datatailor.get_customisation(customisation._id)
-        (out,) = fnmatch.filter(customisation.outputs, "*")
-        jobID = customisation._id
-        logger.info(f"Downloading outputs from Data Tailor job {jobID}")
-        with customisation.stream_output(
-            out,
-        ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
-            shutil.copyfileobj(stream, fdst)
-            logger.debug(f'Saved file to {fdst}')
-        try:
-            logger.info(f"Deleting job {jobID} from Data Tailor storage")
-            customisation.delete()
-        except:
-            logger.info(f"Failed deleting customization {jobID}")
-        return fdst
+            customisation = datatailor.get_customisation(customisation._id)
+            (out,) = fnmatch.filter(customisation.outputs, "*")
+            jobID = customisation._id
+            logger.info(f"Downloading outputs from Data Tailor job {jobID}")
+
+            self.data_dir = "."
+            with customisation.stream_output(
+                out,
+            ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
+                filename = os.path.join(self.data_dir, stream.name)
+                shutil.copyfileobj(stream, fdst)
+                logger.debug(f"Saved file to {filename}")
+
+                # save to native file data store
+                self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
+                fs = fsspec.open(data_store_filename_remote).fs
+                fs.put(filename, data_store_filename_remote)
+                self.logger.debug(f"Copied file from {filename} to {data_store_filename_remote}")
+
+            try:
+                logger.info(f"Deleting job {jobID} from Data Tailor storage")
+                customisation.delete()
+
+            except Exception as e:
+                logger.info(f"Failed deleting customization {jobID}")
+                logger.warning(e)
+
+            return filename
 
 
 def get_filesize_megabytes(filename):
