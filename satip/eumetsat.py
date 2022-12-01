@@ -591,8 +591,7 @@ class DownloadManager:  # noqa: D205
                 shutil.copyfileobj(stream, fdst)
                 logger.debug(f"Saved file to {filename}")
 
-                # save to native file dir
-                # save to data store
+                # save to native file data store
                 self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
                 fs = fsspec.open(data_store_filename_remote).fs
                 fs.put(filename, data_store_filename_remote)
