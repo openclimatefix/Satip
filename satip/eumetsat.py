@@ -422,47 +422,25 @@ class DownloadManager:  # noqa: D205
             return
 
         for dataset_id in dataset_ids:
-
-            # check data store, if its there use this instead
-            data_store_filename_remote = dateset_it_to_filename(dataset_id, self.native_file_dir)
-            data_store_filename_local = dateset_it_to_filename(dataset_id, self.data_dir)
-
-            fs = fsspec.open(data_store_filename_remote).fs
-            if fs.exists(data_store_filename_remote):
-
-                # copy to 'data_dir'
-                self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
-                fs.get(data_store_filename_remote, data_store_filename_local)
-
-            else:
-                self.logger.debug(f'{data_store_filename_remote} does not exist')
-
-                # Download the raw data
-                try:
-                    fdst = self._download_single_tailored_dataset(
-                        dataset_id,
-                        product_id=product_id,
-                        roi=roi,
-                        file_format=file_format,
-                        projection=projection,
-                    )
-                except Exception:
-                    self.logger.info("The EUMETSAT access token has been refreshed")
-                    self.request_access_token()
-                    fdst = self._download_single_tailored_dataset(
-                        dataset_id,
-                        product_id=product_id,
-                        roi=roi,
-                        file_format=file_format,
-                        projection=projection,
-                    )
-
-                # save to data store
-                self.logger.debug(f'Copying file from {fdst} to {data_store_filename_remote}')
-                fs = fsspec.open(fdst).fs
-                fs.get(fdst, data_store_filename_remote)
-
-
+            # Download the raw data
+            try:
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
+            except Exception:
+                self.logger.info("The EUMETSAT access token has been refreshed")
+                self.request_access_token()
+                self._download_single_tailored_dataset(
+                    dataset_id,
+                    product_id=product_id,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
 
 
     def _download_single_tailored_dataset(
@@ -504,17 +482,40 @@ class DownloadManager:  # noqa: D205
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
         if tailor_id == SEVIRI:  # Also do HRV
-            credentials = (self.user_key, self.user_secret)
-            token = eumdac.AccessToken(credentials)
-            datastore = eumdac.DataStore(token)
-            product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-            fdst = self.create_and_download_datatailor_data(
-                dataset_id=product_id,
-                tailor_id=SEVIRI_HRV,
-                roi=roi,
-                file_format=file_format,
-                projection=projection,
-            )
+
+            # check data store, if its there use this instead
+            data_store_filename_remote = dateset_it_to_filename(dataset_id, tailor_id, self.native_file_dir)
+            data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
+
+            fs = fsspec.open(data_store_filename_remote).fs
+            if fs.exists(data_store_filename_remote):
+
+                # copy to 'data_dir'
+                self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
+                fs.get(data_store_filename_remote, data_store_filename_local)
+
+            else:
+                self.logger.debug(f'{data_store_filename_remote} does not exist')
+
+
+                credentials = (self.user_key, self.user_secret)
+                token = eumdac.AccessToken(credentials)
+                datastore = eumdac.DataStore(token)
+                product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
+                fdst = self.create_and_download_datatailor_data(
+                    dataset_id=product_id,
+                    tailor_id=SEVIRI_HRV,
+                    roi=roi,
+                    file_format=file_format,
+                    projection=projection,
+                )
+
+                # save to native file dir
+                # save to data store
+                self.logger.debug(f'Copying file from {fdst} to {data_store_filename_remote}')
+                fs = fsspec.open(fdst).fs
+                fs.get(fdst, data_store_filename_remote)
+
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
@@ -554,47 +555,72 @@ class DownloadManager:  # noqa: D205
         """
         Create and download a single data tailor call
         """
-        chain = eumdac.tailor_models.Chain(
-            product=tailor_id,
-            format=file_format,
-            projection=projection,
-            roi=roi,
-            compression=compression,
-        )
-        datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
-        customisation = datatailor.new_customisation(dataset_id, chain=chain)
-        sleep_time = 5  # seconds
-        logger.info(customisation)
-        # Customisation Loop
-        status = datatailor.get_customisation(customisation._id).status
-        while status != "DONE":
+
+        # check data store, if its there use this instead
+        data_store_filename_remote = dateset_it_to_filename(dataset_id, tailor_id, self.native_file_dir)
+        data_store_filename_local = dateset_it_to_filename(dataset_id, tailor_id, self.data_dir)
+
+        fs = fsspec.open(data_store_filename_remote).fs
+        if fs.exists(data_store_filename_remote):
+
+            # copy to 'data_dir'
+            self.logger.debug(f'Copying file from {data_store_filename_remote} to {data_store_filename_local}')
+            fs.get(data_store_filename_remote, data_store_filename_local)
+
+        else:
+            self.logger.debug(f'{data_store_filename_remote} does not exist, so will download it')
+
+            chain = eumdac.tailor_models.Chain(
+                product=tailor_id,
+                format=file_format,
+                projection=projection,
+                roi=roi,
+                compression=compression,
+            )
+            datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
+            customisation = datatailor.new_customisation(dataset_id, chain=chain)
+            sleep_time = 5  # seconds
+            logger.info(customisation)
+            # Customisation Loop
             status = datatailor.get_customisation(customisation._id).status
-            # Get the status of the ongoing customisation
-            logger.info(f"ID: {customisation._id} Status: {status}")
+            while status != "DONE":
+                status = datatailor.get_customisation(customisation._id).status
+                # Get the status of the ongoing customisation
+                logger.info(f"ID: {customisation._id} Status: {status}")
 
-            if "DONE" == status:
-                logger.info("SUCCESS")
-                break
-            elif "ERROR" in status or "KILLED" in status:
-                logger.info("UNSUCCESS, exiting")
-                break
-            time.sleep(sleep_time)
+                if "DONE" == status:
+                    logger.info("SUCCESS")
+                    break
+                elif "ERROR" in status or "KILLED" in status:
+                    logger.info("UNSUCCESS, exiting")
+                    break
+                time.sleep(sleep_time)
 
-        customisation = datatailor.get_customisation(customisation._id)
-        (out,) = fnmatch.filter(customisation.outputs, "*")
-        jobID = customisation._id
-        logger.info(f"Downloading outputs from Data Tailor job {jobID}")
-        with customisation.stream_output(
-            out,
-        ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
-            shutil.copyfileobj(stream, fdst)
-            logger.debug(f'Saved file to {fdst}')
-        try:
-            logger.info(f"Deleting job {jobID} from Data Tailor storage")
-            customisation.delete()
-        except:
-            logger.info(f"Failed deleting customization {jobID}")
-        return fdst
+            customisation = datatailor.get_customisation(customisation._id)
+            (out,) = fnmatch.filter(customisation.outputs, "*")
+            jobID = customisation._id
+            logger.info(f"Downloading outputs from Data Tailor job {jobID}")
+            with customisation.stream_output(
+                out,
+            ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
+                filename = os.path.join(self.data_dir, stream.name)
+                shutil.copyfileobj(stream, fdst)
+                logger.debug(f'Saved file to {filename}')
+            try:
+                logger.info(f"Deleting job {jobID} from Data Tailor storage")
+                customisation.delete()
+
+                # save to native file dir
+                # save to data store
+                self.logger.debug(f'Copying file from {filename} to {data_store_filename_remote}')
+                fs = fsspec.open(filename).fs
+                fs.get(fdst, data_store_filename_remote)
+
+            except Exception as e:
+                logger.info(f"Failed deleting customization {jobID}")
+                logger.warning(e)
+
+            return filename
 
 
 def get_filesize_megabytes(filename):

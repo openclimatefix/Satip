@@ -20,7 +20,7 @@ from satip.utils import (
     save_native_to_zarr,
 )
 
-logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s:%(message)s")
+logging.basicConfig(format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
 logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
 logger = logging.getLogger(__name__)
 logging.getLogger(__name__).setLevel(logging.INFO)
