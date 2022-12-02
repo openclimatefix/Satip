@@ -652,9 +652,9 @@ def save_native_to_zarr(
 
         logger.debug(f"Processing {f}")
         if "EPCT" in f:
-            logger.debug("Processing HRIT file")
+            logger.debug("fProcessing HRIT file {f}")
             if "HRV" in f:
-                logger.debug("Processing HRV")
+                logger.debug(f"Processing HRV {f}")
                 logger.info(
                     f"Start HRV process Memory in use: "
                     f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -665,7 +665,7 @@ def save_native_to_zarr(
                     f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
             else:
-                logger.debug("Processing non-HRV")
+                logger.debug(f"Processing non-HRV {f}")
                 logger.info(
                     f"STart non-HRV process Memory in use: "
                     f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -677,7 +677,7 @@ def save_native_to_zarr(
                 )
         else:
             if "HRV" in bands:
-                logger.debug("Processing HRV")
+                logger.debug(f"Processing HRV {f}")
                 logger.info(
                     f"Start HRV process Memory in use:"
                     f" {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -688,7 +688,7 @@ def save_native_to_zarr(
                     f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
                 )
 
-            logger.debug("Processing non-HRV")
+            logger.debug(f"Processing non-HRV {f}")
             logger.info(
                 f"STart non-HRV process Memory in use: "
                 f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
