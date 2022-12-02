@@ -859,7 +859,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         )
 
         # make sure variable
-        dataset.assign_coords({'variable': dataset.coords['variable'].astype(str)})
+        dataset = dataset.assign_coords({'variable': dataset.coords['variable'].astype(str)})
 
 
         with zarr.ZipStore(path) as store:
