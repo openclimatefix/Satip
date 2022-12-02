@@ -218,11 +218,11 @@ def run(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
 
-    # 4. update table to show when this data has been pulled
-    if db_url is not None:
-        connection = DatabaseConnection(url=db_url, base=Base_Forecast)
-        with connection.get_session() as session:
-            update_latest_input_data_last_updated(session=session, component="satellite")
+        # 4. update table to show when this data has been pulled
+        if db_url is not None:
+            connection = DatabaseConnection(url=db_url, base=Base_Forecast)
+            with connection.get_session() as session:
+                update_latest_input_data_last_updated(session=session, component="satellite")
 
     logger.info("Finished Running application.")
 
