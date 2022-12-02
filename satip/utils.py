@@ -858,9 +858,8 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
 
-        # make sure variable
-        dataset = dataset.assign_coords({'variable': dataset.coords['variable'].astype(str)})
-
+        # make sure variable is string
+        dataset = dataset.assign_coords({"variable": dataset.coords["variable"].astype(str)})
 
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w", encoding=encoding)
@@ -1055,7 +1054,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    logger.debug('Collating HRV files')
+    logger.debug("Collating HRV files")
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     dataset = (
         xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr")
@@ -1064,8 +1063,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     )
     save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
 
-
-    logger.debug('Collating non-HRV files')
+    logger.debug("Collating non-HRV files")
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
     )
@@ -1078,7 +1076,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
 
     # rename
-    logger.debug('Renaming')
+    logger.debug("Renaming")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
     filesystem.mv(
         f"{save_dir}/latest/hrv_tmp.zarr.zip",

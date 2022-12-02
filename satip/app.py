@@ -191,7 +191,10 @@ def run(
             logger.info(native_files)
             # Save to S3
             save_native_to_zarr(
-                native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup
+                native_files,
+                save_dir=save_dir,
+                use_rescaler=use_rescaler,
+                using_backup=using_backup,
             )
             logger.info(
                 f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
