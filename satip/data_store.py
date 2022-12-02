@@ -13,10 +13,9 @@ def dateset_it_to_filename(dataset_id: str, tailor_id: str, dir) -> str:
     :return: filename
     """
 
-    filename = f"{dir}/{dataset_id}_{tailor_id}"
-
-
     if 'HRSEVIRI' not in tailor_id:
-        filename = f"{filename}.nat"
+        filename = f"{dir}/{dataset_id}_{tailor_id}.nat"
+    else:
+        filename = f"{dir}/{dataset_id}_EPCT_{tailor_id}"
 
     return filename
