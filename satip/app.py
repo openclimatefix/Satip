@@ -158,52 +158,57 @@ def run(
         )
 
         # if both final files don't exists, then we should make sure we run the whole process
-        if check_both_final_files_exists(save_dir=save_dir, using_backup=using_backup):
-            logger.debug("filtering ....")
-            datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
+        logger.debug("filtering ....")
+        datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
         logger.info(f"Files to download after filtering: {len(datasets)}")
 
         if len(datasets) == 0:
             logger.info("No files to download, exiting")
-            return
-        if using_backup:
-
-            download_manager.download_tailored_datasets(
-                datasets,
-                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
-            )
+            updated_data = False
         else:
-            download_manager.download_datasets(
-                datasets,
-                product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+            updated_data = True
+            if using_backup:
+
+                download_manager.download_tailored_datasets(
+                    datasets,
+                    product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                )
+            else:
+                download_manager.download_datasets(
+                    datasets,
+                    product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+                )
+            logger.info(
+                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
 
-        # 2. Load nat files to one Xarray Dataset
-        native_files = (
-            list(glob.glob(os.path.join(tmpdir, "*.nat")))
-            if not using_backup
-            else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
-        )
-        logger.info(native_files)
-        # Save to S3
-        save_native_to_zarr(
-            native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup
-        )
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
+            # 2. Load nat files to one Xarray Dataset
+            native_files = (
+                list(glob.glob(os.path.join(tmpdir, "*.nat")))
+                if not using_backup
+                else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
+            )
+            logger.info(native_files)
+            # Save to S3
+            save_native_to_zarr(
+                native_files, save_dir=save_dir, use_rescaler=use_rescaler, using_backup=using_backup
+            )
+            logger.info(
+                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+            )
 
-        # Move around files into and out of latest
-        move_older_files_to_different_location(
-            save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
-        )
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
+            # Move around files into and out of latest
+            move_older_files_to_different_location(
+                save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
+            )
+            logger.info(
+                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+            )
 
+    if not check_both_final_files_exists(save_dir=save_dir, using_backup=using_backup):
+        updated_data = True
+
+    if updated_data:
         # Collate files into single NetCDF file
         collate_files_into_latest(save_dir=save_dir, using_backup=using_backup)
         logger.info(
