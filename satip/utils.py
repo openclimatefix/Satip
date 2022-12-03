@@ -1081,6 +1081,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         f"{save_dir}/latest/hrv_tmp.zarr.zip",
         filename,
     )
+    new_times = xr.open_dataset(f'zip::{filename}',engine="zarr",cache=False).time
+    logger.debug(f'{new_times}')
+
+
 
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
     logger.debug(f"Collating non-HRV files {filename}")
@@ -1107,6 +1111,9 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         f"{save_dir}/latest/tmp.zarr.zip",
         filename,
     )
+
+    new_times = xr.open_dataset(f'zip::{filename}',engine="zarr",cache=False).time
+    logger.debug(f'{new_times}')
 
 
 # Cell
