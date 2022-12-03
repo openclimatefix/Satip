@@ -1065,12 +1065,13 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     logger.debug(hrv_files)
     dataset = (
-        xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr")
+        xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr", consolidated=True)
         .sortby("time")
         .drop_duplicates("time")
     )
     logger.debug(dataset.time.values)
     save_to_zarr_to_s3(dataset, filename_temp)
+
 
     # rename
     logger.debug("Renaming")
@@ -1092,7 +1093,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     logger.debug(nonhrv_files)
     o_dataset = (
-        xr.open_mfdataset(nonhrv_files, concat_dim="time", combine="nested", engine="zarr")
+        xr.open_mfdataset(nonhrv_files, concat_dim="time", combine="nested", engine="zarr", consolidated=True)
         .sortby("time")
         .drop_duplicates("time")
     )
