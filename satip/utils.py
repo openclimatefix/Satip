@@ -988,7 +988,11 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if file_time > history_time:
             logger.debug("Moving file into latest folder")
             # Move HRV and non-HRV to new place
-            filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
+            filename = f"{save_dir}/latest/{date.split('/')[-1]}"
+            if filesystem.exists(filename):
+                logger.debug(f'File already in latest folder, so not moving {filename}')
+            else:
+                filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
             logger.debug("Removing file over 2 days over")
