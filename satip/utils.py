@@ -652,7 +652,7 @@ def save_native_to_zarr(
 
         logger.debug(f"Processing {f}")
         if "EPCT" in f:
-            logger.debug("fProcessing HRIT file {f}")
+            logger.debug(f"Processing HRIT file {f}")
             if "HRV" in f:
                 logger.debug(f"Processing HRV {f}")
                 logger.info(
@@ -986,7 +986,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time > history_time:
-            logger.debug("Moving file out of latest folder")
+            logger.debug("Moving file into latest folder")
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
