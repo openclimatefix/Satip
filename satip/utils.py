@@ -1074,6 +1074,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     # rename
     logger.debug("Renaming")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
+    filesystem.rm(filename)
     filesystem.mv(
         f"{save_dir}/latest/hrv_tmp.zarr.zip",
         filename,
@@ -1096,6 +1097,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
     logger.debug("Renaming")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
+    filesystem.rm(filename)
     filesystem.mv(
         f"{save_dir}/latest/tmp.zarr.zip",
         filename,
