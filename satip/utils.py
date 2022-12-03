@@ -22,6 +22,7 @@ from typing import Any, Tuple
 from zipfile import ZipFile
 
 import fsspec
+import secrets
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -350,7 +351,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2**10) - 1
+    upper_bound = (2 ** 10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -990,7 +991,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             # Move HRV and non-HRV to new place
             filename = f"{save_dir}/latest/{date.split('/')[-1]}"
             if filesystem.exists(filename):
-                logger.debug(f'File already in latest folder, so not moving {filename}')
+                logger.debug(f"File already in latest folder, so not moving {filename}")
             else:
                 filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
@@ -1059,6 +1060,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         return
     # Add S3 to beginning of each URL
     filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
+    filename_temp = f"{save_dir}/latest/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     logger.debug(f"Collating HRV files {filename}")
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     logger.debug(hrv_files)
@@ -1068,25 +1070,21 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     logger.debug(dataset.time.values)
-    save_to_zarr_to_s3(dataset, f"{save_dir}/latest/hrv_tmp.zarr.zip")
+    save_to_zarr_to_s3(dataset, filename_temp)
 
     # rename
     logger.debug("Renaming")
-    filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
+    filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
     except:
-        logger.debug(f'Tried to remove {filename} but couldnt')
-    filesystem.mv(
-        f"{save_dir}/latest/hrv_tmp.zarr.zip",
-        filename,
-    )
-    new_times = xr.open_dataset(f'zip::{filename}',engine="zarr",cache=False).time
-    logger.debug(f'{new_times}')
-
-
+        logger.debug(f"Tried to remove {filename} but couldnt")
+    filesystem.mv(filename_temp,filename)
+    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
+    logger.debug(f"{new_times}")
 
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
+    filename_temp = f"{save_dir}/latest/tmp_{secrets.token_hex(6)}.zarr.zip"
     logger.debug(f"Collating non-HRV files {filename}")
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
@@ -1099,21 +1097,18 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     logger.debug(o_dataset.time.values)
-    save_to_zarr_to_s3(o_dataset, f"{save_dir}/latest/tmp.zarr.zip")
+    save_to_zarr_to_s3(o_dataset, filename_temp)
 
     logger.debug("Renaming")
-    filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
+    filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
     except:
-        logger.debug(f'Tried to remove {filename} but couldnt')
-    filesystem.mv(
-        f"{save_dir}/latest/tmp.zarr.zip",
-        filename,
-    )
+        logger.debug(f"Tried to remove {filename} but couldnt")
+    filesystem.mv(filename_temp,filename,)
 
-    new_times = xr.open_dataset(f'zip::{filename}',engine="zarr",cache=False).time
-    logger.debug(f'{new_times}')
+    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
+    logger.debug(f"{new_times}")
 
 
 # Cell
