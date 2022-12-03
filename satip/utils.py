@@ -1058,7 +1058,6 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    logger.debug("Collating HRV files")
     filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     logger.debug(f"Collating HRV files {filename}")
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
@@ -1074,7 +1073,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     # rename
     logger.debug("Renaming")
     filesystem = fsspec.open(f"{save_dir}/latest/hrv_tmp.zarr.zip").fs
-    filesystem.rm(filename)
+    try:
+        filesystem.rm(filename)
+    except:
+        logger.debug(f'Tried to remove {filename} but couldnt')
     filesystem.mv(
         f"{save_dir}/latest/hrv_tmp.zarr.zip",
         filename,
@@ -1097,12 +1099,14 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
     logger.debug("Renaming")
     filesystem = fsspec.open(f"{save_dir}/latest/tmp.zarr.zip").fs
-    filesystem.rm(filename)
+    try:
+        filesystem.rm(filename)
+    except:
+        logger.debug(f'Tried to remove {filename} but couldnt')
     filesystem.mv(
         f"{save_dir}/latest/tmp.zarr.zip",
         filename,
     )
-    logger.info(f"Collating non-HRV into {save_dir}/latest/latest.zarr.zip")
 
 
 # Cell
