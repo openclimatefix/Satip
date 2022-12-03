@@ -862,6 +862,8 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         # make sure variable is string
         dataset = dataset.assign_coords({"variable": dataset.coords["variable"].astype(str)})
 
+        logger.debug(f'{dataset.time}')    
+
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w", encoding=encoding, consolidated=True)
 
