@@ -1065,13 +1065,22 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     logger.debug(hrv_files)
     dataset = (
-        xr.open_mfdataset(hrv_files, concat_dim="time", combine="nested", engine="zarr", consolidated=True)
+        xr.open_mfdataset(
+            hrv_files,
+            concat_dim="time",
+            combine="nested",
+            engine="zarr",
+            consolidated=True,
+            chunks="auto",
+            mode="r",
+        )
         .sortby("time")
         .drop_duplicates("time")
     )
     logger.debug(dataset.time.values)
     save_to_zarr_to_s3(dataset, filename_temp)
-
+    new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
+    logger.debug(f"{filename_temp}  {new_times}")
 
     # rename
     logger.debug("Renaming")
@@ -1080,9 +1089,9 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         filesystem.rm(filename)
     except:
         logger.debug(f"Tried to remove {filename} but couldnt")
-    filesystem.mv(filename_temp,filename)
-    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
-    logger.debug(f"{new_times}")
+    filesystem.mv(filename_temp, filename)
+    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
+    logger.debug(f"{filename} {new_times}")
 
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{save_dir}/latest/tmp_{secrets.token_hex(6)}.zarr.zip"
@@ -1093,12 +1102,22 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     logger.debug(nonhrv_files)
     o_dataset = (
-        xr.open_mfdataset(nonhrv_files, concat_dim="time", combine="nested", engine="zarr", consolidated=True)
+        xr.open_mfdataset(
+            nonhrv_files,
+            concat_dim="time",
+            combine="nested",
+            engine="zarr",
+            consolidated=True,
+            chunks="auto",
+            mode="r",
+        )
         .sortby("time")
         .drop_duplicates("time")
     )
     logger.debug(o_dataset.time.values)
     save_to_zarr_to_s3(o_dataset, filename_temp)
+    new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
+    logger.debug(f"{filename_temp} {new_times}")
 
     logger.debug("Renaming")
     filesystem = fsspec.open(filename_temp).fs
@@ -1106,10 +1125,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         filesystem.rm(filename)
     except:
         logger.debug(f"Tried to remove {filename} but couldnt")
-    filesystem.mv(filename_temp,filename,)
+    filesystem.mv(filename_temp, filename)
 
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
-    logger.debug(f"{new_times}")
+    logger.debug(f"{filename} {new_times}")
 
 
 # Cell
