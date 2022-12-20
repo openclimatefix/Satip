@@ -350,21 +350,44 @@ class DownloadManager:  # noqa: D205
 
         for dataset_id in dataset_ids:
             logger.info(f"Downloading: {dataset_id}")
-            dataset_link = dataset_id_to_link(
-                product_id, dataset_id, access_token=self.access_token
-            )
-            # Download the raw data
-            try:
-                self.download_single_dataset(dataset_link)
-            except HTTPError:
-                self.logger.info("The EUMETSAT access token has been refreshed")
-                self.request_access_token()
+
+            self.data_dir = './raw'
+
+            # check data store, if its there use this instead
+            data_store_filename_remote = f'{self.native_file_dir}/{dataset_id}.NA'
+            data_store_filename_local = f'{self.data_dir}/{dataset_id}.NA'
+
+            fs = fsspec.open(data_store_filename_remote).fs
+            if fs.exists(data_store_filename_remote):
+                # copy to 'data_dir'
+                self.logger.debug(
+                    f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
+                )
+                fs.get(data_store_filename_remote, data_store_filename_local)
+            else:
                 dataset_link = dataset_id_to_link(
                     product_id, dataset_id, access_token=self.access_token
                 )
-                self.download_single_dataset(dataset_link)
-            except Exception:
-                self.logger.exception(f"Error downloading dataset with id {dataset_id}")
+                # Download the raw data
+                try:
+                    self.download_single_dataset(dataset_link)
+                except HTTPError:
+                    self.logger.info("The EUMETSAT access token has been refreshed")
+                    self.request_access_token()
+                    dataset_link = dataset_id_to_link(
+                        product_id, dataset_id, access_token=self.access_token
+                    )
+                    self.download_single_dataset(dataset_link)
+
+                except Exception:
+                    self.logger.exception(f"Error downloading dataset with id {dataset_id}")
+
+                # save to native file data store
+                self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
+                fs = fsspec.open(data_store_filename_remote).fs
+                fs.put(filename, data_store_filename_remote)
+                self.logger.debug(f"Copied file from {filename} to {data_store_filename_remote}")
+
 
     def download_tailored_date_range(
         self,
@@ -532,6 +555,8 @@ class DownloadManager:  # noqa: D205
         Create and download a single data tailor call
         """
 
+        self.data_dir = './raw'
+
         # check data store, if its there use this instead
         data_store_filename_remote = dateset_it_to_filename(
             dataset_id, tailor_id, self.native_file_dir
@@ -574,6 +599,7 @@ class DownloadManager:  # noqa: D205
                 elif "ERROR" in status or "KILLED" in status:
                     logger.info("UNSUCCESS, exiting")
                     break
+                # TODO should this break if "FAILED"
                 time.sleep(sleep_time)
 
             customisation = datatailor.get_customisation(customisation._id)
