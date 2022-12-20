@@ -4,7 +4,7 @@ numcodecs
 numpy>=1.19.4
 pandas>=1.1.4
 requests
-satpy[seviri_l2_grib]>=0.30.1
+satpy[seviri_l2_grib]==0.37.1
 tqdm
 xarray==2022.3.0
 zarr
