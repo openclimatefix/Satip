@@ -351,11 +351,11 @@ class DownloadManager:  # noqa: D205
         for dataset_id in dataset_ids:
             logger.info(f"Downloading: {dataset_id}")
 
-            self.data_dir = './raw'
+            self.data_dir = "./raw"
 
             # check data store, if its there use this instead
-            data_store_filename_remote = f'{self.native_file_dir}/{dataset_id}.NA'
-            data_store_filename_local = f'{self.data_dir}/{dataset_id}.NA'
+            data_store_filename_remote = f"{self.native_file_dir}/{dataset_id}.NA"
+            data_store_filename_local = f"{self.data_dir}/{dataset_id}.NA"
 
             fs = fsspec.open(data_store_filename_remote).fs
             if fs.exists(data_store_filename_remote):
@@ -388,7 +388,6 @@ class DownloadManager:  # noqa: D205
                 fs = fsspec.open(data_store_filename_remote).fs
                 fs.put(filename, data_store_filename_remote)
                 self.logger.debug(f"Copied file from {filename} to {data_store_filename_remote}")
-
 
     def download_tailored_date_range(
         self,
@@ -556,7 +555,7 @@ class DownloadManager:  # noqa: D205
         Create and download a single data tailor call
         """
 
-        self.data_dir = './raw'
+        self.data_dir = "./raw"
 
         # check data store, if its there use this instead
         data_store_filename_remote = dateset_it_to_filename(

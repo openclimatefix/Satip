@@ -13,6 +13,7 @@ import gc
 import glob
 import logging
 import os
+import secrets
 import shutil
 import subprocess
 import tempfile
@@ -22,7 +23,6 @@ from typing import Any, Tuple
 from zipfile import ZipFile
 
 import fsspec
-import secrets
 import numcodecs
 import numpy as np
 import pandas as pd
@@ -351,7 +351,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2 ** 10) - 1
+    upper_bound = (2**10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -862,7 +862,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         # make sure variable is string
         dataset = dataset.assign_coords({"variable": dataset.coords["variable"].astype(str)})
 
-        logger.debug(f'{dataset.time}')
+        logger.debug(f"{dataset.time}")
 
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w", encoding=encoding, consolidated=True)
