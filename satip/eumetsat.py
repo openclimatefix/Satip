@@ -354,8 +354,8 @@ class DownloadManager:  # noqa: D205
             self.data_dir = "./raw"
 
             # check data store, if its there use this instead
-            data_store_filename_remote = f"{self.native_file_dir}/{dataset_id}.NA"
-            data_store_filename_local = f"{self.data_dir}/{dataset_id}.NA"
+            data_store_filename_remote = f"{self.native_file_dir}/{dataset_id}.nat"
+            data_store_filename_local = f"{self.data_dir}/{dataset_id}.nat"
 
             fs = fsspec.open(data_store_filename_remote).fs
             if fs.exists(data_store_filename_remote):
