@@ -4,11 +4,11 @@ channels:
 dependencies:
   - python>=3.9
   - pip
-  - numpy<=1.24.0
+  - numpy==1.23.0
   - pandas>=1.1.4
   - requests
   - fsspec
-  - satpy==0.37.1
+  - satpy==0.36.0
   - zarr
   - xarray
   - bottleneck
