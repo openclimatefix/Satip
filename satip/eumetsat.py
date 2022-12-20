@@ -383,7 +383,7 @@ class DownloadManager:  # noqa: D205
                     self.logger.exception(f"Error downloading dataset with id {dataset_id}")
 
                 # save to native file data store
-                filename = f'{self.data_dir}/{dataset_id}.nat'
+                filename = f"{self.data_dir}/{dataset_id}.nat"
                 self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
                 fs = fsspec.open(data_store_filename_remote).fs
                 fs.put(filename, data_store_filename_remote)
