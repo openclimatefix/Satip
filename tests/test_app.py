@@ -35,7 +35,7 @@ def test_save_to_netcdf():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
@@ -59,7 +59,7 @@ def test_save_to_netcdf_now():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
@@ -85,7 +85,7 @@ def test_cleanup_now():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) == 0
@@ -112,7 +112,7 @@ def test_save_datatailor_to_disk():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
@@ -139,7 +139,7 @@ def test_save_to_netcdf_rescaled():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
@@ -168,7 +168,7 @@ def test_use_backup():  # noqa 103
                 "--maximum-n-datasets",
                 1,
             ],
-            catch_exceptions=False
+            catch_exceptions=False,
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0

@@ -116,7 +116,7 @@ def run(
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
     use_backup: bool = False,
-    maximum_n_datasets: int = -1
+    maximum_n_datasets: int = -1,
 ):
     """Run main application
 
@@ -188,7 +188,7 @@ def run(
         else:
 
             if maximum_n_datasets != -1:
-                logger.debug(f'Ony going to get at most {maximum_n_datasets} datasets')
+                logger.debug(f"Ony going to get at most {maximum_n_datasets} datasets")
                 datasets = datasets[0:maximum_n_datasets]
 
             updated_data = True
