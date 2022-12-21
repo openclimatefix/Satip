@@ -91,6 +91,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Run Data Tailor Cleanup and exit",
     type=click.BOOL,
 )
+@click.option(
+    "--use-backup",
+    envvar="USE_BACKUP",
+    default=False,
+    help="Option not to sue the RSS imaginary. If True, use the 15 mins data. ",
+    type=click.BOOL,
+)
 def run(
     api_key,
     api_secret,
@@ -101,6 +108,7 @@ def run(
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
+    use_backup: bool = False,
 ):
     """Run main application
 
@@ -114,10 +122,10 @@ def run(
         use_rescaler: Rescale data to between 0 and 1 or not
         start_time: Start time in UTC ISO Format
         cleanup: Cleanup Data Tailor
+        use_backup: use 15 min data, not RSS
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
-    using_backup = False
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
@@ -144,14 +152,17 @@ def run(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
         # Check if any RSS imagery is available, if not, fall back to 15 minutely data
-        if len(datasets) == 0:
-            logger.info("No RSS Imagery available, falling back to 15-minutely data")
+        if (len(datasets) == 0) or use_backup:
+            logger.info(
+                f"No RSS Imagery available or using backup ({use_backup=}), "
+                f"falling back to 15-minutely data"
+            )
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
                 product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
-            using_backup = True
+            use_backup = True
         # Filter out ones that already exist
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -167,7 +178,7 @@ def run(
             updated_data = False
         else:
             updated_data = True
-            if using_backup:
+            if use_backup:
 
                 download_manager.download_tailored_datasets(
                     datasets,
@@ -185,7 +196,7 @@ def run(
             # 2. Load nat files to one Xarray Dataset
             native_files = (
                 list(glob.glob(os.path.join(tmpdir, "*.nat")))
-                if not using_backup
+                if not use_backup
                 else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
             )
             logger.info(native_files)
@@ -194,7 +205,7 @@ def run(
                 native_files,
                 save_dir=save_dir,
                 use_rescaler=use_rescaler,
-                using_backup=using_backup,
+                using_backup=use_backup,
             )
             logger.info(
                 f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
@@ -208,12 +219,12 @@ def run(
                 f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
             )
 
-    if not check_both_final_files_exists(save_dir=save_dir, using_backup=using_backup):
+    if not check_both_final_files_exists(save_dir=save_dir, using_backup=use_backup):
         updated_data = True
 
     if updated_data:
         # Collate files into single NetCDF file
-        collate_files_into_latest(save_dir=save_dir, using_backup=using_backup)
+        collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
