@@ -1,4 +1,4 @@
 # noqa: D104
 import satip.jpeg_xl_float_with_nans
 
-__version__ = "2.10.40"
+__version__ = "2.10.41"
