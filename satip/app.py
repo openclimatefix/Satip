@@ -104,7 +104,7 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     envvar="MAXIMUM_N_DATASETS",
     default=-1,
     help="Set the maximum number of dataset to load, default gets them all",
-    type=click.BOOL,
+    type=click.INT,
 )
 def run(
     api_key,
