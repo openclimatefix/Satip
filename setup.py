@@ -15,9 +15,16 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 install_requires = (this_directory / "requirements.txt").read_text().splitlines()
 
+# get version
+with open("satip/__init__.py") as f:
+    for line in f:
+        if line.startswith("__version__"):
+            _, _, version = line.replace("'", "").split()
+            version = version.replace('"', "")
+
 setup(
     name="satip",
-    version="2.10.40",
+    version=version,
     license="MIT",
     description="""Satip provides the functionality necessary for
                    retrieving, and storing EUMETSAT data""",

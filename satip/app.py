@@ -12,6 +12,7 @@ from nowcasting_datamodel.connection import DatabaseConnection
 from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
+import satip
 from satip.eumetsat import DownloadManager
 from satip.utils import (
     check_both_final_files_exists,
@@ -134,7 +135,7 @@ def run(
         maximum_n_datasets: Set the maximum number of dataset to load, default gets them all
     """
 
-    logger.info(f'Running application and saving to "{save_dir}"')
+    logger.info(f'Running application and saving to "{save_dir}" ({satip.__version__}')
     # 1. Get data from API, download native files
     with tempfile.TemporaryDirectory() as tmpdir:
         download_manager = DownloadManager(
