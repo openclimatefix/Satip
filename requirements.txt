@@ -17,3 +17,4 @@ nowcasting_datamodel>=0.0.36
 h5netcdf
 psutil
 eumdac
+pyresample==1.25.0
