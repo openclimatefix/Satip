@@ -98,6 +98,13 @@ logging.getLogger(__name__).setLevel(logging.INFO)
     help="Option not to sue the RSS imaginary. If True, use the 15 mins data. ",
     type=click.BOOL,
 )
+@click.option(
+    "--maximum-n-datasets",
+    envvar="MAXIMUM_N_DATASETS",
+    default=-1,
+    help="Set the maximum number of dataset to load, default gets them all",
+    type=click.BOOL,
+)
 def run(
     api_key,
     api_secret,
@@ -109,6 +116,7 @@ def run(
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
     use_backup: bool = False,
+    maximum_n_datasets: int = -1
 ):
     """Run main application
 
@@ -123,6 +131,7 @@ def run(
         start_time: Start time in UTC ISO Format
         cleanup: Cleanup Data Tailor
         use_backup: use 15 min data, not RSS
+        maximum_n_datasets: Set the maximum number of dataset to load, default gets them all
     """
 
     logger.info(f'Running application and saving to "{save_dir}"')
@@ -177,6 +186,11 @@ def run(
             logger.info("No files to download, exiting")
             updated_data = False
         else:
+
+            if maximum_n_datasets != -1:
+                logger.debug(f'Ony going to get at most {maximum_n_datasets} datasets')
+                datasets = datasets[0:maximum_n_datasets]
+
             updated_data = True
             if use_backup:
 
