@@ -128,3 +128,29 @@ def test_save_to_netcdf_rescaled():  # noqa 103
         )
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
+
+
+@freeze_time("2022-06-28 12:00:00")  # Use backup
+def test_use_backup():  # noqa 103
+    user_key = os.environ.get("API_KEY")
+    user_secret = os.environ.get("API_SECRET")
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        runner.invoke(
+            run,
+            [
+                "--api-key",
+                user_key,
+                "--api-secret",
+                user_secret,
+                "--save-dir",
+                tmpdirname,
+                "--use-rescaler",
+                False,
+                "--start-time",
+                datetime.datetime.utcnow().isoformat(),
+                "--use-backup",
+                True,
+            ],
+        )
+        native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
+        assert len(native_files) > 0
