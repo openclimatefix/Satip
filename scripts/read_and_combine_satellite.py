@@ -43,10 +43,10 @@ class Blosc2(Codec):
     numcodecs.zstd.Zstd, numcodecs.lz4.LZ4
     """
 
-    codec_id = 'blosc2'
-    max_buffer_size = 2 ** 31 - 1
+    codec_id = "blosc2"
+    max_buffer_size = 2**31 - 1
 
-    def __init__(self, cname='blosc2', clevel=5):
+    def __init__(self, cname="blosc2", clevel=5):
         self.cname = cname
         if cname == "zstd":
             self._codec = blosc2.Codec.ZSTD
@@ -63,10 +63,11 @@ class Blosc2(Codec):
         return blosc2.decompress(buf, out)
 
     def __repr__(self):
-        r = '%s(cname=%r, clevel=%r)' % \
-            (type(self).__name__,
-             self.cname,
-             self.clevel,)
+        r = "%s(cname=%r, clevel=%r)" % (
+            type(self).__name__,
+            self.cname,
+            self.clevel,
+        )
         return r
 
 
@@ -92,16 +93,36 @@ def read_zarrs(files, dim, transform_func=None):
     return combined
 
 
+def read_mf_zarrs(files, preprocess_func=None):
+    # use a context manager, to ensure the file gets closed after use
+    with xr.open_mfdataset(
+        files,
+        chunks="auto",  # See issue #456 for why we use "auto".
+        mode="r",
+        engine="zarr",
+        concat_dim="time",
+        consolidated=True,
+        preprocess=preprocess_func,
+        combine="nested",
+    ) as ds:
+        ds.load()
+        return ds
+
+
 def preprocess_function(xr_data: xr.Dataset) -> xr.Dataset:
     attrs = xr_data.attrs
     y_coords = xr_data.coords["y_geostationary"].values
     x_coords = xr_data.coords["x_geostationary"].values
-    x_dataarray = xr.DataArray(data=np.expand_dims(xr_data.coords["x_geostationary"].values, axis=0),
-                               dims=["time", "x_geostationary"],
-                               coords=dict(time=xr_data.coords["time"].values, x_geostationary=x_coords))
-    y_dataarray = xr.DataArray(data=np.expand_dims(xr_data.coords["y_geostationary"].values, axis=0),
-                               dims=["time", "y_geostationary"],
-                               coords=dict(time=xr_data.coords["time"].values, y_geostationary=y_coords))
+    x_dataarray = xr.DataArray(
+        data=np.expand_dims(xr_data.coords["x_geostationary"].values, axis=0),
+        dims=["time", "x_geostationary"],
+        coords=dict(time=xr_data.coords["time"].values, x_geostationary=x_coords),
+    )
+    y_dataarray = xr.DataArray(
+        data=np.expand_dims(xr_data.coords["y_geostationary"].values, axis=0),
+        dims=["time", "y_geostationary"],
+        coords=dict(time=xr_data.coords["time"].values, y_geostationary=y_coords),
+    )
     xr_data["x_geostationary_coordinates"] = x_dataarray
     xr_data["y_geostationary_coordinates"] = y_dataarray
     xr_data.attrs = attrs
@@ -110,15 +131,15 @@ def preprocess_function(xr_data: xr.Dataset) -> xr.Dataset:
 
 def read_hrv_timesteps_and_return(files):
     try:
-        dataset = xr.open_mfdataset(
-            files,
-            chunks="auto",  # See issue #456 for why we use "auto".
-            mode="r",
-            engine="zarr",
-            concat_dim="time",
-            consolidated=True,
-            combine="nested",
-        ).load().chunk({"time": 12, "x_geostationary": int(5568 / 4), "y_geostationary": int(4176 / 4), "variable": -1}).astype(np.float16)
+        dataset = read_mf_zarrs(files, preprocess_func=preprocess_function)
+        dataset = dataset.chunk(
+            {
+                "time": 12,
+                "x_geostationary": int(5568 / 4),
+                "y_geostationary": int(4176 / 4),
+                "variable": -1,
+            }
+        ).astype(np.float16)
     except Exception as e:
         print(e)
         return None
@@ -128,15 +149,10 @@ def read_hrv_timesteps_and_return(files):
 
 def read_nonhrv_timesteps_and_return(files):
     try:
-        dataset = xr.open_mfdataset(
-            files,
-            chunks="auto",  # See issue #456 for why we use "auto".
-            mode="r",
-            engine="zarr",
-            concat_dim="time",
-            consolidated=True,
-            combine="nested",
-        ).load().chunk({"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": -1}).astype(np.float16)
+        dataset = read_mf_zarrs(files)
+        dataset = dataset.chunk(
+            {"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": -1}
+        ).astype(np.float16)
     except Exception as e:
         print(e)
         return None
@@ -157,7 +173,9 @@ def write_to_zarr(dataset, zarr_name, mode, chunks):
         },
     }
     extra_kwargs = mode_extra_kwargs[mode]
-    dataset.chunk(chunks).to_zarr(zarr_name, compute=True, **extra_kwargs, consolidated=True, mode=mode)
+    dataset.chunk(chunks).to_zarr(
+        zarr_name, compute=True, **extra_kwargs, consolidated=True, mode=mode
+    )
 
 
 dask.config.set(**{"array.slicing.split_large_chunks": False})
@@ -170,11 +188,18 @@ for year in years:
     output_name = f"/mnt/leonardo/storage_c/{year}_nonhrv.zarr"
     pattern = f"{year}"
     # Get all files for a month, and use that as the name for the empty one, zip up at end and download
-    data_files = sorted(list(glob(os.path.join(
-        "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-        f"{pattern}*.zarr.zip"))))
+    data_files = sorted(
+        list(
+            glob(
+                os.path.join(
+                    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+                    f"{pattern}*.zarr.zip",
+                )
+            )
+        )
+    )
     n = 12
-    data_files = [data_files[i * n:(i + 1) * n] for i in range((len(data_files) + n - 1) // n)]
+    data_files = [data_files[i * n : (i + 1) * n] for i in range((len(data_files) + n - 1) // n)]
     print(len(data_files))
     # hrv_data_files = sorted(list(glob(os.path.join(
     #    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
@@ -186,8 +211,26 @@ for year in years:
     dataset = read_nonhrv_timesteps_and_return(data_files[0])
     if dataset is None:
         raise ValueError("First dataset is None, failing")
-    write_to_zarr(dataset, output_name, mode="w",
-                  chunks={"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 11})
+    write_to_zarr(
+        dataset,
+        output_name,
+        mode="w",
+        chunks={
+            "time": 12,
+            "x_geostationary": int(3712 / 4),
+            "y_geostationary": 1392,
+            "variable": 11,
+        },
+    )
     for dataset in tqdm(pool.imap(read_nonhrv_timesteps_and_return, data_files[1:])):
-        write_to_zarr(dataset, output_name, mode="a",
-                      chunks={"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 11})
+        write_to_zarr(
+            dataset,
+            output_name,
+            mode="a",
+            chunks={
+                "time": 12,
+                "x_geostationary": int(3712 / 4),
+                "y_geostationary": 1392,
+                "variable": 11,
+            },
+        )
