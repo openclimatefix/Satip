@@ -21,7 +21,6 @@ from numcodecs.registry import register_codec
 from numcodecs.abc import Codec
 from numcodecs.compat import ensure_contiguous_ndarray
 from jpeg_xl_float_with_nans.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-
 import blosc2
 import numpy as np
 import os
@@ -29,6 +28,7 @@ import warnings
 import dask
 import multiprocessing
 from tqdm import tqdm
+from argparse import ArgumentParser
 
 
 class Blosc2(Codec):
@@ -136,13 +136,13 @@ def read_hrv_timesteps_and_return(files):
         dataset = read_mf_zarrs(files, preprocess_func=preprocess_function)
         dataset = dataset.chunk(
             {
-                "time": 12,
+                "time": len(dataset.time.values),
                 "x_geostationary": int(5548 / 4),
                 "y_geostationary": int(4176 / 4),
                 "variable": -1,
             }
         )
-        dataset = dataset.isel(x_geostationary=slice(0,5548))
+        dataset = dataset.isel(x_geostationary=slice(0, 5548))
         dataset["data"] = dataset.data.astype(np.float16)
         for v in list(dataset.coords.keys()):
             if dataset.coords[v].dtype == object:
@@ -162,7 +162,12 @@ def read_nonhrv_timesteps_and_return(files):
     try:
         dataset = read_mf_zarrs(files)
         dataset = dataset.chunk(
-            {"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 1}
+            {
+                "time": len(dataset.time.values),
+                "x_geostationary": int(3712 / 4),
+                "y_geostationary": 1392,
+                "variable": -1,
+            }
         ).astype(np.float16)
         for v in list(dataset.coords.keys()):
             if dataset.coords[v].dtype == object:
@@ -196,63 +201,74 @@ def write_to_zarr(dataset, zarr_name, mode, chunks):
     )
 
 
-dask.config.set(**{"array.slicing.split_large_chunks": False})
-warnings.filterwarnings("ignore", category=RuntimeWarning)
+if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--hrv", action="store_true")
+    parser.add_argument("--workers", type=int, default=10)
+    parser.add_argument("--x_div", type=int, default=4)
+    parser.add_argument("--y_div", type=int, default=1)
+    parser.add_argument("--n_channel", type=int, default=-1)
+    parser.add_argument("--time_chunk", type=int, default=12)
+    args = parser.parse_args()
 
+    dask.config.set(**{"array.slicing.split_large_chunks": False})
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-pool = multiprocessing.Pool(10)
-years = list(range(2022, 2013, -1))
+    pool = multiprocessing.Pool(args.workers)
+    years = list(range(2022, 2013, -1))
 
-for year in years:
-    output_name = f"/mnt/leonardo/storage_c/{year}_hrv.zarr"
-    pattern = f"{year}"
-    # Get all files for a month, and use that as the name for the empty one, zip up at end and download
-    data_files = sorted(
-        list(
-            glob(
-                os.path.join(
-                    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-                    f"hrv_{pattern}*.zarr.zip",
+    for year in years:
+        output_name = f"/mnt/leonardo/storage_c/{year}_{'hrv' if args.hrv else 'nonhrv'}.zarr"
+        pattern = f"{year}"
+        # Get all files for a month, and use that as the name for the empty one, zip up at end and download
+        data_files = sorted(
+            list(
+                glob(
+                    os.path.join(
+                        "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+                        f"{'hrv_' if args.hrv else ''}{pattern}*.zarr.zip",
+                    )
                 )
             )
         )
-    )
-    n = 12
-    data_files = [data_files[i * n : (i + 1) * n] for i in range((len(data_files) + n - 1) // n)]
-    print(len(data_files))
-    # hrv_data_files = sorted(list(glob(os.path.join(
-    #    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-    #    f"hrv_{pattern}*.zarr.zip"))))
-    # print(len(hrv_data_files))
+        n = args.time_chunk
+        data_files = [
+            data_files[i * n : (i + 1) * n] for i in range((len(data_files) + n - 1) // n)
+        ]
+        print(len(data_files))
+        # hrv_data_files = sorted(list(glob(os.path.join(
+        #    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+        #    f"hrv_{pattern}*.zarr.zip"))))
+        # print(len(hrv_data_files))
 
-    # 2. Split files into sets of 12 and send to multiprocessing
-    # 3. Load and combine the files
-    dataset = read_hrv_timesteps_and_return(data_files[0])
-    print(dataset)
-    if dataset is None:
-        raise ValueError("First dataset is None, failing")
-    write_to_zarr(
-        dataset,
-        output_name,
-        mode="w",
-        chunks={
-            "time": 12,
-            "x_geostationary": int(5548 / 4),
-            "y_geostationary": int(4176 / 4),
-            "variable": -1,
-        },
-    )
-    for dataset in tqdm(pool.imap(read_hrv_timesteps_and_return, data_files[1:])):
+        # 2. Split files into sets of 12 and send to multiprocessing
+        # 3. Load and combine the files
+        dataset = read_hrv_timesteps_and_return(data_files[0])
+        print(dataset)
         if dataset is None:
-            continue
+            raise ValueError("First dataset is None, failing")
         write_to_zarr(
             dataset,
             output_name,
-            mode="a",
+            mode="w",
             chunks={
-                "time": 12,
-                "x_geostationary": int(5548 / 4),
-                "y_geostationary": int(4176 / 4),
-                "variable": -1,
+                "time": args.time_chunk,
+                "x_geostationary": len(dataset.x_geostationary.values) // args.x_div,
+                "y_geostationary": len(dataset.y_geostationary.values) // args.y_div,
+                "variable": args.n_channel,
             },
         )
+        for dataset in tqdm(pool.imap(read_hrv_timesteps_and_return, data_files[1:])):
+            if dataset is None:
+                continue
+            write_to_zarr(
+                dataset,
+                output_name,
+                mode="a",
+                chunks={
+                    "time": args.time_chunk,
+                    "x_geostationary": len(dataset.x_geostationary.values) // args.x_div,
+                    "y_geostationary": len(dataset.y_geostationary.values) // args.y_div,
+                    "variable": args.n_channel,
+                },
+            )
