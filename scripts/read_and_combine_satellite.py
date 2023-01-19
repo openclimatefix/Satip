@@ -23,6 +23,11 @@ from numcodecs.compat import ensure_contiguous_ndarray
 import blosc2
 import numpy as np
 import os
+import warnings
+import dask
+import multiprocessing
+from tqdm import tqdm
+
 
 class Blosc2(Codec):
     """Codec providing compression using the Blosc meta-compressor.
@@ -39,7 +44,7 @@ class Blosc2(Codec):
     """
 
     codec_id = 'blosc2'
-    max_buffer_size = 2**31 - 1
+    max_buffer_size = 2 ** 31 - 1
 
     def __init__(self, cname='blosc2', clevel=5):
         self.cname = cname
@@ -90,7 +95,7 @@ def read_zarrs(files, dim, transform_func=None):
 def preprocess_function(xr_data: xr.Dataset) -> xr.Dataset:
     attrs = xr_data.attrs
     y_coords = xr_data.coords["y_geostationary"].values
-    x_coords  = xr_data.coords["x_geostationary"].values
+    x_coords = xr_data.coords["x_geostationary"].values
     x_dataarray = xr.DataArray(data=np.expand_dims(xr_data.coords["x_geostationary"].values, axis=0),
                                dims=["time", "x_geostationary"],
                                coords=dict(time=xr_data.coords["time"].values, x_geostationary=x_coords))
@@ -104,62 +109,85 @@ def preprocess_function(xr_data: xr.Dataset) -> xr.Dataset:
 
 
 def read_hrv_timesteps_and_return(files):
-    dataset = xr.open_mfdataset(
-        files,
-        chunks="auto",  # See issue #456 for why we use "auto".
-        mode="r",
-        engine="zarr",
-        concat_dim="time",
-        consolidated=True,
-        combine="nested",
-    ).load().chunk({"time": 12,  "x_geostationary": int(5568/4), "y_geostationary": int(4176/4), "variable": -1})
+    try:
+        dataset = xr.open_mfdataset(
+            files,
+            chunks="auto",  # See issue #456 for why we use "auto".
+            mode="r",
+            engine="zarr",
+            concat_dim="time",
+            consolidated=True,
+            combine="nested",
+        ).load().chunk({"time": 12, "x_geostationary": int(5568 / 4), "y_geostationary": int(4176 / 4), "variable": -1}).astype(np.float16)
+    except Exception as e:
+        print(e)
+        return None
 
     return dataset
 
 
 def read_nonhrv_timesteps_and_return(files):
-    dataset = xr.open_mfdataset(
-        files,
-        chunks="auto",  # See issue #456 for why we use "auto".
-        mode="r",
-        engine="zarr",
-        concat_dim="time",
-        consolidated=True,
-        combine="nested",
-    ).load().chunk({"time": 12,  "x_geostationary": int(3712/4), "y_geostationary": 1392, "variable": -1})
+    try:
+        dataset = xr.open_mfdataset(
+            files,
+            chunks="auto",  # See issue #456 for why we use "auto".
+            mode="r",
+            engine="zarr",
+            concat_dim="time",
+            consolidated=True,
+            combine="nested",
+        ).load().chunk({"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": -1}).astype(np.float16)
+    except Exception as e:
+        print(e)
+        return None
 
     return dataset
 
 
-def write_to_zarr(dataset, zarr_name, mode):
+def write_to_zarr(dataset, zarr_name, mode, chunks):
     mode_extra_kwargs = {
         "a": {"append_dim": "time"},
         "w": {
             "encoding": {
+                "data": {
+                    "compressor": Blosc2("zstd", clevel=5),
+                },
                 "time": {"units": "nanoseconds since 1970-01-01"},
             }
         },
     }
     extra_kwargs = mode_extra_kwargs[mode]
-    dataset.to_zarr(zarr_name, compute=True, **extra_kwargs, consolidated=True, mode=mode)
+    dataset.chunk(chunks).to_zarr(zarr_name, compute=True, **extra_kwargs, consolidated=True, mode=mode)
 
-
-import warnings
-import dask
 
 dask.config.set(**{"array.slicing.split_large_chunks": False})
 warnings.filterwarnings("ignore", category=RuntimeWarning)
+
+pool = multiprocessing.Pool(10)
 years = list(range(2022, 2013, -1))
 
 for year in years:
+    output_name = f"/mnt/leonardo/storage_c/{year}_nonhrv.zarr"
     pattern = f"{year}"
     # Get all files for a month, and use that as the name for the empty one, zip up at end and download
-    data_files = sorted(list(glob.glob(os.path.join(
+    data_files = sorted(list(glob(os.path.join(
         "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
         f"{pattern}*.zarr.zip"))))
+    n = 12
+    data_files = [data_files[i * n:(i + 1) * n] for i in range((len(data_files) + n - 1) // n)]
     print(len(data_files))
-    hrv_data_files = sorted(list(glob.glob(os.path.join(
-        "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-        f"hrv_{pattern}*.zarr.zip"))))
-    print(len(hrv_data_files))
+    # hrv_data_files = sorted(list(glob(os.path.join(
+    #    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+    #    f"hrv_{pattern}*.zarr.zip"))))
+    # print(len(hrv_data_files))
 
+    # 2. Split files into sets of 12 and send to multiprocessing
+    # 3. Load and combine the files
+    dataset = read_nonhrv_timesteps_and_return(data_files[0])
+    if dataset is None:
+        raise ValueError("First dataset is None, failing")
+    write_to_zarr(dataset, output_name, mode="w",
+                  chunks={"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 11})
+    for dataset in tqdm(pool.imap(read_nonhrv_timesteps_and_return, data_files[1:])):
+        write_to_zarr(dataset, output_name, mode="a",
+                      chunks={"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 11})
