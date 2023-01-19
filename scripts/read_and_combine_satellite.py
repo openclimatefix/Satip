@@ -209,6 +209,7 @@ if __name__ == "__main__":
     parser.add_argument("--y_div", type=int, default=1)
     parser.add_argument("--n_channel", type=int, default=-1)
     parser.add_argument("--time_chunk", type=int, default=12)
+    parser.add_argument("--search_path", type=str, default="/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/")
     args = parser.parse_args()
 
     dask.config.set(**{"array.slicing.split_large_chunks": False})
@@ -225,7 +226,7 @@ if __name__ == "__main__":
             list(
                 glob(
                     os.path.join(
-                        "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+                        args.search_path,
                         f"{'hrv_' if args.hrv else ''}{pattern}*.zarr.zip",
                     )
                 )
