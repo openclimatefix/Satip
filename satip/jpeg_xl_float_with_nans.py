@@ -60,6 +60,7 @@ class JpegXlFloatWithNaNs(JpegXl):
             decodingspeed: DON'T SET THIS WITH THIS JpegXlFuture wrapper!
         """
         assert decodingspeed is None
+        lossless = False
         if lossless is not None:
             if lossless:
                 assert (

@@ -1,15 +1,16 @@
 import os
 
+os.environ["SAT_API_KEY"] = "SWdEnLvOlVTVGli1An1nKJ3NcV0a"
+os.environ["SAT_API_SECRET"] = "gUQe0ej7H_MqQVGF4cd7wfQWcawa"
 import modal
 
-app = modal.App(
-    image=modal.Conda()
-    .conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"])
-    .pip_install(["satip"])
-)
+app = modal.Stub("eumetsat-processing")
+
+mount = modal.Mount(local_file="/home/jacob/Downloads/jxl-debs-amd64-debian-bullseye-v0.7.0/libjxl_0.7_amd64.deb", remote_dir="/")
+image = modal.Image.conda().copy(mount, "/downloads").apt_install("libbrotli1").run_commands("dpkg -i /downloads/libjxl_0.7_amd64.deb").conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"]).pip_install(["satip"])
 
 
-@app.function(secret=modal.ref("eumetsat"))
+@app.function(image=image, secret=modal.Secret.from_name("eumetsat"), memory=8192, rate_limit=modal.RateLimit(per_minute=6), concurrency_limit=6)
 def f(datasets):
     import glob
     import tempfile
@@ -19,6 +20,7 @@ def f(datasets):
     import xarray as xr
     import zarr
     from satpy import Scene
+    import numcodecs
 
     from satip.eumetsat import DownloadManager
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
@@ -121,7 +123,7 @@ def f(datasets):
         hrv_dataarray = hrv_dataarray.chunk(chunks)
 
         compression_algos = {
-            "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
+            "jpeg-xl": numcodecs.Blosc("zstd"),
         }
         compression_algo = compression_algos["jpeg-xl"]
 
@@ -226,12 +228,12 @@ if __name__ == "__main__":
     from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 
-    date_range = pd.date_range(start="2021-10-15 00:00", end="2022-05-31 00:00", freq="1D")
+    date_range = pd.date_range(start="2023-01-01 00:00", end="2023-01-31 00:00", freq="1W")
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
     download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
-    for date in date_range:
-        start_date = pd.Timestamp(date) - pd.Timedelta("1D")
+    for date in date_range[::-1]:
+        start_date = pd.Timestamp(date) - pd.Timedelta("1W")
         end_date = pd.Timestamp(date) + pd.Timedelta("1min")
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
@@ -240,59 +242,43 @@ if __name__ == "__main__":
         print(len(datasets))
         if len(datasets) == 0:
             continue
+        tmp_datasets = []
         for dataset in datasets:
             if os.path.exists(
                 os.path.join(
-                    "/run/media/jacob/data/modal/",
+                    "/run/media/jacob/Windows/",
                     f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
                 )
-            ):
-                print("Skipping Time")
-                continue
-            if os.path.exists(
+            ) and os.path.exists(
                 os.path.join(
-                    "/run/media/jacob/7214E0FE36731680/modal/",
-                    f"{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
+                    "/run/media/jacob/Windows/",
+                    f"hrv_{pd.Timestamp(eumetsat_filename_to_datetime(dataset['id'])).round('5 min').strftime('%Y%m%d%H%M')}.zarr.zip",
                 )
             ):
                 print("Skipping Time")
                 continue
-            try:
+            else:
+                tmp_datasets.append(dataset)
+        if len(tmp_datasets) > 0:
                 with app.run():
                     try:
-                        hrv, dataarray, now_time = f(dataset)
+                        hrv, dataarray, now_time = f.map(tmp_datasets)
                         if hrv is None:
                             continue
                         save_file = os.path.join(
-                            "/run/media/jacob/data/modal/", f"hrv_{now_time}.zarr.zip"
+                            "/run/media/jacob/Windows/",
+                            f"hrv_{now_time}.zarr.zip",
                         )
 
                         with open(save_file, "wb") as h:
                             h.write(hrv)
                         save_file = os.path.join(
-                            "/run/media/jacob/data/modal/", f"{now_time}.zarr.zip"
+                            "/run/media/jacob/Windows/",
+                            f"{now_time}.zarr.zip",
                         )
                         with open(save_file, "wb") as w:
                             w.write(dataarray)
-                    except:
-                        try:
-                            hrv, dataarray, now_time = f(dataset)
-                            if hrv is None:
-                                continue
-                            save_file = os.path.join(
-                                "/run/media/jacob/7214E0FE36731680/modal/",
-                                f"hrv_{now_time}.zarr.zip",
-                            )
-
-                            with open(save_file, "wb") as h:
-                                h.write(hrv)
-                            save_file = os.path.join(
-                                "/run/media/jacob/7214E0FE36731680/modal/", f"{now_time}.zarr.zip"
-                            )
-                            with open(save_file, "wb") as w:
-                                w.write(dataarray)
-                        except:
-                            continue
-            except:
-                print("Failed Mapping")
-                time.sleep(np.random.randint(30, 600))
+                    except Exception as e:
+                        print(e)
+                        raise e
+                        continue
