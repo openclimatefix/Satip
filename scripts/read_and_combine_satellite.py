@@ -20,6 +20,8 @@ from glob import glob
 from numcodecs.registry import register_codec
 from numcodecs.abc import Codec
 from numcodecs.compat import ensure_contiguous_ndarray
+from jpeg_xl_float_with_nans.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
+
 import blosc2
 import numpy as np
 import os
@@ -135,11 +137,20 @@ def read_hrv_timesteps_and_return(files):
         dataset = dataset.chunk(
             {
                 "time": 12,
-                "x_geostationary": int(5568 / 4),
+                "x_geostationary": int(5548 / 4),
                 "y_geostationary": int(4176 / 4),
                 "variable": -1,
             }
-        ).astype(np.float16)
+        )
+        dataset = dataset.isel(x_geostationary=slice(0,5548))
+        dataset["data"] = dataset.data.astype(np.float16)
+        for v in list(dataset.coords.keys()):
+            if dataset.coords[v].dtype == object:
+                dataset[v].encoding.clear()
+
+        for v in list(dataset.variables.keys()):
+            if dataset[v].dtype == object:
+                dataset[v].encoding.clear()
     except Exception as e:
         print(e)
         return None
@@ -151,8 +162,15 @@ def read_nonhrv_timesteps_and_return(files):
     try:
         dataset = read_mf_zarrs(files)
         dataset = dataset.chunk(
-            {"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": -1}
+            {"time": 12, "x_geostationary": int(3712 / 4), "y_geostationary": 1392, "variable": 1}
         ).astype(np.float16)
+        for v in list(dataset.coords.keys()):
+            if dataset.coords[v].dtype == object:
+                dataset[v].encoding.clear()
+
+        for v in list(dataset.variables.keys()):
+            if dataset[v].dtype == object:
+                dataset[v].encoding.clear()
     except Exception as e:
         print(e)
         return None
@@ -181,11 +199,12 @@ def write_to_zarr(dataset, zarr_name, mode, chunks):
 dask.config.set(**{"array.slicing.split_large_chunks": False})
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
+
 pool = multiprocessing.Pool(10)
 years = list(range(2022, 2013, -1))
 
 for year in years:
-    output_name = f"/mnt/leonardo/storage_c/{year}_nonhrv.zarr"
+    output_name = f"/mnt/leonardo/storage_c/{year}_hrv.zarr"
     pattern = f"{year}"
     # Get all files for a month, and use that as the name for the empty one, zip up at end and download
     data_files = sorted(
@@ -193,7 +212,7 @@ for year in years:
             glob(
                 os.path.join(
                     "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-                    f"{pattern}*.zarr.zip",
+                    f"hrv_{pattern}*.zarr.zip",
                 )
             )
         )
@@ -208,7 +227,8 @@ for year in years:
 
     # 2. Split files into sets of 12 and send to multiprocessing
     # 3. Load and combine the files
-    dataset = read_nonhrv_timesteps_and_return(data_files[0])
+    dataset = read_hrv_timesteps_and_return(data_files[0])
+    print(dataset)
     if dataset is None:
         raise ValueError("First dataset is None, failing")
     write_to_zarr(
@@ -217,20 +237,22 @@ for year in years:
         mode="w",
         chunks={
             "time": 12,
-            "x_geostationary": int(3712 / 4),
-            "y_geostationary": 1392,
-            "variable": 11,
+            "x_geostationary": int(5548 / 4),
+            "y_geostationary": int(4176 / 4),
+            "variable": -1,
         },
     )
-    for dataset in tqdm(pool.imap(read_nonhrv_timesteps_and_return, data_files[1:])):
+    for dataset in tqdm(pool.imap(read_hrv_timesteps_and_return, data_files[1:])):
+        if dataset is None:
+            continue
         write_to_zarr(
             dataset,
             output_name,
             mode="a",
             chunks={
                 "time": 12,
-                "x_geostationary": int(3712 / 4),
-                "y_geostationary": 1392,
-                "variable": 11,
+                "x_geostationary": int(5548 / 4),
+                "y_geostationary": int(4176 / 4),
+                "variable": -1,
             },
         )
