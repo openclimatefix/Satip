@@ -20,7 +20,7 @@ from glob import glob
 from numcodecs.registry import register_codec
 from numcodecs.abc import Codec
 from numcodecs.compat import ensure_contiguous_ndarray
-from jpeg_xl_float_with_nans.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
+from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 import blosc2
 import numpy as np
 import os
@@ -210,6 +210,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_channel", type=int, default=-1)
     parser.add_argument("--time_chunk", type=int, default=12)
     parser.add_argument("--search_path", type=str, default="/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/")
+    parser.add_argument("--out_path", type=str, default="/mnt/leonardo/storage_c/")
     args = parser.parse_args()
 
     dask.config.set(**{"array.slicing.split_large_chunks": False})
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     years = list(range(2022, 2013, -1))
 
     for year in years:
-        output_name = f"/mnt/leonardo/storage_c/{year}_{'hrv' if args.hrv else 'nonhrv'}.zarr"
+        output_name = os.path.join(args.out_path, f"{year}_{'hrv' if args.hrv else 'nonhrv'}.zarr")
         pattern = f"{year}"
         # Get all files for a month, and use that as the name for the empty one, zip up at end and download
         data_files = sorted(
@@ -244,7 +245,8 @@ if __name__ == "__main__":
 
         # 2. Split files into sets of 12 and send to multiprocessing
         # 3. Load and combine the files
-        dataset = read_hrv_timesteps_and_return(data_files[0])
+        read_function = read_hrv_timesteps_and_return if args.hrv else read_nonhrv_timesteps_and_return
+        dataset = read_function(data_files[0])
         print(dataset)
         if dataset is None:
             raise ValueError("First dataset is None, failing")
@@ -259,7 +261,7 @@ if __name__ == "__main__":
                 "variable": args.n_channel,
             },
         )
-        for dataset in tqdm(pool.imap(read_hrv_timesteps_and_return, data_files[1:])):
+        for dataset in tqdm(pool.imap(read_function, data_files[1:])):
             if dataset is None:
                 continue
             write_to_zarr(
