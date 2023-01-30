@@ -29,6 +29,7 @@ import dask
 import multiprocessing
 from tqdm import tqdm
 from argparse import ArgumentParser
+import pandas as pd
 
 
 class Blosc2(Codec):
@@ -209,18 +210,26 @@ if __name__ == "__main__":
     parser.add_argument("--y_div", type=int, default=1)
     parser.add_argument("--n_channel", type=int, default=-1)
     parser.add_argument("--time_chunk", type=int, default=12)
-    parser.add_argument("--search_path", type=str, default="/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/")
-    parser.add_argument("--out_path", type=str, default="/mnt/leonardo/storage_c/")
+    parser.add_argument("--search_path", type=str, default="/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/")
+    parser.add_argument("--out_path", type=str, default="/mnt/storage_c/")
     args = parser.parse_args()
 
     dask.config.set(**{"array.slicing.split_large_chunks": False})
     warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     pool = multiprocessing.Pool(args.workers)
-    years = list(range(2022, 2013, -1))
+    years = list(range(2023, 2013, -1))
 
     for year in years:
         output_name = os.path.join(args.out_path, f"{year}_{'hrv' if args.hrv else 'nonhrv'}.zarr")
+        # Check if output zarr exists, which elements are already there and ignore them for appending
+        dataset_time_values = None
+        if os.path.exists(output_name):
+            # Try opening it, if successful, then get timestamps and exclude those from the datafiles
+            try:
+                dataset_time_values = xr.open_zarr(output_name).time.values
+            except Exception as e:
+                print(f"Failing to open {output_name} because of {e}")
         pattern = f"{year}"
         # Get all files for a month, and use that as the name for the empty one, zip up at end and download
         data_files = sorted(
@@ -233,35 +242,49 @@ if __name__ == "__main__":
                 )
             )
         )
+
+        if dataset_time_values is not None:
+            print("Filtering based off old datetimes")
+            # Filter times here
+            new_data_files = []
+            regex = '%Y%m%d%H%M'
+            for f in data_files:
+                f_parts = f.split("/")[-1].split(".zarr")[0]
+                if args.hrv:
+                    f_parts = f_parts.split("hrv_")[-1]
+                dtime = pd.to_datetime(f_parts, format=regex)
+                if dtime not in dataset_time_values:
+                    print(f"{dtime} is not in current Zarr")
+                    new_data_files.append(f)
+            data_files = new_data_files
         n = args.time_chunk
         data_files = [
             data_files[i * n : (i + 1) * n] for i in range((len(data_files) + n - 1) // n)
         ]
         print(len(data_files))
-        # hrv_data_files = sorted(list(glob(os.path.join(
-        #    "/mnt/leonardo/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
-        #    f"hrv_{pattern}*.zarr.zip"))))
-        # print(len(hrv_data_files))
 
         # 2. Split files into sets of 12 and send to multiprocessing
         # 3. Load and combine the files
         read_function = read_hrv_timesteps_and_return if args.hrv else read_nonhrv_timesteps_and_return
-        dataset = read_function(data_files[0])
-        print(dataset)
-        if dataset is None:
-            raise ValueError("First dataset is None, failing")
-        write_to_zarr(
-            dataset,
-            output_name,
-            mode="w",
-            chunks={
-                "time": args.time_chunk,
-                "x_geostationary": len(dataset.x_geostationary.values) // args.x_div,
-                "y_geostationary": len(dataset.y_geostationary.values) // args.y_div,
-                "variable": args.n_channel,
-            },
-        )
-        for dataset in tqdm(pool.imap(read_function, data_files[1:])):
+        if dataset_time_values is None:
+            # Only need to write new zarr if old one didn't work
+            dataset = read_function(data_files[0])
+            print(dataset)
+            if dataset is None:
+                raise ValueError("First dataset is None, failing")
+            write_to_zarr(
+                dataset,
+                output_name,
+                mode="w",
+                chunks={
+                    "time": args.time_chunk,
+                    "x_geostationary": len(dataset.x_geostationary.values) // args.x_div,
+                    "y_geostationary": len(dataset.y_geostationary.values) // args.y_div,
+                    "variable": args.n_channel,
+                },
+            )
+        data_files_left = data_files[1:] if dataset_time_values is None else data_files
+        for dataset in tqdm(pool.imap(read_function, data_files_left)):
             if dataset is None:
                 continue
             write_to_zarr(
