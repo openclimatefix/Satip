@@ -17,11 +17,7 @@ For each year:
 
 import xarray as xr
 from glob import glob
-from numcodecs.registry import register_codec
-from numcodecs.abc import Codec
-from numcodecs.compat import ensure_contiguous_ndarray
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-import blosc2
 import numpy as np
 import os
 import warnings
@@ -30,51 +26,7 @@ import multiprocessing
 from tqdm import tqdm
 from argparse import ArgumentParser
 import pandas as pd
-
-
-class Blosc2(Codec):
-    """Codec providing compression using the Blosc meta-compressor.
-    Parameters
-    ----------
-    cname : string, optional
-        A string naming one of the compression algorithms available within blosc, e.g.,
-        'zstd', 'blosclz', 'lz4', 'lz4hc', 'zlib' or 'snappy'.
-    clevel : integer, optional
-        An integer between 0 and 9 specifying the compression level.
-    See Also
-    --------
-    numcodecs.zstd.Zstd, numcodecs.lz4.LZ4
-    """
-
-    codec_id = "blosc2"
-    max_buffer_size = 2**31 - 1
-
-    def __init__(self, cname="blosc2", clevel=5):
-        self.cname = cname
-        if cname == "zstd":
-            self._codec = blosc2.Codec.ZSTD
-        elif cname == "blosc2":
-            self._codec = blosc2.Codec.BLOSCLZ
-        self.clevel = clevel
-
-    def encode(self, buf):
-        buf = ensure_contiguous_ndarray(buf, self.max_buffer_size)
-        return blosc2.compress(buf, codec=self._codec, clevel=self.clevel)
-
-    def decode(self, buf, out=None):
-        buf = ensure_contiguous_ndarray(buf, self.max_buffer_size)
-        return blosc2.decompress(buf, out)
-
-    def __repr__(self):
-        r = "%s(cname=%r, clevel=%r)" % (
-            type(self).__name__,
-            self.cname,
-            self.clevel,
-        )
-        return r
-
-
-register_codec(Blosc2)
+from ocf_blosc2.ocf_blosc2 import Blosc2
 
 
 def read_zarrs(files, dim, transform_func=None):
@@ -95,6 +47,12 @@ def read_zarrs(files, dim, transform_func=None):
     combined = xr.concat(datasets, dim)
     return combined
 
+def try_each_zarr_and_remove_faulty_ones(files):
+    for f in files:
+        try:
+            xr.open_dataset(f).load()
+        except:
+            os.remove(f)
 
 def read_mf_zarrs(files, preprocess_func=None):
     # use a context manager, to ensure the file gets closed after use
@@ -154,6 +112,7 @@ def read_hrv_timesteps_and_return(files):
                 dataset[v].encoding.clear()
     except Exception as e:
         print(e)
+        try_each_zarr_and_remove_faulty_ones(files)
         return None
 
     return dataset
@@ -179,6 +138,7 @@ def read_nonhrv_timesteps_and_return(files):
                 dataset[v].encoding.clear()
     except Exception as e:
         print(e)
+        try_each_zarr_and_remove_faulty_ones(files)
         return None
 
     return dataset
