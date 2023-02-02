@@ -187,7 +187,10 @@ if __name__ == "__main__":
         if os.path.exists(output_name):
             # Try opening it, if successful, then get timestamps and exclude those from the datafiles
             try:
-                dataset_time_values = xr.open_zarr(output_name).time.values
+                with xr.open_zarr(output_name) as ds:
+                    dataset_time_values = ds.time.values
+                    dataset_x = len(ds.x_geostationary.values)
+                    dataset_y = len(ds.y_geostationary.values)
             except Exception as e:
                 print(f"Failing to open {output_name} because of {e}")
         pattern = f"{year}"
@@ -232,6 +235,8 @@ if __name__ == "__main__":
             print(dataset)
             if dataset is None:
                 raise ValueError("First dataset is None, failing")
+            dataset_x = len(dataset.x_geostationary.values)
+            dataset_y = len(dataset.y_geostationary.values)
             write_to_zarr(
                 dataset,
                 output_name,
@@ -246,6 +251,8 @@ if __name__ == "__main__":
         data_files_left = data_files[1:] if dataset_time_values is None else data_files
         for dataset in tqdm(pool.imap(read_function, data_files_left)):
             if dataset is None:
+                continue
+            if len(dataset.x_geostationary.values) != dataset_x or len(dataset.y_geostationary.values) != dataset_y:
                 continue
             write_to_zarr(
                 dataset,
