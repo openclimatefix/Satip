@@ -187,14 +187,12 @@ def run(
             logger.info("No files to download, exiting")
             updated_data = False
         else:
-
             if maximum_n_datasets != -1:
                 logger.debug(f"Ony going to get at most {maximum_n_datasets} datasets")
                 datasets = datasets[0:maximum_n_datasets]
 
             updated_data = True
             if use_backup:
-
                 download_manager.download_tailored_datasets(
                     datasets,
                     product_id="EO:EUM:DAT:MSG:HRSEVIRI",

@@ -650,7 +650,6 @@ def save_native_to_zarr(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
     for f in list_of_native_files:
-
         logger.debug(f"Processing {f}")
         if "EPCT" in f:
             logger.debug(f"Processing HRIT file {f}")

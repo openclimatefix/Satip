@@ -15,18 +15,20 @@ For each year:
 
 """
 
-import xarray as xr
-from glob import glob
-from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-import numpy as np
+import multiprocessing
 import os
 import warnings
-import dask
-import multiprocessing
-from tqdm import tqdm
 from argparse import ArgumentParser
+from glob import glob
+
+import dask
+import numpy as np
 import pandas as pd
+import xarray as xr
 from ocf_blosc2.ocf_blosc2 import Blosc2
+from tqdm import tqdm
+
+from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 
 
 def read_zarrs(files, dim, transform_func=None):
@@ -47,12 +49,14 @@ def read_zarrs(files, dim, transform_func=None):
     combined = xr.concat(datasets, dim)
     return combined
 
+
 def try_each_zarr_and_remove_faulty_ones(files):
     for f in files:
         try:
             xr.open_dataset(f).load()
         except:
             os.remove(f)
+
 
 def read_mf_zarrs(files, preprocess_func=None):
     # use a context manager, to ensure the file gets closed after use
@@ -170,7 +174,11 @@ if __name__ == "__main__":
     parser.add_argument("--y_div", type=int, default=1)
     parser.add_argument("--n_channel", type=int, default=-1)
     parser.add_argument("--time_chunk", type=int, default=12)
-    parser.add_argument("--search_path", type=str, default="/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/")
+    parser.add_argument(
+        "--search_path",
+        type=str,
+        default="/mnt/storage_a/data/ocf/solar_pv_nowcasting/nowcasting_dataset_pipeline/satellite/EUMETSAT/SEVIRI_RSS/zarr/v6/",
+    )
     parser.add_argument("--out_path", type=str, default="/mnt/storage_c/")
     args = parser.parse_args()
 
@@ -210,7 +218,7 @@ if __name__ == "__main__":
             print("Filtering based off old datetimes")
             # Filter times here
             new_data_files = []
-            regex = '%Y%m%d%H%M'
+            regex = "%Y%m%d%H%M"
             for f in data_files:
                 f_parts = f.split("/")[-1].split(".zarr")[0]
                 if args.hrv:
@@ -228,7 +236,9 @@ if __name__ == "__main__":
 
         # 2. Split files into sets of 12 and send to multiprocessing
         # 3. Load and combine the files
-        read_function = read_hrv_timesteps_and_return if args.hrv else read_nonhrv_timesteps_and_return
+        read_function = (
+            read_hrv_timesteps_and_return if args.hrv else read_nonhrv_timesteps_and_return
+        )
         if dataset_time_values is None:
             # Only need to write new zarr if old one didn't work
             dataset = read_function(data_files[0])
@@ -252,7 +262,10 @@ if __name__ == "__main__":
         for dataset in tqdm(pool.imap(read_function, data_files_left)):
             if dataset is None:
                 continue
-            if len(dataset.x_geostationary.values) != dataset_x or len(dataset.y_geostationary.values) != dataset_y:
+            if (
+                len(dataset.x_geostationary.values) != dataset_x
+                or len(dataset.y_geostationary.values) != dataset_y
+            ):
                 continue
             write_to_zarr(
                 dataset,

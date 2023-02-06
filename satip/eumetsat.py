@@ -177,7 +177,6 @@ def identify_available_datasets(
     new_end_date = datasets[-1]["properties"]["date"].split("/")[1]
 
     for i in range(extra_loops_needed):
-
         # ensure the last loop we only get the remaining assets
         if i + 1 < extra_loops_needed:
             num_features = 500
@@ -481,7 +480,6 @@ class DownloadManager:  # noqa: D205
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
         if tailor_id == SEVIRI:  # Also do HRV
-
             credentials = (self.user_key, self.user_secret)
             token = eumdac.AccessToken(credentials)
             datastore = eumdac.DataStore(token)
@@ -540,7 +538,6 @@ class DownloadManager:  # noqa: D205
 
         fs = fsspec.open(data_store_filename_remote).fs
         if fs.exists(data_store_filename_remote):
-
             # copy to 'data_dir'
             self.logger.debug(
                 f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"

@@ -51,7 +51,6 @@ class TestScaleToZeroToOne(unittest.TestCase):
         return super().setUp()
 
     def test_fit(self):  # noqa: D102
-
         scaler = ScaleToZeroToOne(
             mins=np.asarray([-5, 0]),
             maxs=np.asarray([5, 20]),

@@ -6,21 +6,37 @@ import modal
 
 app = modal.Stub("eumetsat-processing")
 
-mount = modal.Mount(local_file="/home/jacob/Downloads/jxl-debs-amd64-debian-bullseye-v0.7.0/libjxl_0.7_amd64.deb", remote_dir="/")
-image = modal.Image.conda().copy(mount, "/downloads").apt_install("libbrotli1").run_commands("dpkg -i /downloads/libjxl_0.7_amd64.deb").conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"]).pip_install(["satip"])
+mount = modal.Mount(
+    local_file="/home/jacob/Downloads/jxl-debs-amd64-debian-bullseye-v0.7.0/libjxl_0.7_amd64.deb",
+    remote_dir="/",
+)
+image = (
+    modal.Image.conda()
+    .copy(mount, "/downloads")
+    .apt_install("libbrotli1")
+    .run_commands("dpkg -i /downloads/libjxl_0.7_amd64.deb")
+    .conda_install(["zarr", "s3fs", "fsspec", "xarray", "satpy[all]"])
+    .pip_install(["satip"])
+)
 
 
-@app.function(image=image, secret=modal.Secret.from_name("eumetsat"), memory=8192, rate_limit=modal.RateLimit(per_minute=6), concurrency_limit=6)
+@app.function(
+    image=image,
+    secret=modal.Secret.from_name("eumetsat"),
+    memory=8192,
+    rate_limit=modal.RateLimit(per_minute=6),
+    concurrency_limit=6,
+)
 def f(datasets):
     import glob
     import tempfile
 
+    import numcodecs
     import numpy as np
     import pandas as pd
     import xarray as xr
     import zarr
     from satpy import Scene
-    import numcodecs
 
     from satip.eumetsat import DownloadManager
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
@@ -260,25 +276,25 @@ if __name__ == "__main__":
             else:
                 tmp_datasets.append(dataset)
         if len(tmp_datasets) > 0:
-                with app.run():
-                    try:
-                        hrv, dataarray, now_time = f.map(tmp_datasets)
-                        if hrv is None:
-                            continue
-                        save_file = os.path.join(
-                            "/run/media/jacob/Windows/",
-                            f"hrv_{now_time}.zarr.zip",
-                        )
-
-                        with open(save_file, "wb") as h:
-                            h.write(hrv)
-                        save_file = os.path.join(
-                            "/run/media/jacob/Windows/",
-                            f"{now_time}.zarr.zip",
-                        )
-                        with open(save_file, "wb") as w:
-                            w.write(dataarray)
-                    except Exception as e:
-                        print(e)
-                        raise e
+            with app.run():
+                try:
+                    hrv, dataarray, now_time = f.map(tmp_datasets)
+                    if hrv is None:
                         continue
+                    save_file = os.path.join(
+                        "/run/media/jacob/Windows/",
+                        f"hrv_{now_time}.zarr.zip",
+                    )
+
+                    with open(save_file, "wb") as h:
+                        h.write(hrv)
+                    save_file = os.path.join(
+                        "/run/media/jacob/Windows/",
+                        f"{now_time}.zarr.zip",
+                    )
+                    with open(save_file, "wb") as w:
+                        w.write(dataarray)
+                except Exception as e:
+                    print(e)
+                    raise e
+                    continue

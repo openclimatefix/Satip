@@ -276,7 +276,6 @@ def create_dummy_zarr(datasets, base_path):
 
 
 if __name__ == "__main__":
-
     date_range = pd.date_range(start="2011-01-01 00:00", end="2019-01-01 00:00", freq="1M")
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
