@@ -650,7 +650,6 @@ def save_native_to_zarr(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
     for f in list_of_native_files:
-
         logger.debug(f"Processing {f}")
         if "EPCT" in f:
             logger.debug(f"Processing HRIT file {f}")
@@ -1092,8 +1091,8 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
-    except:
-        logger.debug(f"Tried to remove {filename} but couldnt")
+    except Exception:
+        logger.debug(f"Tried to remove {filename} but couldn't")
     filesystem.mv(filename_temp, filename)
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
     logger.debug(f"{filename} {new_times}")
@@ -1128,8 +1127,8 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
-    except:
-        logger.debug(f"Tried to remove {filename} but couldnt")
+    except Exception:
+        logger.debug(f"Tried to remove {filename} but couldn't")
     filesystem.mv(filename_temp, filename)
 
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
