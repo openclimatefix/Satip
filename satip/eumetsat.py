@@ -252,7 +252,7 @@ class DownloadManager:  # noqa: D205
         # Configuring the logger
         self.logger = utils.set_up_logging(logger_name)
 
-        self.logger.info("********** Download Manager Initialised **************")
+        #self.logger.info("********** Download Manager Initialised **************")
 
         # Requesting the API access token
         self.user_key = user_key

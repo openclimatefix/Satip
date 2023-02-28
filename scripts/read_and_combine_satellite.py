@@ -14,6 +14,7 @@ For each year:
 5. Write chunk to disk
 
 """
+import shutil
 
 import xarray as xr
 from glob import glob
@@ -26,6 +27,7 @@ import multiprocessing
 from tqdm import tqdm
 from argparse import ArgumentParser
 import pandas as pd
+import json
 from ocf_blosc2.ocf_blosc2 import Blosc2
 
 
@@ -178,7 +180,7 @@ if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=RuntimeWarning)
 
     pool = multiprocessing.Pool(args.workers)
-    years = list(range(2023, 2013, -1))
+    years = [2017] #list(range(2023, 2013, -1))
 
     for year in years:
         output_name = os.path.join(args.out_path, f"{year}_{'hrv' if args.hrv else 'nonhrv'}.zarr")
@@ -253,6 +255,7 @@ if __name__ == "__main__":
             if dataset is None:
                 continue
             if len(dataset.x_geostationary.values) != dataset_x or len(dataset.y_geostationary.values) != dataset_y:
+                print(f"Dataets X ({len(dataset.x_geostationary.values)} vs {dataset_x}) or Y ({len(dataset.y_geostationary.values)} vs {dataset_y}) mismatch, skipping")
                 continue
             write_to_zarr(
                 dataset,
@@ -265,3 +268,29 @@ if __name__ == "__main__":
                     "variable": args.n_channel,
                 },
             )
+        # Combine time coords
+        ds = xr.open_zarr(output_name)
+        del ds["data"]
+        # Need to remove these encodings to avoid chunking
+        del ds.time.encoding['chunks']
+        del ds.time.encoding['preferred_chunks']
+        ds.to_zarr(f"{output_name.split('.zarr')[0]}_coord.zarr", consolidated=True)
+        # Remove current time ones
+        shutil.rmtree(f"{output_name}/time/")
+        # Add new time ones
+        shutil.copytree(f"{output_name.split('.zarr')[0]}_coord.zarr/time", f"{output_name}/time")
+
+        # Now replace the part of the .zmetadata with the part of the .zmetadata from the new coord one
+        with open(f"{output_name}/.zmetadata", "r") as f:
+            data = json.load(f)
+            with open(f"{output_name.split('.zarr')[0]}_coord.zarr/.zmetadata", "r") as f2:
+                coord_data = json.load(f2)
+            data["metadata"]["time/.zarray"] = coord_data["metadata"]["time/.zarray"]
+        with open(f"{output_name}/.zmetadata", "w") as f:
+            json.dump(data,f)
+        # When this is done, we want to rewrite the time coordinate as a few,
+        # large files rather than thousands of small ones (which is what happens with appending)
+        # To do this, we write a dummy array, and copy over the time coordinates, and change
+        # the .zmetadata chunks to be the correct size (1/4th the size of the total times usually)
+        # .zmetadata is JSON file, so can open, write the new time chunk value, and resave
+        # To get the right one, open the .zmetdata of the dummy one, read out that and insert into the other
