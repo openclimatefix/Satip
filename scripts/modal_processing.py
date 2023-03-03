@@ -15,12 +15,12 @@ def f(datasets):
     import glob
     import tempfile
 
+    import numcodecs
     import numpy as np
     import pandas as pd
     import xarray as xr
     import zarr
     from satpy import Scene
-    import numcodecs
 
     from satip.eumetsat import DownloadManager
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
@@ -219,14 +219,10 @@ def f(datasets):
 
 
 if __name__ == "__main__":
-    import time
 
-    import numpy as np
     import pandas as pd
-    import zarr
 
     from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
-    from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 
     date_range = pd.date_range(start="2023-01-01 00:00", end="2023-01-31 00:00", freq="1W")
     api_key = os.environ["SAT_API_KEY"]

@@ -14,21 +14,20 @@ For each year:
 5. Write chunk to disk
 
 """
-import shutil
-
-import xarray as xr
-from glob import glob
-from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
-import numpy as np
-import os
-import warnings
-import dask
-import multiprocessing
-from tqdm import tqdm
-from argparse import ArgumentParser
-import pandas as pd
 import json
+import multiprocessing
+import os
+import shutil
+import warnings
+from argparse import ArgumentParser
+from glob import glob
+
+import dask
+import numpy as np
+import pandas as pd
+import xarray as xr
 from ocf_blosc2.ocf_blosc2 import Blosc2
+from tqdm import tqdm
 
 
 def read_zarrs(files, dim, transform_func=None):
