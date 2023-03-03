@@ -9,7 +9,6 @@ import dask
 import numpy as np
 import pandas as pd
 import xarray as xr
-import zarr
 from satpy import Scene
 from tqdm import tqdm
 
