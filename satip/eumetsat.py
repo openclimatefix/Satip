@@ -120,7 +120,7 @@ def query_data_products(
         r: Response from the request
     """
 
-    search_url = API_ENDPOINT + "/data/search-products/os"
+    search_url = API_ENDPOINT + "/data/search-products/0.4.0/os"
 
     params = {
         "format": "json",
@@ -161,7 +161,7 @@ def identify_available_datasets(
 
     r_json = query_data_products(start_date, end_date, product_id=product_id).json()
 
-    num_total_results = r_json["properties"]["totalResults"]
+    num_total_results = r_json["totalResults"]
     print(f"identify_available_datasets: found {num_total_results} results from API")
     if log:
         log.info(f"Found {len(num_total_results)} EUMETSAT dataset files")
