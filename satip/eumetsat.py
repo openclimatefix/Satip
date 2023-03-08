@@ -139,7 +139,7 @@ def query_data_products(
 
 
 def identify_available_datasets(
-    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", log=None
+    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS"
 ):
     """Identifies available datasets from the EUMETSAT data API
 
