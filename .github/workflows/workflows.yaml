@@ -14,6 +14,7 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.10'
+          cache: 'pip'
       - name: Do some Ubunutu specific installs for Python 3.10
         if: runner.os == 'Linux'
         run: |
@@ -23,18 +24,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install wheel pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Setup with pytest-xdist
-        run: |
-          # lets get the string for how many cpus to use with pytest
-          echo "Will be using 2 cpus for pytest testing"
-          #
-          # make PYTESTXDIST
-          export PYTESTXDIST="-n 2"
-          if [ 2 -gt 0 ]; then export PYTESTXDIST="$PYTESTXDIST --dist=loadfile"; fi
-          #
-          # echo results and save env var for other jobs
-          echo "pytest-xdist options that will be used are: $PYTESTXDIST"
-          echo "PYTESTXDIST=$PYTESTXDIST" >> $GITHUB_ENV
       - name: Setup with pytest-cov
         run: |
           # let make pytest run with coverage
