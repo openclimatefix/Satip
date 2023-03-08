@@ -17,7 +17,7 @@ jobs:
       - name: Do some Ubunutu specific installs for Python 3.10
         if: runner.os == 'Linux'
         run: |
-          echo "Installing ${{inputs.sudo_ap_install}}
+          echo "Installing ${{inputs.sudo_ap_install}}"
           sudo apt install ${{inputs.sudo_apt_install}}
       - name: Install dependencies
         run: |
