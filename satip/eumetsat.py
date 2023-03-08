@@ -164,7 +164,7 @@ def identify_available_datasets(
 
     num_total_results = r_json["totalResults"]
     if log:
-        log.info(f"Found {len(num_total_results)} EUMETSAT dataset files", productID=product_id)
+        log.info(f"Found {num_total_results} EUMETSAT dataset files", productID=product_id)
 
     if num_total_results < 500:
         return r_json["features"]
