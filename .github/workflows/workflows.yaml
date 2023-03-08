@@ -14,17 +14,16 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.10'
-      - name: Do some Ubunutu specific installs for Python 3.9
+      - name: Do some Ubunutu specific installs for Python 3.10
         if: runner.os == 'Linux'
         run: |
+          echo "Installing ${{inputs.sudo_ap_install}}
           sudo apt install ${{inputs.sudo_apt_install}}
-      - name: Add conda to system path
-        run: |
-          # $CONDA is an environment variable pointing to the root of the miniconda directory
-          echo $CONDA/bin >> $GITHUB_PATH
       - name: Install dependencies
         run: |
-          conda env update --file environment.yml --name base
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Setup with pytest-xdist
         run: |
           # lets get the string for how many cpus to use with pytest
