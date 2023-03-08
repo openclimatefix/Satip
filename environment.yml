@@ -70,7 +70,6 @@ dependencies:
   - geotiff=1.7.1=h90559a4_4
   - gettext=0.21.1=h0186832_0
   - giflib=5.2.1=h27ca646_2
-  - h5netcdf=1.1.0=pyhd8ed1ab_0
   - h5py=3.8.0=nompi_py310h3419284_100
   - hdf4=4.2.15=h1a38d6a_5
   - hdf5=1.12.2=nompi_h33dac16_100
@@ -220,6 +219,7 @@ dependencies:
       - alembic==1.10.1
       - eccodes-python==0.9.9
       - eumdac==2.0.1
+      - h5netcdf==1.1.0
       - mako==1.2.4
       - nowcasting-datamodel==1.1.70
       - psycopg2-binary==2.9.5
