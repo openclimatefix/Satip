@@ -18,6 +18,7 @@ from itertools import repeat
 from pathlib import Path
 
 import pandas as pd
+import structlog
 import xarray as xr
 from tqdm import tqdm
 
@@ -28,8 +29,6 @@ from satip.utils import (
     load_native_to_dataarray,
     save_dataarray_to_zarr,
 )
-
-import structlog
 
 log = structlog.stdlib.get_logger()
 

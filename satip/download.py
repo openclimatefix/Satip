@@ -131,7 +131,7 @@ def download_eumetsat_data(
             )
         else:
             times_to_use = [(pd.to_datetime(start_date), pd.to_datetime(end_date))]
-        log.debug(f"Got time ranges for which to fetch data", ranges=times_to_use)
+        log.debug("Got time ranges for which to fetch data", ranges=times_to_use)
 
         if number_of_processes > 0:
             pool = multiprocessing.Pool(processes=number_of_processes)

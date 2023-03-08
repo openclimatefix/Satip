@@ -12,8 +12,8 @@ from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 import satip
-from satip.eumetsat import DownloadManager
 from satip import utils
+from satip.eumetsat import DownloadManager
 
 log = structlog.stdlib.get_logger()
 
@@ -210,7 +210,7 @@ def run(
         if updated_data:
             # Collate files into single NetCDF file
             utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
-            log.debug(f"Collated files", memory=utils.getMemory())
+            log.debug("Collated files", memory=utils.getMemory())
 
             # 4. update table to show when this data has been pulled
             if db_url is not None:

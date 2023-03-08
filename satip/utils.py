@@ -280,16 +280,16 @@ def convert_scene_to_dataarray(
     """
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
-    log.debug(f"Starting scene conversion", memory=getMemory())
+    log.debug("Starting scene conversion", memory=getMemory())
     if area != "RSS":
         try:
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
         except NotImplementedError:
             # 15 minutely data by default doesn't work for some reason, have to resample it
             scene = scene.resample("msg_seviri_rss_1km" if band == "HRV" else "msg_seviri_rss_3km")
-            log.debug(f"Finished resample", memory=getMemory())
+            log.debug("Finished resample", memory=getMemory())
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-    log.debug(f"Finished crop", memory=getMemory())
+    log.debug("Finished crop", memory=getMemory())
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
     data_attrs = {}
@@ -300,7 +300,7 @@ def convert_scene_to_dataarray(
             data_attrs[new_name] = scene[channel].attrs[attr]
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
-    log.debug(f"Converted to dataarray", memory=getMemory())
+    log.debug("Converted to dataarray", memory=getMemory())
 
     # Lat and Lon are the same for all the channels now
     if calculate_osgb:
@@ -322,7 +322,7 @@ def convert_scene_to_dataarray(
 
     for name in ["x", "y"]:
         dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
-    log.info(f"Calculated OSGB", memory=getMemory())
+    log.info("Calculated OSGB", memory=getMemory())
     # Round to the nearest 5 minutes
     dataarray.attrs.update(data_attrs)
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
@@ -335,7 +335,7 @@ def convert_scene_to_dataarray(
 
     del dataarray["crs"]
     del scene
-    log.debug(f"Finished conversion", memory=getMemory())
+    log.debug("Finished conversion", memory=getMemory())
     return dataarray
 
 
@@ -384,11 +384,11 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
         generate=False,
     )
 
-    log.debug(f"Loaded HRV", memory=getMemory())
+    log.debug("Loaded HRV", memory=getMemory())
     hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
         hrv_scene, band="HRV", area="UK", calculate_osgb=True
     )
-    log.debug(f"Converted HRV to dataarray", memory=getMemory())
+    log.debug("Converted HRV to dataarray", memory=getMemory())
     del hrv_scene
     attrs = serialize_attrs(hrv_dataarray.attrs)
     if use_rescaler:
@@ -407,14 +407,14 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
     hrv_dataset = hrv_dataarray.to_dataset(name="data")
     hrv_dataset.attrs.update(attrs)
-    log.debug(f"Converted HRV to DataArray", memory=getMemory())
+    log.debug("Converted HRV to DataArray", memory=getMemory())
     now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
     log.debug(f"Saving HRV netcdf in {save_file}", memory=getMemory())
     save_to_zarr_to_s3(hrv_dataset, save_file)
     del hrv_dataset
     gc.collect()
-    log.debug(f"Saved HRV to NetCDF", memory=getMemory())
+    log.debug("Saved HRV to NetCDF", memory=getMemory())
 
 
 def get_nonhrv_dataset_from_scene(
@@ -502,10 +502,10 @@ def get_nonhrv_dataset_from_scene(
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.chunk((1, 256, 256, 1))
     dataset = dataarray.to_dataset(name="data")
-    log.debug(f"Converted non-HRV to dataset", memory=getMemory())
+    log.debug("Converted non-HRV to dataset", memory=getMemory())
     del dataarray
     dataset.attrs.update(attrs)
-    log.debug(f"Deleted return list", memory=getMemory())
+    log.debug("Deleted return list", memory=getMemory())
     now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
     log.debug(f"Saving non-HRV netcdf in {save_file}", memory=getMemory())
