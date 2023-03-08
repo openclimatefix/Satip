@@ -11,7 +11,6 @@ Usage example:
 Author(s): Jacob Bieker
 """
 
-import logging
 import math
 import multiprocessing
 import os
@@ -25,13 +24,13 @@ import fsspec
 import numpy as np
 import pandas as pd
 import requests.exceptions
+import structlog
 import yaml
 
 from satip import eumetsat
 from satip.utils import format_dt_str
 
-_LOG = logging.getLogger("satip.download")
-_LOG.setLevel(logging.INFO)
+log = structlog.stdlib.get_logger()
 
 SAT_VARIABLE_NAMES = (
     "HRV",
@@ -132,7 +131,7 @@ def download_eumetsat_data(
             )
         else:
             times_to_use = [(pd.to_datetime(start_date), pd.to_datetime(end_date))]
-        _LOG.info(times_to_use)
+        log.debug(f"Got time ranges for which to fetch data", ranges=times_to_use)
 
         if number_of_processes > 0:
             pool = multiprocessing.Pool(processes=number_of_processes)
@@ -164,8 +163,7 @@ def _download_time_range(
 ) -> None:
     time_range, product_id, download_manager = x
     start_time, end_time = time_range
-    _LOG.info(format_dt_str(start_time))
-    _LOG.info(format_dt_str(end_time))
+    log.debug(f"Fetching data for {format_dt_str(start_time)} - {format_dt_str(end_time)}")
     # To help stop with rate limiting
     time.sleep(np.random.randint(0, 30))
     complete = False
@@ -188,7 +186,7 @@ def _download_time_range(
             )
             complete = True
         except Exception as e:
-            _LOG.warning(f"An Error was thrown, waiting and trying again: {e}")
+            log.warning(f"An Error was thrown, waiting and trying again: {e}")
 
 
 def _load_key_secret(filename: str) -> Tuple[str, str]:
@@ -248,9 +246,10 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
             file_size = eumetsat.get_filesize_megabytes(f)
             if not math.isclose(file_size, CLOUD_FILESIZE_MB, abs_tol=1):
                 # Removes if not the right size
-                _LOG.exception(
-                    f"Error when sanity-checking {f}.  Skipping this file.  "
-                    + "Will be downloaded next time this script is run."
+                log.warn(
+                    f"Error when sanity-checking {f}. Skipping this file. "
+                    + "Will be downloaded next time this script is run.",
+                    file=f, filesize=file_size, expsize=CLOUD_FILESIZE_MB
                 )
                 continue
             else:
@@ -268,7 +267,7 @@ def _process_rss_images(
     try:
         file_size = eumetsat.get_filesize_megabytes(f)
         if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
-            _LOG.info("RSS Image has the wrong size, skipping")
+            log.debug("RSS Image has the wrong size, skipping", filesize=file_size, expsize=NATIVE_FILESIZE_MB)
             return
 
         # Now that the file has been checked and can be opened,
@@ -276,8 +275,8 @@ def _process_rss_images(
         completed_process = subprocess.run(["pbzip2", "-5", f])
         try:
             completed_process.check_returncode()
-        except Exception:
-            _LOG.exception("Compression failed!")
+        except Exception as e:
+            log.warn(f"Error caught during compression: {e}", exc_info=True)
             return
 
         full_compressed_filename = f + ".bz2"
@@ -298,18 +297,20 @@ def _process_rss_images(
         # Remove the uncompressed file
         try:
             fs.rm(f)
-        except Exception:
+        except Exception as e:
+            log.warn(f"Error removing uncompressed file {f}: {e}", exc_info=True)
             return
 
     except Exception as e:
-        _LOG.exception(
+        log.warn(
             f"Error {e} when sanity-checking {f}.  Deleting this file.  "
             + "Will be downloaded next time this script is run."
         )
         # Something is wrong with the file, redownload later
         try:
             fs.rm(f)
-        except Exception:
+        except Exception as e:
+            log.warn(f"Error removing broken file {f}: {e}", exc_info=True)
             return
 
 

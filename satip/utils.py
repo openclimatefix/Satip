@@ -11,7 +11,6 @@ Collection of helper functions and utilities around
 import datetime
 import gc
 import glob
-import logging
 import os
 import secrets
 import shutil
@@ -27,6 +26,7 @@ import numcodecs
 import numpy as np
 import pandas as pd
 import psutil
+import structlog
 import xarray as xr
 import zarr
 from satpy import Scene
@@ -36,7 +36,7 @@ from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
-logger = logging.getLogger(__name__)
+log = structlog.get_logger()
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
 warnings.filterwarnings("ignore", message="invalid value encountered in sin")
@@ -51,6 +51,30 @@ warnings.filterwarnings(
         "#what-is-the-best-format-for-describing-coordinate-reference-systems"
     ),
 )
+
+
+def setupLogging() -> None:
+    """Instantiate the structlog package to produce JSON logs."""
+
+    # Add required processors and formatters to structlog
+    structlog.configure(
+        processors=[
+            structlog.processors.EventRenamer("message", replace_by="_event"),
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.CallsiteParameterAdder(
+                [
+                    structlog.processors.CallsiteParameter.FILENAME,
+                    structlog.processors.CallsiteParameter.LINENO
+                ],
+            ),
+            structlog.processors.dict_tracebacks,
+            structlog.stdlib.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer(),
+        ],
+    )
 
 
 def format_dt_str(datetime_string):
@@ -256,25 +280,16 @@ def convert_scene_to_dataarray(
     """
     if area not in GEOGRAPHIC_BOUNDS:
         raise ValueError(f"`area` must be one of {GEOGRAPHIC_BOUNDS.keys()}, not '{area}'")
-    logger.info(
-        f"Start of conversion Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Starting scene conversion", memory=getMemory())
     if area != "RSS":
         try:
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
         except NotImplementedError:
             # 15 minutely data by default doesn't work for some reason, have to resample it
             scene = scene.resample("msg_seviri_rss_1km" if band == "HRV" else "msg_seviri_rss_3km")
-            logger.info(
-                f"After Resample Memory in use: "
-                f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+            log.debug(f"Finished resample", memory=getMemory())
             scene = scene.crop(ll_bbox=GEOGRAPHIC_BOUNDS[area])
-    logger.info(
-        f"After Crop Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Finished crop", memory=getMemory())
     # Remove acq time from all bands because it is not useful, and can actually
     # get in the way of combining multiple Zarr datasets.
     data_attrs = {}
@@ -285,10 +300,7 @@ def convert_scene_to_dataarray(
             data_attrs[new_name] = scene[channel].attrs[attr]
     dataset: xr.Dataset = scene.to_xarray_dataset()
     dataarray = dataset.to_array()
-    logger.info(
-        f"After to DataArray Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Converted to dataarray", memory=getMemory())
 
     # Lat and Lon are the same for all the channels now
     if calculate_osgb:
@@ -310,10 +322,7 @@ def convert_scene_to_dataarray(
 
     for name in ["x", "y"]:
         dataarray[name].attrs["coordinate_reference_system"] = "geostationary"
-    logger.info(
-        f"After OSGB Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.info(f"Calculated OSGB", memory=getMemory())
     # Round to the nearest 5 minutes
     dataarray.attrs.update(data_attrs)
     dataarray.attrs["end_time"] = pd.Timestamp(dataarray.attrs["end_time"]).round("5 min")
@@ -326,10 +335,7 @@ def convert_scene_to_dataarray(
 
     del dataarray["crs"]
     del scene
-    logger.info(
-        f"End of conversion Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Finished conversion", memory=getMemory())
     return dataarray
 
 
@@ -366,10 +372,10 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     Returns the Xarray dataset from the filename
     """
     if ".nat" in filename:
-        logger.info(f"Loading Native {filename}")
+        log.debug(f"Loading Native {filename}", memory=getMemory())
         hrv_scene = load_native_from_zip(filename)
     else:
-        logger.info(f"Loading HRIT {filename}")
+        log.debug(f"Loading HRIT {filename}", memory=getMemory())
         hrv_scene = load_hrit_from_zip(filename, sections=list(range(16, 25)))
     hrv_scene.load(
         [
@@ -378,17 +384,11 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
         generate=False,
     )
 
-    logger.info(
-        f"After loading HRV Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Loaded HRV", memory=getMemory())
     hrv_dataarray: xr.DataArray = convert_scene_to_dataarray(
         hrv_scene, band="HRV", area="UK", calculate_osgb=True
     )
-    logger.info(
-        f"After converting HRV to DataArray Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Converted HRV to dataarray", memory=getMemory())
     del hrv_scene
     attrs = serialize_attrs(hrv_dataarray.attrs)
     if use_rescaler:
@@ -403,31 +403,18 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     hrv_dataarray = hrv_dataarray.transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    logger.info(
-        f"AFter HRV Rescaling Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.info("Rescaled HRV", memory=getMemory())
     hrv_dataarray = hrv_dataarray.chunk((1, 512, 512, 1))
     hrv_dataset = hrv_dataarray.to_dataset(name="data")
     hrv_dataset.attrs.update(attrs)
-    logger.info(
-        f"After HRV to Dataset Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Converted HRV to DataArray", memory=getMemory())
     now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
-    logger.info(f"Saving HRV netcdf in {save_file}")
-    logger.info(
-        f"At start of HRV Saving Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Saving HRV netcdf in {save_file}", memory=getMemory())
     save_to_zarr_to_s3(hrv_dataset, save_file)
     del hrv_dataset
     gc.collect()
-    logger.info(
-        f"At end of HRV Saving Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Saved HRV to NetCDF", memory=getMemory())
 
 
 def get_nonhrv_dataset_from_scene(
@@ -456,17 +443,11 @@ def get_nonhrv_dataset_from_scene(
         ],
         generate=False,
     )
-    logger.info(
-        f"After loading non-HRV Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Loaded non-hrv file: {filename}", memory=getMemory())
     dataarray: xr.DataArray = convert_scene_to_dataarray(
         scene, band="IR_016", area="UK", calculate_osgb=True
     )
-    logger.info(
-        f"After non-HRV to DataArray Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Converted non-HRV file {filename} to dataarray", memory=getMemory())
     del scene
     attrs = serialize_attrs(dataarray.attrs)
     if use_rescaler:
@@ -521,27 +502,17 @@ def get_nonhrv_dataset_from_scene(
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.chunk((1, 256, 256, 1))
     dataset = dataarray.to_dataset(name="data")
-    logger.info(
-        f"After non-HRV to Dataset Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Converted non-HRV to dataset", memory=getMemory())
     del dataarray
     dataset.attrs.update(attrs)
-    logger.info(
-        f"After Del Return List Memory in use: "
-        f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Deleted return list", memory=getMemory())
     now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
-    logger.info(f"Saving non-HRV netcdf in {save_file}")
-    logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
+    log.debug(f"Saving non-HRV netcdf in {save_file}", memory=getMemory())
     save_to_zarr_to_s3(dataset, save_file)
     del dataset
     gc.collect()
-    logger.info(
-        f"After saving non-HRV Memory in use:"
-        f" {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-    )
+    log.debug(f"Saved non-HRV file {save_file}", memory=getMemory())
 
 
 def load_hrit_from_zip(filename: str, sections: list) -> Scene:
@@ -599,7 +570,7 @@ def save_native_to_zarr(
         using_backup: Whether the input data is the backup 15 minutely data or not
     """
 
-    logger.info(f"Converting from {'HRIT' if using_backup else 'native'} to zarr in {save_dir}")
+    log.debug(f"Converting from {'HRIT' if using_backup else 'native'} to zarr in {save_dir}", memory=getMemory())
 
     scaler = ScaleToZeroToOne(
         mins=np.array(
@@ -650,54 +621,24 @@ def save_native_to_zarr(
         variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
     )
     for f in list_of_native_files:
-        logger.debug(f"Processing {f}")
+        log.debug(f"Processing {f}", memory=getMemory())
         if "EPCT" in f:
-            logger.debug(f"Processing HRIT file {f}")
+            log.debug(f"Processing HRIT file {f}", memory=getMemory())
             if "HRV" in f:
-                logger.debug(f"Processing HRV {f}")
-                logger.info(
-                    f"Start HRV process Memory in use: "
-                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
+                log.debug(f"Processing HRV {f}", memory=getMemory())
                 get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
-                logger.info(
-                    f"After HRV process ends Memory in use: "
-                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
             else:
-                logger.debug(f"Processing non-HRV {f}")
-                logger.info(
-                    f"STart non-HRV process Memory in use: "
-                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
+                log.debug(f"Processing non-HRV {f}", memory=getMemory())
                 get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
-                logger.info(
-                    f"After non-HRV process ends Memory in use: "
-                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
         else:
             if "HRV" in bands:
-                logger.debug(f"Processing HRV {f}")
-                logger.info(
-                    f"Start HRV process Memory in use:"
-                    f" {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
+                log.debug(f"Processing HRV {f}", memory=getMemory())
                 get_dataset_from_scene(f, hrv_scaler, use_rescaler, save_dir, using_backup)
-                logger.info(
-                    f"After HRV process ends Memory in use: "
-                    f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-                )
 
-            logger.debug(f"Processing non-HRV {f}")
-            logger.info(
-                f"STart non-HRV process Memory in use: "
-                f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+            log.debug(f"Processing non-HRV {f}", memory=getMemory())
             get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, using_backup)
-            logger.info(
-                f"After non-HRV process ends Memory in use: "
-                f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+
+        log.debug(f"Finished processing files: {list_of_native_files}", memory=getMemory())
 
 
 def save_dataarray_to_zarr(
@@ -847,33 +788,25 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
     """
 
     gc.collect()
-    logger.info(f"Saving file to {filename}")
-    logger.info(f"nbytes in MB:  {dataset.nbytes / (1024 * 1024)}")
+    log.info(f"Saving file to {filename}", memory=getMemory())
 
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.zarr.zip"
         encoding = {"data": {"dtype": "int16"}}
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
 
         # make sure variable is string
         dataset = dataset.assign_coords({"variable": dataset.coords["variable"].astype(str)})
 
-        logger.debug(f"{dataset.time}")
+        log.debug(f"Dataset time: {dataset.time}", memory=getMemory())
 
         with zarr.ZipStore(path) as store:
             dataset.to_zarr(store, compute=True, mode="w", encoding=encoding, consolidated=True)
 
         new_times = xr.open_dataset(f"zip::{path}", engine="zarr").time
-        logger.debug(f"{path} {new_times}")
+        log.debug(f"New times for {path}: {new_times}", memory=getMemory())
 
-        logger.debug(f"Saved to temporary file {path}, " f"now pushing to {filename}")
-        logger.info(
-            f"Finished writing Memory in use: "
-            f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
+        log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=getMemory())
         # save to s3
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
@@ -900,20 +833,20 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     ids = [dataset["id"] for dataset in datasets]
     filesystem = fsspec.open(save_dir).fs
     finished_files_not_latest = list(filesystem.glob(f"{save_dir}/*.zarr.zip"))
-    logger.info(f"Found {len(finished_files_not_latest)} already downloaded in data folder")
+    log.debug(f"Found {len(finished_files_not_latest)} already downloaded in data folder")
 
     filesystem_latest = fsspec.open(save_dir + "/latest").fs
     finished_files_latest = list(filesystem_latest.glob(f"{save_dir}/latest/*.zarr.zip"))
-    logger.info(f"Found {len(finished_files_latest)} already downloaded in latest folder")
+    log.debug(f"Found {len(finished_files_latest)} already downloaded in latest folder")
 
     finished_files = finished_files_not_latest + finished_files_latest
-    logger.info(f"Found {len(finished_files)} already downloaded")
+    log.debug(f"Found {len(finished_files)} already downloaded")
 
     datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
     if not datetimes:  # Empty list
-        logger.debug("No datetimes to download")
+        log.debug("No datetimes to download")
         return []
-    logger.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
+    log.debug(f"The latest datetime that we want to downloaded is {max(datetimes)}")
 
     finished_datetimes = []
 
@@ -929,19 +862,19 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
             )
         )
     if len(finished_datetimes) > 0:
-        logger.debug(f"The already downloaded finished datetime are {finished_datetimes}")
+        log.debug(f"The already downloaded finished datetime are {finished_datetimes}")
     else:
-        logger.debug("There are no files already downloaded")
+        log.debug("There are no files already downloaded")
 
     # find which indexes to remove, if file is already there
     idx_to_remove = []
     for idx, date in enumerate(datetimes):
         if date in finished_datetimes:
             idx_to_remove.append(idx)
-            logger.debug(f"Will not be downloading file with {date=} as already downloaded")
+            log.debug(f"Will not be downloading file with {date=} as already downloaded")
         else:
-            logger.debug(f"Will be downloading file with {date=}")
-    logger.debug(
+            log.debug(f"Will be downloading file with {date=}")
+    log.debug(
         f"Will be not be downloading {len(idx_to_remove)} files "
         f"as they have already been downloaded"
     )
@@ -968,12 +901,12 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
     # Now to move into latest
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
 
-    logger.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
+    log.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
 
     # get datetimes of the finished files
 
     for date in finished_files:
-        logger.debug(f"Looking at file {date}")
+        log.debug(f"Looking at file {date}")
         if "latest.zarr" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -991,23 +924,23 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time > history_time:
-            logger.debug("Moving file into latest folder")
+            log.debug("Moving file into latest folder")
             # Move HRV and non-HRV to new place
             filename = f"{save_dir}/latest/{date.split('/')[-1]}"
             if filesystem.exists(filename):
-                logger.debug(f"File already in latest folder, so not moving {filename}")
+                log.debug(f"File already in latest folder, so not moving {filename}")
             else:
                 filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
-            logger.debug("Removing file over 2 days over")
+            log.debug("Removing file over 2 days over")
             filesystem.rm(date)
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
-    logger.info(f"Checking {save_dir}/latest/ for older files")
+    log.info(f"Checking {save_dir}/latest/ for older files")
     # get datetimes of the finished files
     for date in finished_files:
-        logger.debug(f"Looking at file {date}")
+        log.debug(f"Looking at file {date}")
         if "latest.zarr" in date or "latest_15.zarr" in date or "tmp" in date:
             continue
         if "hrv" in date:
@@ -1025,7 +958,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time < history_time:
-            logger.debug("Moving file out of latest folder")
+            log.debug("Moving file out of latest folder")
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
@@ -1035,15 +968,15 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
     hrv_filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
 
-    logger.debug(f"Checking {hrv_filename} and or {filename} exists")
+    log.debug(f"Checking {hrv_filename} and or {filename} exists")
 
     if fsspec.open(hrv_filename).fs.exists(hrv_filename) and fsspec.open(filename).fs.exists(
         filename
     ):
-        logger.debug(f"Both {hrv_filename} and {filename} exists")
+        log.debug(f"Both {hrv_filename} and {filename} exists")
         return True
     else:
-        logger.debug(f"Either {hrv_filename} or {filename} dont exists")
+        log.debug(f"Either {hrv_filename} or {filename} dont exists")
         return False
 
 
@@ -1065,9 +998,9 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     # Add S3 to beginning of each URL
     filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{save_dir}/latest/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
-    logger.debug(f"Collating HRV files {filename}")
+    log.debug(f"Collating HRV files {filename}")
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
-    logger.debug(hrv_files)
+    log.debug(hrv_files)
     dataset = (
         xr.open_mfdataset(
             hrv_files,
@@ -1081,30 +1014,30 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .sortby("time")
         .drop_duplicates("time")
     )
-    logger.debug(dataset.time.values)
+    log.debug(dataset.time.values)
     save_to_zarr_to_s3(dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
-    logger.debug(f"{filename_temp}  {new_times}")
+    log.debug(f"{filename_temp}  {new_times}")
 
     # rename
-    logger.debug("Renaming")
+    log.debug("Renaming")
     filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
-    except Exception:
-        logger.debug(f"Tried to remove {filename} but couldn't")
+    except Exception as e:
+        log.warn(f"Error removing {filename}: {e}", exc_info=True)
     filesystem.mv(filename_temp, filename)
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
-    logger.debug(f"{filename} {new_times}")
+    log.debug(f"{filename} {new_times}")
 
     filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{save_dir}/latest/tmp_{secrets.token_hex(6)}.zarr.zip"
-    logger.debug(f"Collating non-HRV files {filename}")
+    log.debug(f"Collating non-HRV files {filename}")
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
     )
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
-    logger.debug(nonhrv_files)
+    log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(
             nonhrv_files,
@@ -1118,104 +1051,22 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .sortby("time")
         .drop_duplicates("time")
     )
-    logger.debug(o_dataset.time.values)
+    log.debug(o_dataset.time.values)
     save_to_zarr_to_s3(o_dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
-    logger.debug(f"{filename_temp} {new_times}")
+    log.debug(f"{filename_temp} {new_times}")
 
-    logger.debug("Renaming")
+    log.debug("Renaming")
     filesystem = fsspec.open(filename_temp).fs
     try:
         filesystem.rm(filename)
-    except Exception:
-        logger.debug(f"Tried to remove {filename} but couldn't")
+    except Exception as e:
+        log.warn(f"Error removing {filename}: {e}", exc_info=True)
     filesystem.mv(filename_temp, filename)
 
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
-    logger.debug(f"{filename} {new_times}")
+    log.debug(f"{filename} {new_times}")
 
 
-# Cell
-def set_up_logging(
-    name: str,
-    main_logging_level: str = "DEBUG",
-) -> logging.Logger:
-    """`set_up_logging` initialises and configures a custom logger for `satip`.
-
-    The custom logger's logging level of the file and
-    Jupyter outputs are specified by `main_logging_level`
-    whilst the Slack handler uses `slack_logging_level`.
-    There are three core ways that logs are broadcasted:
-    - Logging to a specified file
-    - Logging to Jupyter cell outputs
-    - Logging to Slack
-    Note that the value passed for `main_logging_level`
-    and `slack_logging_level` must be one of:
-    - 'CRITICAL'
-    - 'FATAL'
-    - 'ERROR'
-    - 'WARNING'
-    - 'WARN'
-    - 'INFO'
-    - 'DEBUG'
-    - 'NOTSET'
-    Parameters:
-        name: Name of the logger, if a logging.Logger object
-              is passed then that will be used instead.
-        log_dir: directory where the logs will be stored
-        main_logging_level: Logging level for file and Jupyter
-    Returns:
-        logger: Custom satip logger
-    Example:
-        Here we'll create a custom logger that saves data
-        to the file 'test_log.txt' and also sends Slack
-        messages to the specified user and channel.
-        >>> from satip.utils import set_up_logging
-        >>> import logging
-        >>> logger = set_up_logging(
-                'test_log',
-                'test_log.txt',
-                slack_id=slack_id,
-                slack_webhook_url=slack_webhook_url
-            )
-        >>> logger.log(
-                logging.INFO,
-                'This will output to file and Jupyter but not to Slack as it is not critical'
-            )
-        '2020-10-20 10:24:35,367 - INFO - This will output to file and Jupyter but not to Slack as it is not critical'  # noqa: E501
-    """
-
-    # Initialising logger
-    if isinstance(name, str):
-        logger = logging.getLogger(name)
-    else:
-        # instance where a logger object is passed
-        logger = name
-
-    # Configuring log level
-    logging_levels = [
-        "CRITICAL",
-        "FATAL",
-        "ERROR",
-        "WARNING",
-        "WARN",
-        "INFO",
-        "DEBUG",
-        "NOTSET",
-    ]
-
-    assert (
-        main_logging_level in logging_levels
-    ), f"main_logging_level must be one of {', '.join(logging_levels)}"
-
-    logger.setLevel(getattr(logging, main_logging_level))
-
-    # Defining global formatter
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-
-    # Configuring Jupyter output handler
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    return logger
+def getMemory() -> str:
+    return f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"

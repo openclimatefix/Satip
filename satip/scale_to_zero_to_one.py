@@ -15,6 +15,10 @@ import xarray as xr
 
 from satip.serialize import serialize_attrs
 
+import structlog
+
+log = structlog.stdlib.get_logger()
+
 
 class ScaleToZeroToOne:
     """ScaleToZeroToOne: rescales dataarrays so all values lie in the range [0, 1]."""
@@ -93,9 +97,9 @@ class ScaleToZeroToOne:
         self.maxs = dataset.max(dims).compute()
         self.variable_order = dataset.coords["variable"].values
 
-        print(f"The mins are: {self.mins}")
-        print(f"The maxs are: {self.maxs}")
-        print(f"The variable order is: {self.variable_order}")
+        log.debug(f"Calculated new min and max values",
+                  mins=self.mins, maxes=self.maxs, variableorder=self.variable_order
+        )
 
         return self
 
