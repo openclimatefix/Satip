@@ -11,9 +11,12 @@ Usage Example:
 from typing import Iterable, Union
 
 import numpy as np
+import structlog
 import xarray as xr
 
 from satip.serialize import serialize_attrs
+
+log = structlog.stdlib.get_logger()
 
 
 class ScaleToZeroToOne:
@@ -93,9 +96,9 @@ class ScaleToZeroToOne:
         self.maxs = dataset.max(dims).compute()
         self.variable_order = dataset.coords["variable"].values
 
-        print(f"The mins are: {self.mins}")
-        print(f"The maxs are: {self.maxs}")
-        print(f"The variable order is: {self.variable_order}")
+        log.debug("Calculated new min and max values",
+                  mins=self.mins, maxes=self.maxs, variableorder=self.variable_order
+        )
 
         return self
 

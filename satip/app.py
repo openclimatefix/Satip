@@ -1,31 +1,21 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
-import logging
 import os
 import tempfile
 from typing import Optional
 
 import click
 import pandas as pd
-import psutil
+import structlog
 from nowcasting_datamodel.connection import DatabaseConnection
 from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 import satip
+from satip import utils
 from satip.eumetsat import DownloadManager
-from satip.utils import (
-    check_both_final_files_exists,
-    collate_files_into_latest,
-    filter_dataset_ids_on_current_files,
-    move_older_files_to_different_location,
-    save_native_to_zarr,
-)
 
-logging.basicConfig(format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s")
-logging.getLogger("satip").setLevel(getattr(logging, os.environ.get("LOG_LEVEL", "INFO")))
-logger = logging.getLogger(__name__)
-logging.getLogger(__name__).setLevel(logging.INFO)
+log = structlog.stdlib.get_logger()
 
 
 @click.command()
@@ -135,120 +125,103 @@ def run(
         maximum_n_datasets: Set the maximum number of dataset to load, default gets them all
     """
 
-    logger.info(f'Running application and saving to "{save_dir}" ({satip.__version__}')
-    # 1. Get data from API, download native files
-    with tempfile.TemporaryDirectory() as tmpdir:
-        download_manager = DownloadManager(
-            user_key=api_key,
-            user_secret=api_secret,
-            data_dir=tmpdir,
-            native_file_dir=save_dir_native,
-        )
-        if cleanup:
-            logger.info("Running Data Tailor Cleanup")
-            download_manager.cleanup_datatailor()
-            return
-        start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
-        logger.info(start_date)
-        logger.info(start_time)
-        datasets = download_manager.identify_available_datasets(
-            start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
-        )
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
-        # Check if any RSS imagery is available, if not, fall back to 15 minutely data
-        if (len(datasets) == 0) or use_backup:
-            logger.info(
-                f"No RSS Imagery available or using backup ({use_backup=}), "
-                f"falling back to 15-minutely data"
+    utils.setupLogging()
+
+    try:
+
+        log.info(f'Running application and saving to "{save_dir}"', version=satip.__version__, memory=utils.getMemory())
+        # 1. Get data from API, download native files
+        with tempfile.TemporaryDirectory() as tmpdir:
+            download_manager = DownloadManager(
+                user_key=api_key,
+                user_secret=api_secret,
+                data_dir=tmpdir,
+                native_file_dir=save_dir_native,
             )
+            if cleanup:
+                log.debug("Running Data Tailor Cleanup", memory=utils.getMemory())
+                download_manager.cleanup_datatailor()
+                return
+            start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
+            log.info(f'Fetching datasets for {start_date} - {start_time}', memory=utils.getMemory())
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
-                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
             )
-            use_backup = True
-        # Filter out ones that already exist
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
-
-        # if both final files don't exists, then we should make sure we run the whole process
-        logger.debug("filtering ....")
-        datasets = filter_dataset_ids_on_current_files(datasets, save_dir)
-        logger.info(f"Files to download after filtering: {len(datasets)}")
-
-        if len(datasets) == 0:
-            logger.info("No files to download, exiting")
-            updated_data = False
-        else:
-            if maximum_n_datasets != -1:
-                logger.debug(f"Ony going to get at most {maximum_n_datasets} datasets")
-                datasets = datasets[0:maximum_n_datasets]
-
-            updated_data = True
-            if use_backup:
-                download_manager.download_tailored_datasets(
-                    datasets,
+            # Check if any RSS imagery is available, if not, fall back to 15 minutely data
+            if (len(datasets) == 0) or use_backup:
+                log.warn(
+                    f"No RSS Imagery available or using backup ({use_backup=}), "
+                    f"falling back to 15-minutely data", memory=utils.getMemory()
+                )
+                datasets = download_manager.identify_available_datasets(
+                    start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
+                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
                     product_id="EO:EUM:DAT:MSG:HRSEVIRI",
                 )
+                use_backup = True
+            # Filter out ones that already exist
+            # if both final files don't exist, then we should make sure we run the whole process
+            datasets = utils.filter_dataset_ids_on_current_files(datasets, save_dir)
+            log.info(f"Files to download after filtering: {len(datasets)}", memory=utils.getMemory())
+
+            if len(datasets) == 0:
+                log.info("No files to download, exiting", memory=utils.getMemory())
+                updated_data = False
             else:
-                download_manager.download_datasets(
-                    datasets,
-                    product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+                if maximum_n_datasets != -1:
+                    log.debug(f"Ony going to get at most {maximum_n_datasets} datasets", memory=utils.getMemory())
+                    datasets = datasets[0:maximum_n_datasets]
+
+                updated_data = True
+                if use_backup:
+                    download_manager.download_tailored_datasets(
+                        datasets,
+                        product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                    )
+                else:
+                    download_manager.download_datasets(
+                        datasets,
+                        product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+                    )
+
+                # 2. Load nat files to one Xarray Dataset
+                native_files = (
+                    list(glob.glob(os.path.join(tmpdir, "*.nat")))
+                    if not use_backup
+                    else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
                 )
-            logger.info(
-                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+                log.debug("Saving native files to Zarr: " + native_files.__str__(), memory=utils.getMemory())
+                # Save to S3
+                utils.save_native_to_zarr(
+                    native_files,
+                    save_dir=save_dir,
+                    use_rescaler=use_rescaler,
+                    using_backup=use_backup,
+                )
+                # Move around files into and out of latest
+                utils.move_older_files_to_different_location(
+                    save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
+                )
 
-            # 2. Load nat files to one Xarray Dataset
-            native_files = (
-                list(glob.glob(os.path.join(tmpdir, "*.nat")))
-                if not use_backup
-                else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
-            )
-            logger.info(native_files)
-            # Save to S3
-            save_native_to_zarr(
-                native_files,
-                save_dir=save_dir,
-                use_rescaler=use_rescaler,
-                using_backup=use_backup,
-            )
-            logger.info(
-                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+        if not utils.check_both_final_files_exists(save_dir=save_dir, using_backup=use_backup):
+            updated_data = True
 
-            # Move around files into and out of latest
-            move_older_files_to_different_location(
-                save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
-            )
-            logger.info(
-                f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-            )
+        if updated_data:
+            # Collate files into single NetCDF file
+            utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
+            log.debug("Collated files", memory=utils.getMemory())
 
-    if not check_both_final_files_exists(save_dir=save_dir, using_backup=use_backup):
-        updated_data = True
+            # 4. update table to show when this data has been pulled
+            if db_url is not None:
+                connection = DatabaseConnection(url=db_url, base=Base_Forecast)
+                with connection.get_session() as session:
+                    update_latest_input_data_last_updated(session=session, component="satellite")
 
-    if updated_data:
-        # Collate files into single NetCDF file
-        collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
+        log.info("Finished Running application", memory=utils.getMemory())
 
-        # 4. update table to show when this data has been pulled
-        if db_url is not None:
-            connection = DatabaseConnection(url=db_url, base=Base_Forecast)
-            with connection.get_session() as session:
-                update_latest_input_data_last_updated(session=session, component="satellite")
-
-    logger.info("Finished Running application.")
+    except Exception as e:
+        log.error(f"Error caught during run: {e}", exc_info=True)
 
 
 if __name__ == "__main__":
