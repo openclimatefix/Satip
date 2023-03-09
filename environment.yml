@@ -226,4 +226,3 @@ dependencies:
       - pydantic==1.10.5
       - sqlalchemy==2.0.5.post1
       - structlog==22.3.0
-prefix: /opt/homebrew/Caskroom/miniforge/base/envs/satip
