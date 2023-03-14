@@ -12,7 +12,6 @@ Usage example:
 
 import datetime
 import fnmatch
-import logging
 import os
 import re
 import shutil
@@ -25,11 +24,12 @@ from urllib.error import HTTPError
 import eumdac
 import fsspec
 import requests
+import structlog
 
 from satip import utils
 from satip.data_store import dateset_it_to_filename
 
-logger = logging.getLogger(__name__)
+log = structlog.stdlib.get_logger()
 
 API_ENDPOINT = "https://api.eumetsat.int"
 
@@ -120,7 +120,7 @@ def query_data_products(
         r: Response from the request
     """
 
-    search_url = API_ENDPOINT + "/data/search-products/os"
+    search_url = API_ENDPOINT + "/data/search-products/0.4.0/os"
 
     params = {
         "format": "json",
@@ -139,7 +139,7 @@ def query_data_products(
 
 
 def identify_available_datasets(
-    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS", log=None
+    start_date: str, end_date: str, product_id: str = "EO:EUM:DAT:MSG:MSG15-RSS"
 ):
     """Identifies available datasets from the EUMETSAT data API
 
@@ -155,16 +155,16 @@ def identify_available_datasets(
     Returns:
         JSON-formatted response from the request
     """
-    logger.info(
-        f"Identifying which dataset are available for " f"{start_date=} {end_date=} {product_id=}"
+    log.info(
+        f"Identifying which dataset are available for {start_date} {end_date} {product_id}",
+        productID=product_id
     )
 
     r_json = query_data_products(start_date, end_date, product_id=product_id).json()
 
-    num_total_results = r_json["properties"]["totalResults"]
-    print(f"identify_available_datasets: found {num_total_results} results from API")
+    num_total_results = r_json["totalResults"]
     if log:
-        log.info(f"Found {len(num_total_results)} EUMETSAT dataset files")
+        log.info(f"Found {num_total_results} EUMETSAT dataset files", productID=product_id)
 
     if num_total_results < 500:
         return r_json["features"]
@@ -189,9 +189,8 @@ def identify_available_datasets(
         new_end_date = batch_r_json["features"][-1]["properties"]["date"].split("/")[1]
         datasets = datasets + batch_r_json["features"]
 
-    assert num_total_results == len(
-        datasets
-    ), f"Some features have not been appended - {len(datasets)} / {num_total_results}"
+    if num_total_results != len(datasets):
+        log.warn(f"Some features have not been appended - {len(datasets)} / {num_total_results}", productID=product_id)
 
     return datasets
 
@@ -228,12 +227,10 @@ class DownloadManager:  # noqa: D205
         user_secret: str,
         data_dir: str,
         native_file_dir: str = ".",
-        logger_name="EUMETSAT Download",
     ):
         """Download manager initialisation
 
         Initialises the download manager by:
-        * Setting up the logger
         * Requesting an API access token
         * Configuring the download directory
         * Adding satip helper functions
@@ -243,16 +240,10 @@ class DownloadManager:  # noqa: D205
             user_secret: EUMETSAT API secret
             data_dir: Path to the directory where the satellite data will be saved
             native_file_dir: this is where the native files are saved
-            log_fp: Filepath where the logs will be stored
 
         Returns:
             download_manager: Instance of the DownloadManager class
         """
-
-        # Configuring the logger
-        self.logger = utils.set_up_logging(logger_name)
-
-        #self.logger.info("********** Download Manager Initialised **************")
 
         # Requesting the API access token
         self.user_key = user_key
@@ -305,7 +296,7 @@ class DownloadManager:  # noqa: D205
             data_link: Url link for the relevant dataset
         """
 
-        logger.info(f"Downloading one file {data_link}")
+        log.info(f"Downloading one file: {data_link}", parent="DownloadManager")
 
         params = {"access_token": self.access_token}
 
@@ -344,11 +335,11 @@ class DownloadManager:  # noqa: D205
 
         # Downloading specified datasets
         if not dataset_ids:
-            self.logger.info("No files will be downloaded. None were found in API search.")
+            log.info("No files will be downloaded. None were found in API search.", parent="DownloadManager")
             return
 
         for dataset_id in dataset_ids:
-            logger.info(f"Downloading: {dataset_id}")
+            log.debug(f"Downloading: {dataset_id}", parent="DownloadManager")
             dataset_link = dataset_id_to_link(
                 product_id, dataset_id, access_token=self.access_token
             )
@@ -356,14 +347,14 @@ class DownloadManager:  # noqa: D205
             try:
                 self.download_single_dataset(dataset_link)
             except HTTPError:
-                self.logger.info("The EUMETSAT access token has been refreshed")
+                log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
                 self.request_access_token()
                 dataset_link = dataset_id_to_link(
                     product_id, dataset_id, access_token=self.access_token
                 )
                 self.download_single_dataset(dataset_link)
-            except Exception:
-                self.logger.exception(f"Error downloading dataset with id {dataset_id}")
+            except Exception as e:
+                log.error(f"Error downloading dataset with id {dataset_id}: {e}", exc_info=True, parent="DownloadManager")
 
     def download_tailored_date_range(
         self,
@@ -414,10 +405,10 @@ class DownloadManager:  # noqa: D205
 
         # Identifying dataset ids to download
         dataset_ids = sorted([dataset["id"] for dataset in datasets])
-        logger.info(f"Dataset IDS: {dataset_ids}")
+        log.debug(f"Dataset IDS: {dataset_ids}", parent="DownloadManager")
         # Downloading specified datasets
         if not dataset_ids:
-            self.logger.info("No files will be downloaded. None were found in API search.")
+            log.info("No files will be downloaded. None were found in API search.", parent="DownloadManager")
             return
 
         for dataset_id in dataset_ids:
@@ -431,7 +422,7 @@ class DownloadManager:  # noqa: D205
                     projection=projection,
                 )
             except Exception:
-                self.logger.info("The EUMETSAT access token has been refreshed")
+                log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
                 self.request_access_token()
                 self._download_single_tailored_dataset(
                     dataset_id,
@@ -476,7 +467,6 @@ class DownloadManager:  # noqa: D205
         elif product_id == "EO:EUM:DAT:MSG:RSS-CLM":
             tailor_id = CLM_ID
         else:
-            self.logger.error(f"Product ID {product_id} not recognized, ending now")
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
         if tailor_id == SEVIRI:  # Also do HRV
@@ -512,15 +502,16 @@ class DownloadManager:  # noqa: D205
         for customisation in datatailor.customisations:
             if customisation.status == "DONE" or customisation.status == "FAILED":
                 try:
-                    logger.debug(
+                    log.debug(
                         f"Delete completed customisation {customisation} "
                         f"from {customisation.creation_time}."
                     )
                     customisation.delete()
                 except eumdac.datatailor.CustomisationError as error:
-                    logger.debug("Customisation Error:", error)
+                    log.debug("Customisation Error:", error)
                 except requests.exceptions.RequestException as error:
-                    logger.debug("Unexpected error:", error)
+                    log.debug("Unexpected error:", error)
+
     def create_and_download_datatailor_data(
         self,
         dataset_id,
@@ -543,13 +534,14 @@ class DownloadManager:  # noqa: D205
         fs = fsspec.open(data_store_filename_remote).fs
         if fs.exists(data_store_filename_remote):
             # copy to 'data_dir'
-            self.logger.debug(
-                f"Copying file from {data_store_filename_remote} to {data_store_filename_local}"
+            log.debug(
+                f"Copying file from {data_store_filename_remote} to {data_store_filename_local}",
+                parent="DownloadManager"
             )
             fs.get(data_store_filename_remote, data_store_filename_local)
 
         else:
-            self.logger.debug(f"{data_store_filename_remote} does not exist, so will download it")
+            log.debug(f"{data_store_filename_remote} does not exist, so will download it", parent="DownloadManager")
 
             chain = eumdac.tailor_models.Chain(
                 product=tailor_id,
@@ -561,47 +553,45 @@ class DownloadManager:  # noqa: D205
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
             customisation = datatailor.new_customisation(dataset_id, chain=chain)
             sleep_time = 5  # seconds
-            logger.info(customisation)
+            log.debug("Customisation: {customisation}", parent="DownloadManager")
             # Customisation Loop
             status = datatailor.get_customisation(customisation._id).status
             while status != "DONE":
                 status = datatailor.get_customisation(customisation._id).status
                 # Get the status of the ongoing customisation
-                logger.info(f"ID: {customisation._id} Status: {status}")
+                log.info(f"Status of ID {customisation._id} is {status}", parent="DownloadManager")
 
                 if "DONE" == status:
-                    logger.info("SUCCESS")
                     break
                 elif "ERROR" in status or "KILLED" in status:
-                    logger.info("UNSUCCESS, exiting")
+                    log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
                 time.sleep(sleep_time)
 
             customisation = datatailor.get_customisation(customisation._id)
             (out,) = fnmatch.filter(customisation.outputs, "*")
             jobID = customisation._id
-            logger.info(f"Downloading outputs from Data Tailor job {jobID}")
+            log.info(f"Downloading outputs from Data Tailor job {jobID}", parent="DownloadManager")
 
             with customisation.stream_output(
                 out,
             ) as stream, open(os.path.join(self.data_dir, stream.name), mode="wb") as fdst:
                 filename = os.path.join(self.data_dir, stream.name)
                 shutil.copyfileobj(stream, fdst)
-                logger.debug(f"Saved file to {filename}")
+                log.debug(f"Saved file to {filename}", parent="DownloadManager")
 
                 # save to native file data store
-                self.logger.debug(f"Copying file from {filename} to {data_store_filename_remote}")
+                log.debug(f"Copying file from {filename} to {data_store_filename_remote}", parent="DownloadManager")
                 fs = fsspec.open(data_store_filename_remote).fs
                 fs.put(filename, data_store_filename_remote)
-                self.logger.debug(f"Copied file from {filename} to {data_store_filename_remote}")
+                log.debug(f"Copied file from {filename} to {data_store_filename_remote}", parent="DownloadManager")
 
             try:
-                logger.info(f"Deleting job {jobID} from Data Tailor storage")
+                log.info(f"Deleting job {jobID} from Data Tailor storage", parent="DownloadManager")
                 customisation.delete()
 
             except Exception as e:
-                logger.info(f"Failed deleting customization {jobID}")
-                logger.warning(e)
+                log.warn(f"Failed deleting customization {jobID}: {e}", exc_info=True)
 
 
 def get_filesize_megabytes(filename):

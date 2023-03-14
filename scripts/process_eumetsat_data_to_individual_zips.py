@@ -214,15 +214,10 @@ def f(datasets):
 
 
 if __name__ == "__main__":
-    import time
-    from itertools import repeat
 
-    import numpy as np
     import pandas as pd
-    import zarr
 
     from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
-    from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 
     date_range = pd.date_range(start="2017-01-01 00:00", end="2022-06-30 00:00", freq="1D")
     api_key = os.environ["SAT_API_KEY"]

@@ -1,15 +1,11 @@
 import asyncio
 import os
-import time
 from pathlib import Path
 
 import modal.aio
-import numpy as np
 import pandas as pd
-import zarr
 
-from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
-from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
+from satip.eumetsat import eumetsat_filename_to_datetime
 
 app = modal.aio.AioApp(
     image=modal.Conda()
@@ -48,10 +44,8 @@ def decompress(full_bzip_filename, temp_pth) -> str:
 @app.function()
 async def f(compressed_bytearray_and_filename):
     import bz2
-    import glob
     import tempfile
     import time
-    from pathlib import Path
 
     import numpy as np
     import pandas as pd
@@ -59,7 +53,6 @@ async def f(compressed_bytearray_and_filename):
     import zarr
     from satpy import Scene
 
-    from satip.eumetsat import DownloadManager
     from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
     from satip.scale_to_zero_to_one import ScaleToZeroToOne
     from satip.serialize import serialize_attrs

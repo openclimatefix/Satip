@@ -11,7 +11,6 @@ Usage examples:
   create_or_update_zarr_with_native_files(*args, **kwargs)
   create_or_update_zarr_with_cloud_mask_files(*args, **kwargs)
 """
-# TODO: Replace print-statements with a properly configured logger
 
 import multiprocessing
 import os
@@ -19,6 +18,7 @@ from itertools import repeat
 from pathlib import Path
 
 import pandas as pd
+import structlog
 import xarray as xr
 from tqdm import tqdm
 
@@ -29,6 +29,8 @@ from satip.utils import (
     load_native_to_dataarray,
     save_dataarray_to_zarr,
 )
+
+log = structlog.stdlib.get_logger()
 
 
 def split_per_month(
@@ -58,7 +60,7 @@ def split_per_month(
     # Get year
     temp_directory = Path(temp_directory)
     year_directories = sorted(os.listdir(directory), reverse=True)
-    print(year_directories)
+    log.debug(f"Year directories: {year_directories}")
     dirs = []
     zarrs = []
     hrv_zarrs = []
@@ -79,10 +81,10 @@ def split_per_month(
             dirs.append(month_directory)
             zarrs.append(month_zarr_path)
             hrv_zarrs.append(hrv_month_zarr_path)
-            print(month_zarr_path)
+            log.debug(f"Monthly zarr path: {month_zarr_path}")
             zarr_exists = os.path.exists(month_zarr_path)
             if not zarr_exists:
-                print(f"Making Zarr: {month_zarr_path}")
+                log.info(f"Making Zarr: {month_zarr_path}")
                 # Inital zarr path before then appending
                 compressed_native_files = sorted(list(Path(month_directory).rglob("*.bz2")))
                 if len(compressed_native_files) == 0:
@@ -124,7 +126,7 @@ def split_per_month(
             ),
         )
     ):
-        print(f"Month {d} done")
+        log.info(f"Month {d} done.")
 
 
 def _wrapper_create_or_update_xarr_with_native_files(args):
@@ -159,7 +161,7 @@ def cloudmask_split_per_month(
     # Get year
     temp_directory = Path(temp_directory)
     year_directories = sorted(os.listdir(directory), reverse=True)
-    print(year_directories)
+    log.debug(f"Year directories: {year_directories}")
     dirs = []
     zarrs = []
     for year in year_directories:
@@ -206,7 +208,7 @@ def cloudmask_split_per_month(
             ),
         )
     ):
-        print("Month done")
+        log.info(f"Month {month} done")
 
 
 def _cloudmask_wrapper(args):
@@ -268,10 +270,10 @@ def create_or_update_zarr_with_cloud_mask_files(
                         timesteps_per_chunk=temporal_chunk_size,
                     )
                 except Exception as e:
-                    print(f"Failed with: {e}")
+                    log.warn(f"Error saving data array: {e}", exc_info=True)
             del dataarray
         except Exception as e:
-            print(f"Failed with Exception with {e}")
+            log.warn(f"Error deleting data array {e}", exc_info=True)
 
 
 def create_or_update_zarr_with_native_files(
@@ -299,7 +301,7 @@ def create_or_update_zarr_with_native_files(
     """
 
     # Satpy Scene doesn't do well with fsspec
-    print(f"Directory: {directory}")
+    log.debug(f"Native file directory: {directory}")
     compressed_native_files = sorted(list(Path(directory).rglob("*.bz2")))
     if len(compressed_native_files) == 0:
         return
@@ -341,23 +343,9 @@ def create_or_update_zarr_with_native_files(
                         timesteps_per_chunk=temporal_chunk_size,
                     )
                 except Exception as e:
-                    print(f"Failed with: {e}")
+                    log.warn(f"Error saving data array to Zarr: {e}", exc_info=True)
             del dataarray
             del hrv_dataarray
         except Exception as e:
-            print(f"Failed with Exception with {e}")
+            log.warn(f"Error deleting data arrays: {e}", exc_info=True)
     return directory
-
-
-# TODO: Not used in the repo, remove?
-def pool_init(q):
-    """Initialies a global process queue for the worker."""
-    global processed_queue  # make queue global in workers
-    processed_queue = q
-
-
-# TODO: Not used in the repo, remove?
-def native_wrapper(filename_and_area):
-    """Puts the data-load-job into the global worker queue."""
-    filename, area = filename_and_area
-    processed_queue.put(load_native_to_dataarray(filename, area))
