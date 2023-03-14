@@ -500,17 +500,20 @@ class DownloadManager:  # noqa: D205
         token = eumdac.AccessToken(credentials)
         datatailor = eumdac.DataTailor(token)
         for customisation in datatailor.customisations:
-            if customisation.status == "DONE" or customisation.status == "FAILED":
-                try:
+            try:
+                if customisation.status == "DONE" or customisation.status == "FAILED":
                     log.debug(
                         f"Delete completed customisation {customisation} "
                         f"from {customisation.creation_time}."
                     )
                     customisation.delete()
-                except eumdac.datatailor.CustomisationError as error:
-                    log.debug("Customisation Error:", error)
-                except requests.exceptions.RequestException as error:
-                    log.debug("Unexpected error:", error)
+            except eumdac.datatailor.CustomisationError as error:
+                log.debug("Customisation Error:", error)
+            except eumdac.customisation.UnableToGetCustomisationError as error:
+                log.debug("Customization Not Found error, skipping:", error)
+                continue
+            except requests.exceptions.RequestException as error:
+                log.debug("Unexpected error:", error)
 
     def create_and_download_datatailor_data(
         self,
