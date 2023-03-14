@@ -510,13 +510,17 @@ class DownloadManager:  # noqa: D205
         token = eumdac.AccessToken(credentials)
         datatailor = eumdac.DataTailor(token)
         for customisation in datatailor.customisations:
-            if customisation.status == "DONE" or "FAILED":
-                logger.debug(
-                    f"Delete completed customisation {customisation} "
-                    f"from {customisation.creation_time}."
-                )
-                customisation.delete()
-
+            if customisation.status == "DONE" or customisation.status == "FAILED":
+                try:
+                    logger.debug(
+                        f"Delete completed customisation {customisation} "
+                        f"from {customisation.creation_time}."
+                    )
+                    customisation.delete()
+                except eumdac.datatailor.CustomisationError as error:
+                    logger.debug("Customisation Error:", error)
+                except requests.exceptions.RequestException as error:
+                    logger.debug("Unexpected error:", error)
     def create_and_download_datatailor_data(
         self,
         dataset_id,
