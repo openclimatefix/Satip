@@ -56,7 +56,7 @@ jobs:
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
-          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s"
+          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG"
           echo "Will be running this command: $PYTEST_COMMAND"
           eval $PYTEST_COMMAND
       - name: Show coverage
