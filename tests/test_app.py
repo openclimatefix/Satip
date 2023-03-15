@@ -19,7 +19,7 @@ def test_save_to_netcdf():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -37,6 +37,7 @@ def test_save_to_netcdf():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
 
@@ -45,7 +46,8 @@ def test_save_to_netcdf_now():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        tmpdirname ='./temp'
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -61,6 +63,7 @@ def test_save_to_netcdf_now():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
 
@@ -69,7 +72,7 @@ def test_cleanup_now():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -87,6 +90,7 @@ def test_cleanup_now():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) == 0
 
@@ -96,7 +100,8 @@ def test_save_datatailor_to_disk():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        tmpdirname = './temp'
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -114,6 +119,7 @@ def test_save_datatailor_to_disk():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
 
@@ -123,7 +129,7 @@ def test_save_to_netcdf_rescaled():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -141,6 +147,7 @@ def test_save_to_netcdf_rescaled():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
 
@@ -150,7 +157,7 @@ def test_use_backup():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
     with tempfile.TemporaryDirectory() as tmpdirname:
-        runner.invoke(
+        response = runner.invoke(
             run,
             [
                 "--api-key",
@@ -170,5 +177,6 @@ def test_use_backup():  # noqa 103
             ],
             catch_exceptions=False,
         )
+        assert response.exit_code == 0, response.exception
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
         assert len(native_files) > 0
