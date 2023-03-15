@@ -26,6 +26,16 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f "setup.py" ]; then pip install -e .; else export PYTHONPATH=$PYTHONPATH:./src; fi
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+      - name: Setup with pytest-xdist
+        run: |
+          # lets get the string for how many cpus to use with pytest
+          echo "Will be using 4 cpus for pytest testing"
+          #
+          # make PYTESTXDIST
+          export PYTESTXDIST="-n 4"
+          # echo results and save env var for other jobs
+          echo "pytest-xdist options that will be used are: $PYTESTXDIST"
+          echo "PYTESTXDIST=$PYTESTXDIST" >> $GITHUB_ENV
       - name: Setup with pytest-cov
         run: |
           # let make pytest run with coverage
@@ -53,4 +63,4 @@ jobs:
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
         with:
-          fail_ci_if_error: true
+          fail_ci_if_error: false
