@@ -30,6 +30,7 @@ jobs:
         run: |
           # lets get the string for how many cpus to use with pytest
           echo "Will be using 4 cpus for pytest testing"
+          pip install pytest-xdist
           #
           # make PYTESTXDIST
           export PYTESTXDIST="-n 4"
