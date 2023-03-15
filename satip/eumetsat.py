@@ -42,6 +42,9 @@ API_CUSTOMIZATION_ENDPOINT = API_ENDPOINT + "/epcs/customisations"
 # Data Tailor download endpoint
 API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
 
+# Data Tailor time out
+DATA_TAILOR_TIMEOUT_LIMIT_MINUTES = 15
+
 
 # TODO: This function is not used anywhere in the code, suggest to remove.
 def build_url_string(url, parameters):
@@ -558,10 +561,16 @@ class DownloadManager:  # noqa: D205
             sleep_time = 5  # seconds
             log.debug("Customisation: {customisation}", parent="DownloadManager")
             # Customisation Loop
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            start = datetime.datetime.now(tz=datetime.timezone.utc)
             status = datatailor.get_customisation(customisation._id).status
-            while status != "DONE":
-                status = datatailor.get_customisation(customisation._id).status
+            while (status != "DONE") & (
+                now - start < datetime.timedelta(minutes=DATA_TAILOR_TIMEOUT_LIMIT_MINUTES)
+            ):
+
                 # Get the status of the ongoing customisation
+                status = datatailor.get_customisation(customisation._id).status
+                now = datetime.datetime.now(tz=datetime.timezone.utc)
                 log.info(f"Status of ID {customisation._id} is {status}", parent="DownloadManager")
 
                 if "DONE" == status:
@@ -569,7 +578,15 @@ class DownloadManager:  # noqa: D205
                 elif "ERROR" in status or "KILLED" in status:
                     log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
+
                 time.sleep(sleep_time)
+
+            if status != "DONE":
+                log.info(
+                    f"UNSUCCESS, data tailor service took more that {DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
+                    f"The service may fail later on now",
+                    parent="DownloadManager",
+                )
 
             customisation = datatailor.get_customisation(customisation._id)
             (out,) = fnmatch.filter(customisation.outputs, "*")
