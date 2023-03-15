@@ -65,7 +65,7 @@ def setupLogging() -> None:
                 [
                     structlog.processors.CallsiteParameter.FILENAME,
                     structlog.processors.CallsiteParameter.FUNC_NAME,
-                    structlog.processors.CallsiteParameter.LINENO
+                    structlog.processors.CallsiteParameter.LINENO,
                 ],
             ),
             structlog.processors.dict_tracebacks,
@@ -358,7 +358,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2**10) - 1
+    upper_bound = (2 ** 10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -571,7 +571,10 @@ def save_native_to_zarr(
         using_backup: Whether the input data is the backup 15 minutely data or not
     """
 
-    log.debug(f"Converting from {'HRIT' if using_backup else 'native'} to zarr in {save_dir}", memory=getMemory())
+    log.debug(
+        f"Converting from {'HRIT' if using_backup else 'native'} to zarr in {save_dir}",
+        memory=getMemory(),
+    )
 
     scaler = ScaleToZeroToOne(
         mins=np.array(

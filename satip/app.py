@@ -129,7 +129,11 @@ def run(
 
     try:
 
-        log.info(f'Running application and saving to "{save_dir}"', version=satip.__version__, memory=utils.getMemory())
+        log.info(
+            f'Running application and saving to "{save_dir}"',
+            version=satip.__version__,
+            memory=utils.getMemory(),
+        )
         # 1. Get data from API, download native files
         with tempfile.TemporaryDirectory() as tmpdir:
             download_manager = DownloadManager(
@@ -143,7 +147,7 @@ def run(
                 download_manager.cleanup_datatailor()
                 return
             start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
-            log.info(f'Fetching datasets for {start_date} - {start_time}', memory=utils.getMemory())
+            log.info(f"Fetching datasets for {start_date} - {start_time}", memory=utils.getMemory())
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
@@ -152,7 +156,8 @@ def run(
             if (len(datasets) == 0) or use_backup:
                 log.warn(
                     f"No RSS Imagery available or using backup ({use_backup=}), "
-                    f"falling back to 15-minutely data", memory=utils.getMemory()
+                    f"falling back to 15-minutely data",
+                    memory=utils.getMemory(),
                 )
                 datasets = download_manager.identify_available_datasets(
                     start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
@@ -163,14 +168,19 @@ def run(
             # Filter out ones that already exist
             # if both final files don't exist, then we should make sure we run the whole process
             datasets = utils.filter_dataset_ids_on_current_files(datasets, save_dir)
-            log.info(f"Files to download after filtering: {len(datasets)}", memory=utils.getMemory())
+            log.info(
+                f"Files to download after filtering: {len(datasets)}", memory=utils.getMemory()
+            )
 
             if len(datasets) == 0:
                 log.info("No files to download, exiting", memory=utils.getMemory())
                 updated_data = False
             else:
                 if maximum_n_datasets != -1:
-                    log.debug(f"Ony going to get at most {maximum_n_datasets} datasets", memory=utils.getMemory())
+                    log.debug(
+                        f"Ony going to get at most {maximum_n_datasets} datasets",
+                        memory=utils.getMemory(),
+                    )
                     datasets = datasets[0:maximum_n_datasets]
 
                 updated_data = True
@@ -191,7 +201,10 @@ def run(
                     if not use_backup
                     else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
                 )
-                log.debug("Saving native files to Zarr: " + native_files.__str__(), memory=utils.getMemory())
+                log.debug(
+                    "Saving native files to Zarr: " + native_files.__str__(),
+                    memory=utils.getMemory(),
+                )
                 # Save to S3
                 utils.save_native_to_zarr(
                     native_files,

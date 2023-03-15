@@ -574,16 +574,16 @@ class DownloadManager:  # noqa: D205
                 compression=compression,
             )
 
-            # sleep
-
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
 
+            # sometimes the customisation fails first time, so we try twice
             try:
                 customisation = datatailor.new_customisation(dataset_id, chain=chain)
             except Exception:
                 log.debug("Did not customisation first time, so trying again after 2 seconds")
                 time.sleep(2)
                 customisation = datatailor.new_customisation(dataset_id, chain=chain)
+
             sleep_time = 5  # seconds
             log.debug(f"Customisation: {customisation}", parent="DownloadManager")
             # Customisation Loop
