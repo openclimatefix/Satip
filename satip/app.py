@@ -222,6 +222,7 @@ def run(
 
     except Exception as e:
         log.error(f"Error caught during run: {e}", exc_info=True)
+        raise e
 
 
 if __name__ == "__main__":
