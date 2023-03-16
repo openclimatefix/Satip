@@ -96,8 +96,11 @@ class ScaleToZeroToOne:
         self.maxs = dataset.max(dims).compute()
         self.variable_order = dataset.coords["variable"].values
 
-        log.debug("Calculated new min and max values",
-                  mins=self.mins, maxes=self.maxs, variableorder=self.variable_order
+        log.debug(
+            "Calculated new min and max values",
+            mins=self.mins,
+            maxes=self.maxs,
+            variableorder=self.variable_order,
         )
 
         return self

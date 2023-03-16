@@ -42,6 +42,9 @@ API_CUSTOMIZATION_ENDPOINT = API_ENDPOINT + "/epcs/customisations"
 # Data Tailor download endpoint
 API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
 
+# Data Tailor time out
+DATA_TAILOR_TIMEOUT_LIMIT_MINUTES = 15
+
 
 # TODO: This function is not used anywhere in the code, suggest to remove.
 def build_url_string(url, parameters):
@@ -157,7 +160,7 @@ def identify_available_datasets(
     """
     log.info(
         f"Identifying which dataset are available for {start_date} {end_date} {product_id}",
-        productID=product_id
+        productID=product_id,
     )
 
     r_json = query_data_products(start_date, end_date, product_id=product_id).json()
@@ -190,7 +193,10 @@ def identify_available_datasets(
         datasets = datasets + batch_r_json["features"]
 
     if num_total_results != len(datasets):
-        log.warn(f"Some features have not been appended - {len(datasets)} / {num_total_results}", productID=product_id)
+        log.warn(
+            f"Some features have not been appended - {len(datasets)} / {num_total_results}",
+            productID=product_id,
+        )
 
     return datasets
 
@@ -335,7 +341,10 @@ class DownloadManager:  # noqa: D205
 
         # Downloading specified datasets
         if not dataset_ids:
-            log.info("No files will be downloaded. None were found in API search.", parent="DownloadManager")
+            log.info(
+                "No files will be downloaded. None were found in API search.",
+                parent="DownloadManager",
+            )
             return
 
         for dataset_id in dataset_ids:
@@ -354,7 +363,11 @@ class DownloadManager:  # noqa: D205
                 )
                 self.download_single_dataset(dataset_link)
             except Exception as e:
-                log.error(f"Error downloading dataset with id {dataset_id}: {e}", exc_info=True, parent="DownloadManager")
+                log.error(
+                    f"Error downloading dataset with id {dataset_id}: {e}",
+                    exc_info=True,
+                    parent="DownloadManager",
+                )
 
     def download_tailored_date_range(
         self,
@@ -408,7 +421,10 @@ class DownloadManager:  # noqa: D205
         log.debug(f"Dataset IDS: {dataset_ids}", parent="DownloadManager")
         # Downloading specified datasets
         if not dataset_ids:
-            log.info("No files will be downloaded. None were found in API search.", parent="DownloadManager")
+            log.info(
+                "No files will be downloaded. None were found in API search.",
+                parent="DownloadManager",
+            )
             return
 
         for dataset_id in dataset_ids:
@@ -539,13 +555,17 @@ class DownloadManager:  # noqa: D205
             # copy to 'data_dir'
             log.debug(
                 f"Copying file from {data_store_filename_remote} to {data_store_filename_local}",
-                parent="DownloadManager"
+                parent="DownloadManager",
             )
             fs.get(data_store_filename_remote, data_store_filename_local)
 
         else:
-            log.debug(f"{data_store_filename_remote} does not exist, so will download it", parent="DownloadManager")
+            log.debug(
+                f"{data_store_filename_remote} does not exist, so will download it",
+                parent="DownloadManager",
+            )
 
+            log.debug("Making customisation, this can take ~1 minute", parent="DownloadManager")
             chain = eumdac.tailor_models.Chain(
                 product=tailor_id,
                 format=file_format,
@@ -553,15 +573,36 @@ class DownloadManager:  # noqa: D205
                 roi=roi,
                 compression=compression,
             )
+
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
-            customisation = datatailor.new_customisation(dataset_id, chain=chain)
+
+            # sometimes the customisation fails first time, so we try twice
+            try:
+                customisation = datatailor.new_customisation(dataset_id, chain=chain)
+            except Exception:
+                log.debug("Did not customisation first time, so trying again after 2 seconds")
+                time.sleep(2)
+                customisation = datatailor.new_customisation(dataset_id, chain=chain)
+
             sleep_time = 5  # seconds
-            log.debug("Customisation: {customisation}", parent="DownloadManager")
+            log.debug(f"Customisation: {customisation}", parent="DownloadManager")
             # Customisation Loop
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            start = datetime.datetime.now(tz=datetime.timezone.utc)
             status = datatailor.get_customisation(customisation._id).status
-            while status != "DONE":
-                status = datatailor.get_customisation(customisation._id).status
+            while (status != "DONE") & (
+                now - start < datetime.timedelta(minutes=DATA_TAILOR_TIMEOUT_LIMIT_MINUTES)
+            ):
+
+                log.debug(
+                    f"Checking if the file has been downloaded. Started at {start}. "
+                    f"Time out is {DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes",
+                    parent="DownloadManager",
+                )
+
                 # Get the status of the ongoing customisation
+                status = datatailor.get_customisation(customisation._id).status
+                now = datetime.datetime.now(tz=datetime.timezone.utc)
                 log.info(f"Status of ID {customisation._id} is {status}", parent="DownloadManager")
 
                 if "DONE" == status:
@@ -569,12 +610,25 @@ class DownloadManager:  # noqa: D205
                 elif "ERROR" in status or "KILLED" in status:
                     log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
+
                 time.sleep(sleep_time)
+
+            if status != "DONE":
+                log.info(
+                    f"UNSUCCESS, data tailor service took more that {DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
+                    f"The service may fail later on now",
+                    parent="DownloadManager",
+                )
+            else:
+                log.info("Customisation as been made", parent="DownloadManager")
 
             customisation = datatailor.get_customisation(customisation._id)
             (out,) = fnmatch.filter(customisation.outputs, "*")
             jobID = customisation._id
-            log.info(f"Downloading outputs from Data Tailor job {jobID}", parent="DownloadManager")
+            log.info(
+                f"Downloading outputs from Data Tailor job {jobID}. This can take ~2 minutes",
+                parent="DownloadManager",
+            )
 
             with customisation.stream_output(
                 out,
@@ -584,13 +638,22 @@ class DownloadManager:  # noqa: D205
                 log.debug(f"Saved file to {filename}", parent="DownloadManager")
 
                 # save to native file data store
-                log.debug(f"Copying file from {filename} to {data_store_filename_remote}", parent="DownloadManager")
+                log.debug(
+                    f"Copying file from {filename} to {data_store_filename_remote}",
+                    parent="DownloadManager",
+                )
                 fs = fsspec.open(data_store_filename_remote).fs
                 fs.put(filename, data_store_filename_remote)
-                log.debug(f"Copied file from {filename} to {data_store_filename_remote}", parent="DownloadManager")
+                log.debug(
+                    f"Copied file from {filename} to {data_store_filename_remote}",
+                    parent="DownloadManager",
+                )
 
             try:
-                log.info(f"Deleting job {jobID} from Data Tailor storage", parent="DownloadManager")
+                log.info(
+                    f"Deleting job {jobID} from Data Tailor storage. This can take ~1 minute",
+                    parent="DownloadManager",
+                )
                 customisation.delete()
 
             except Exception as e:

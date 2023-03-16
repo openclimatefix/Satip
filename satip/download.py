@@ -249,7 +249,9 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
                 log.warn(
                     f"Error when sanity-checking {f}. Skipping this file. "
                     + "Will be downloaded next time this script is run.",
-                    file=f, filesize=file_size, expsize=CLOUD_FILESIZE_MB
+                    file=f,
+                    filesize=file_size,
+                    expsize=CLOUD_FILESIZE_MB,
                 )
                 continue
             else:
@@ -267,7 +269,11 @@ def _process_rss_images(
     try:
         file_size = eumetsat.get_filesize_megabytes(f)
         if not math.isclose(file_size, NATIVE_FILESIZE_MB, abs_tol=1):
-            log.debug("RSS Image has the wrong size, skipping", filesize=file_size, expsize=NATIVE_FILESIZE_MB)
+            log.debug(
+                "RSS Image has the wrong size, skipping",
+                filesize=file_size,
+                expsize=NATIVE_FILESIZE_MB,
+            )
             return
 
         # Now that the file has been checked and can be opened,
