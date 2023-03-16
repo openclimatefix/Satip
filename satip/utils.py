@@ -29,13 +29,12 @@ import psutil
 import structlog
 import xarray as xr
 import zarr
+from ocf_blosc2 import Blosc2
 from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
-
-from ocf_blosc2 import Blosc2
 
 log = structlog.get_logger()
 
