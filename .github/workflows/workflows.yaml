@@ -33,7 +33,7 @@ jobs:
           pip install pytest-xdist
           #
           # make PYTESTXDIST
-          export PYTESTXDIST="-n 4"
+          export PYTESTXDIST="-n 1"
           # echo results and save env var for other jobs
           echo "pytest-xdist options that will be used are: $PYTESTXDIST"
           echo "PYTESTXDIST=$PYTESTXDIST" >> $GITHUB_ENV
