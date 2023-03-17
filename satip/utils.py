@@ -29,10 +29,10 @@ import psutil
 import structlog
 import xarray as xr
 import zarr
+from ocf_blosc2 import Blosc2
 from satpy import Scene
 
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
-from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
@@ -661,7 +661,7 @@ def save_dataarray_to_zarr(
     Args:
         dataarray: DataArray to save
         zarr_path: Filename of the Zarr dataset
-        compressor_name: The name of the compression algorithm to use. Must be 'bz2' or 'jpeg-xl'.
+        compressor_name: The name of the compression algorithm to use. Must be 'bz2' or 'blosc2'.
         zarr_mode: Mode to write to the filename, either 'w' for write, or 'a' to append
         timesteps_per_chunk: Timesteps per Zarr chunk
         y_size_per_chunk: Y pixels per Zarr chunk
@@ -683,7 +683,7 @@ def save_dataarray_to_zarr(
 
     compression_algos = {
         "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
-        "jpeg-xl": JpegXlFloatWithNaNs(lossless=False, distance=0.4, effort=8),
+        "blosc2": Blosc2(cname="zstd", clevel=5)
     }
     compression_algo = compression_algos[compressor_name]
 

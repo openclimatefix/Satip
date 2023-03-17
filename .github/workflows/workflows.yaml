@@ -6,7 +6,7 @@ jobs:
   run-python-tests:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
+      max-parallel: 1
 
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
           pip install pytest-xdist
           #
           # make PYTESTXDIST
-          export PYTESTXDIST="-n 4"
+          export PYTESTXDIST="-n 1"
           # echo results and save env var for other jobs
           echo "pytest-xdist options that will be used are: $PYTESTXDIST"
           echo "PYTESTXDIST=$PYTESTXDIST" >> $GITHUB_ENV
