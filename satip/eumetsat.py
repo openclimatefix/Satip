@@ -517,7 +517,9 @@ class DownloadManager:  # noqa: D205
         datatailor = eumdac.DataTailor(token)
         for customisation in datatailor.customisations:
             try:
-                if customisation.status == "DONE" or customisation.status == "FAILED":
+                if customisation.status in ['INACTIVE']:
+                    customisation.kill()
+                if customisation.status in ['DONE', 'FAILED', 'KILLED', 'DELETED']:
                     log.debug(
                         f"Delete completed customisation {customisation} "
                         f"from {customisation.creation_time}."
@@ -577,12 +579,28 @@ class DownloadManager:  # noqa: D205
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
 
             # sometimes the customisation fails first time, so we try twice
-            try:
-                customisation = datatailor.new_customisation(dataset_id, chain=chain)
-            except Exception:
-                log.debug("Did not customisation first time, so trying again after 2 seconds")
-                time.sleep(2)
-                customisation = datatailor.new_customisation(dataset_id, chain=chain)
+            # This is from Data Tailor only allowing 3 customizations at once
+            # So this should then continue until it is created successfully
+            created_customization = False
+            while not created_customization:
+                try:
+                    customisation = datatailor.new_customisation(dataset_id, chain=chain)
+                except Exception:
+                    log.debug("Customization not made successfully, so trying again after less than 3 customizations")
+                    time.sleep(5)
+                    num_running_customizations = 0
+                    for customisation in datatailor.customisations:
+                        try:
+                            if customisation.status in ['INACTIVE']: # Clear stuck ones
+                                customisation.kill()
+                                customisation.delete()
+                        except:
+                            continue
+                        if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
+                            num_running_customizations += 1
+                    if num_running_customizations < 3:
+                        customisation = datatailor.new_customisation(dataset_id, chain=chain)
+                        created_customization = True
 
             sleep_time = 5  # seconds
             log.debug(f"Customisation: {customisation}", parent="DownloadManager")
