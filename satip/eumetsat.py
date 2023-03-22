@@ -527,14 +527,8 @@ class DownloadManager:  # noqa: D205
                         f"from {customisation.creation_time}."
                     )
                     customisation.delete()
-            except eumdac.datatailor.CustomisationError as error:
-                log.debug("Customisation Error:", error)
-            except eumdac.customisation.UnableToGetCustomisationError as error:
-                log.debug("Customization Not Found error, skipping:", error)
-                continue
-            except requests.exceptions.RequestException as error:
-                log.debug("Unexpected error:", error)
-
+            except Exception as e:
+                log.debug(f"Failed customization delete because of: {e}")
     def create_and_download_datatailor_data(
         self,
         dataset_id,
