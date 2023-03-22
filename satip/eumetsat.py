@@ -583,31 +583,26 @@ class DownloadManager:  # noqa: D205
             # sometimes the customisation fails first time, so we try twice
             # This is from Data Tailor only allowing 3 customizations at once
             # So this should then continue until it is created successfully
-            try:
-                customisation = datatailor.new_customisation(dataset_id, chain=chain)
-            except Exception:
-                log.debug("Customization not made successfully, so "
-                          "trying again after less than 3 customizations")
-                created_customization = False
-                while not created_customization:
+            created_customization = False
+            # 5 minute timeout here
+            start = datetime.datetime.now()
+            while not created_customization and (datetime.datetime.now() - start).seconds < 600:
+                try:
+                    num_running_customizations = 0
+                    for customisation in datatailor.customisations:
+                        if customisation.status in ['INACTIVE']: # Clear stuck ones
+                            customisation.kill()
+                            customisation.delete()
+                        if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
+                            num_running_customizations += 1
+                    if num_running_customizations < 3:
+                        customisation = datatailor.new_customisation(dataset_id, chain=chain)
+                        created_customization = True
+                except Exception:
+                    log.debug("Customization not made successfully, so "
+                              "trying again after less than 3 customizations")
                     time.sleep(3)
-                    try:
-                        num_running_customizations = 0
-                        for customisation in datatailor.customisations:
-                            try:
-                                if customisation.status in ['INACTIVE']: # Clear stuck ones
-                                    customisation.kill()
-                                    customisation.delete()
-                            except Exception:
-                                continue
-                            if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
-                                num_running_customizations += 1
-                        if num_running_customizations < 3:
-                            customisation = datatailor.new_customisation(dataset_id, chain=chain)
-                            created_customization = True
-                    except Exception:
-                        log.debug("Still waiting for customization slots to open up")
-                        continue
+                    continue
 
             sleep_time = 5  # seconds
             log.debug(f"Customisation: {customisation}", parent="DownloadManager")
