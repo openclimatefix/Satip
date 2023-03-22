@@ -223,8 +223,10 @@ def dataset_id_to_link(collection_id, data_id, access_token):
 
 class DownloadManager:  # noqa: D205
     """
-    The DownloadManager class provides a handler for downloading data
-    from the EUMETSAT API, managing: retrieval, logging and metadata
+    The DownloadManager class
+
+    provides a handler for downloading data from the EUMETSAT API,
+     managing: retrieval, logging and metadata
     """
 
     def __init__(
@@ -517,20 +519,16 @@ class DownloadManager:  # noqa: D205
         datatailor = eumdac.DataTailor(token)
         for customisation in datatailor.customisations:
             try:
-                if customisation.status == "DONE" or customisation.status == "FAILED":
+                if customisation.status in ['INACTIVE']:
+                    customisation.kill()
+                if customisation.status in ['DONE', 'FAILED', 'KILLED', 'DELETED']:
                     log.debug(
                         f"Delete completed customisation {customisation} "
                         f"from {customisation.creation_time}."
                     )
                     customisation.delete()
-            except eumdac.datatailor.CustomisationError as error:
-                log.debug("Customisation Error:", error)
-            except eumdac.customisation.UnableToGetCustomisationError as error:
-                log.debug("Customization Not Found error, skipping:", error)
-                continue
-            except requests.exceptions.RequestException as error:
-                log.debug("Unexpected error:", error)
-
+            except Exception as e:
+                log.debug(f"Failed customization delete because of: {e}")
     def create_and_download_datatailor_data(
         self,
         dataset_id,
@@ -577,12 +575,28 @@ class DownloadManager:  # noqa: D205
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
 
             # sometimes the customisation fails first time, so we try twice
-            try:
-                customisation = datatailor.new_customisation(dataset_id, chain=chain)
-            except Exception:
-                log.debug("Did not customisation first time, so trying again after 2 seconds")
-                time.sleep(2)
-                customisation = datatailor.new_customisation(dataset_id, chain=chain)
+            # This is from Data Tailor only allowing 3 customizations at once
+            # So this should then continue until it is created successfully
+            created_customization = False
+            # 5 minute timeout here
+            start = datetime.datetime.now()
+            while not created_customization and (datetime.datetime.now() - start).seconds < 600:
+                try:
+                    num_running_customizations = 0
+                    for customisation in datatailor.customisations:
+                        if customisation.status in ['INACTIVE']: # Clear stuck ones
+                            customisation.kill()
+                            customisation.delete()
+                        if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
+                            num_running_customizations += 1
+                    if num_running_customizations < 3:
+                        customisation = datatailor.new_customisation(dataset_id, chain=chain)
+                        created_customization = True
+                except Exception:
+                    log.debug("Customization not made successfully, so "
+                              "trying again after less than 3 customizations")
+                    time.sleep(3)
+                    continue
 
             sleep_time = 5  # seconds
             log.debug(f"Customisation: {customisation}", parent="DownloadManager")
@@ -615,7 +629,8 @@ class DownloadManager:  # noqa: D205
 
             if status != "DONE":
                 log.info(
-                    f"UNSUCCESS, data tailor service took more that {DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
+                    f"UNSUCCESS, data tailor service took more that "
+                    f"{DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
                     f"The service may fail later on now",
                     parent="DownloadManager",
                 )

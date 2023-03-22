@@ -746,7 +746,9 @@ def check_if_timestep_exists(dt: datetime.datetime, zarr_dataset: xr.Dataset) ->
 
 def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     """
-    Returns a formatted string for a markdown table, according to the dictionary passed as `table_info`.  # noqa E501
+    Returns a formatted string for a markdown table
+
+    according to the dictionary passed as `table_info`.  # noqa E501
 
     Args:
         table_info: Mapping from index to values
@@ -1073,4 +1075,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
 
 def getMemory() -> str:
+    """
+    Gets memory of process as a string
+    """
     return f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
