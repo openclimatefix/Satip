@@ -223,8 +223,10 @@ def dataset_id_to_link(collection_id, data_id, access_token):
 
 class DownloadManager:  # noqa: D205
     """
-    The DownloadManager class provides a handler for downloading data
-    from the EUMETSAT API, managing: retrieval, logging and metadata
+    The DownloadManager class
+
+    provides a handler for downloading data from the EUMETSAT API,
+     managing: retrieval, logging and metadata
     """
 
     def __init__(
@@ -584,7 +586,8 @@ class DownloadManager:  # noqa: D205
             try:
                 customisation = datatailor.new_customisation(dataset_id, chain=chain)
             except Exception:
-                log.debug("Customization not made successfully, so trying again after less than 3 customizations")
+                log.debug("Customization not made successfully, so "
+                          "trying again after less than 3 customizations")
                 created_customization = False
                 while not created_customization:
                     time.sleep(3)
@@ -595,7 +598,7 @@ class DownloadManager:  # noqa: D205
                                 if customisation.status in ['INACTIVE']: # Clear stuck ones
                                     customisation.kill()
                                     customisation.delete()
-                            except:
+                            except Exception:
                                 continue
                             if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
                                 num_running_customizations += 1
@@ -637,7 +640,8 @@ class DownloadManager:  # noqa: D205
 
             if status != "DONE":
                 log.info(
-                    f"UNSUCCESS, data tailor service took more that {DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
+                    f"UNSUCCESS, data tailor service took more that "
+                    f"{DATA_TAILOR_TIMEOUT_LIMIT_MINUTES} minutes. "
                     f"The service may fail later on now",
                     parent="DownloadManager",
                 )
