@@ -585,6 +585,7 @@ class DownloadManager:  # noqa: D205
             while not created_customization:
                 try:
                     customisation = datatailor.new_customisation(dataset_id, chain=chain)
+                    created_customization = True
                 except Exception:
                     log.debug("Customization not made successfully, so trying again after less than 3 customizations")
                     time.sleep(5)
