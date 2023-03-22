@@ -603,7 +603,7 @@ class DownloadManager:  # noqa: D205
                             customisation = datatailor.new_customisation(dataset_id, chain=chain)
                             created_customization = True
                     except Exception:
-                        log.debug(f"Still waiting for customization slots to open up")
+                        log.debug("Still waiting for customization slots to open up")
                         continue
 
             sleep_time = 5  # seconds
