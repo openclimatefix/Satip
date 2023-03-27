@@ -38,7 +38,7 @@ class TestSatipUtils(unittest.TestCase):
                 user_key=USER_KEY,
                 user_secret=USER_SECRET,
                 data_dir=os.getcwd(),
-                logger_name="Plotting_test",
+                # logger_name="Plotting_test",
             )
 
             # Download one set of RSS data and one cloudmask and store them on disk:

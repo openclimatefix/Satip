@@ -1,0 +1,17 @@
+{
+    "40cfaba7": {
+        "user_id": "jbieker",
+        "creation_time": "20230327T070704Z",
+        "backend_id": "epct_plugin_umarf_xrit_nat_HRSEVIRI",
+        "product_id": "HRV",
+        "required_processing_steps": [
+            "format"
+        ],
+        "status": "DONE",
+        "progress": 100,
+        "processing_duration": 11,
+        "output_products": [
+            "HRSEVIRI_HRV--eafa8f8f/EPCT_HRSEVIRI_HRV_eafa8f8f"
+        ]
+    }
+}

@@ -1,0 +1,493 @@
+{
+    "links": [
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0082?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0082",
+            "rel": "collection/details",
+            "numberOfProducts": 147421
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3AMSG15-RSS?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:MSG15-RSS",
+            "rel": "collection/details",
+            "numberOfProducts": 1409450.0
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AASCSZR1B?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:ASCSZR1B",
+            "rel": "collection/details",
+            "numberOfProducts": 111847
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AASCSZF1B?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:ASCSZF1B",
+            "rel": "collection/details",
+            "numberOfProducts": 110490
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0241?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0241",
+            "rel": "collection/details",
+            "numberOfProducts": 13065
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0237?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0237",
+            "rel": "collection/details",
+            "numberOfProducts": 12644
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0584?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0584",
+            "rel": "collection/details",
+            "numberOfProducts": 57065
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMULT%3AHIRSL1?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MULT:HIRSL1",
+            "rel": "collection/details",
+            "numberOfProducts": 129327
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3ACLM-IODC?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:CLM-IODC",
+            "rel": "collection/details",
+            "numberOfProducts": 214635
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0412?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0412",
+            "rel": "collection/details",
+            "numberOfProducts": 54350
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0081?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0081",
+            "rel": "collection/details",
+            "numberOfProducts": 176339
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ACM%3AMETOP%3AASCSZFR02?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:CM:METOP:ASCSZFR02",
+            "rel": "collection/details",
+            "numberOfProducts": 37304
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AASCSZO1B?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:ASCSZO1B",
+            "rel": "collection/details",
+            "numberOfProducts": 111846
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AGOMEL1?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:GOMEL1",
+            "rel": "collection/details",
+            "numberOfProducts": 39806
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0239?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0239",
+            "rel": "collection/details",
+            "numberOfProducts": 12644
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0406?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0406",
+            "rel": "collection/details",
+            "numberOfProducts": 56893
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0410?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0410",
+            "rel": "collection/details",
+            "numberOfProducts": 24167
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0413?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0413",
+            "rel": "collection/details",
+            "numberOfProducts": 47069
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0415?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0415",
+            "rel": "collection/details",
+            "numberOfProducts": 56629
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0416?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0416",
+            "rel": "collection/details",
+            "numberOfProducts": 462347
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3ARSS-CLM?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:RSS-CLM",
+            "rel": "collection/details",
+            "numberOfProducts": 1302262.0
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AOSI-150-A?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:OSI-150-A",
+            "rel": "collection/details",
+            "numberOfProducts": 37296
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AOSI-150-B?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:OSI-150-B",
+            "rel": "collection/details",
+            "numberOfProducts": 37302
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ACM%3AMETOP%3AASCSZOR02?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:CM:METOP:ASCSZOR02",
+            "rel": "collection/details",
+            "numberOfProducts": 37304
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ACM%3AMETOP%3AASCSZRR02?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:CM:METOP:ASCSZRR02",
+            "rel": "collection/details",
+            "numberOfProducts": 37304
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0236?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0236",
+            "rel": "collection/details",
+            "numberOfProducts": 12471
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0615?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0615",
+            "rel": "collection/details",
+            "numberOfProducts": 603404
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AGLB-SST-NC?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:GLB-SST-NC",
+            "rel": "collection/details",
+            "numberOfProducts": 4682
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3ACLM?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:CLM",
+            "rel": "collection/details",
+            "numberOfProducts": 697894
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0408?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0408",
+            "rel": "collection/details",
+            "numberOfProducts": 20841
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0409?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0409",
+            "rel": "collection/details",
+            "numberOfProducts": 379757
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AIASSND02?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:IASSND02",
+            "rel": "collection/details",
+            "numberOfProducts": 138105
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:HRSEVIRI",
+            "rel": "collection/details",
+            "numberOfProducts": 707706
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AIASIL1C-ALL?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:IASIL1C-ALL",
+            "rel": "collection/details",
+            "numberOfProducts": 84995
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMSG%3AHRSEVIRI-IODC?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:MSG:HRSEVIRI-IODC",
+            "rel": "collection/details",
+            "numberOfProducts": 214896
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AMHSL1?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:MHSL1",
+            "rel": "collection/details",
+            "numberOfProducts": 149156
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0238?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0238",
+            "rel": "collection/details",
+            "numberOfProducts": 12471
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0581?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0581",
+            "rel": "collection/details",
+            "numberOfProducts": 343732
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0592?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0592",
+            "rel": "collection/details",
+            "numberOfProducts": 188121
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0583?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0583",
+            "rel": "collection/details",
+            "numberOfProducts": 54611
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0556?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0556",
+            "rel": "collection/details",
+            "numberOfProducts": 707839
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0585?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0585",
+            "rel": "collection/details",
+            "numberOfProducts": 54610
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0557?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0557",
+            "rel": "collection/details",
+            "numberOfProducts": 221187
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0576?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0576",
+            "rel": "collection/details",
+            "numberOfProducts": 117416
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0407?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0407",
+            "rel": "collection/details",
+            "numberOfProducts": 327774
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0411?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0411",
+            "rel": "collection/details",
+            "numberOfProducts": 817827
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0417?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0417",
+            "rel": "collection/details",
+            "numberOfProducts": 462371
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0080?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0080",
+            "rel": "collection/details",
+            "numberOfProducts": 427873
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3ASOMO12?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:SOMO12",
+            "rel": "collection/details",
+            "numberOfProducts": 143324
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3ASOMO25?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:SOMO25",
+            "rel": "collection/details",
+            "numberOfProducts": 143324
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AOSI-104?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:OSI-104",
+            "rel": "collection/details",
+            "numberOfProducts": 104156
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AAMSUL1?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:AMSUL1",
+            "rel": "collection/details",
+            "numberOfProducts": 150003
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3AMETOP%3AAVHRRL1?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:METOP:AVHRRL1",
+            "rel": "collection/details",
+            "numberOfProducts": 150025
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0533?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0533",
+            "rel": "collection/details",
+            "numberOfProducts": 101404
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0240?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0240",
+            "rel": "collection/details",
+            "numberOfProducts": 12471
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0593?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0593",
+            "rel": "collection/details",
+            "numberOfProducts": 188123
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0577?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0577",
+            "rel": "collection/details",
+            "numberOfProducts": 307062
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0586?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0586",
+            "rel": "collection/details",
+            "numberOfProducts": 57053
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0578?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0578",
+            "rel": "collection/details",
+            "numberOfProducts": 195825
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0582?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0582",
+            "rel": "collection/details",
+            "numberOfProducts": 9968
+        },
+        {
+            "type": "Link",
+            "href": "https://api.eumetsat.int/data/browse/1.0.0/collections/EO%3AEUM%3ADAT%3A0414?format=json",
+            "mediaType": "application/json",
+            "title": "EO:EUM:DAT:0414",
+            "rel": "collection/details",
+            "numberOfProducts": 47072
+        }
+    ],
+    "numberOfProducts": 14674581.0
+}
