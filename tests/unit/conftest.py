@@ -142,4 +142,3 @@ def mocked_requests_patch(*args, **kwargs):
         with open(f"{folder}/{filename}") as json_file:
             data = json.load(json_file)
             return MockResponse(data, 200)
-
