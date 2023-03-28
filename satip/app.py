@@ -1,6 +1,5 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
-import logging
 import os
 import tempfile
 from typing import Optional
