@@ -18,7 +18,7 @@ from .conftest import mocked_requests_get, mocked_requests_post, mocked_requests
 @mock.patch("requests.get", side_effect=mocked_requests_get)
 @mock.patch("requests.post", side_effect=mocked_requests_post)
 @mock.patch("requests.patch", side_effect=mocked_requests_patch)
-def test_download_eumetsat_data(m,n,o):  # noqa
+def test_download_eumetsat_data(m,n,o, zip_file):  # noqa
     # Call the downloader on a very short chunk of data:
     _ = download_eumetsat_data(
             download_directory=str(os.getcwd() + "/storage/"),
@@ -37,7 +37,7 @@ def test_download_eumetsat_data(m,n,o):  # noqa
 @mock.patch("requests.get", side_effect=mocked_requests_get)
 @mock.patch("requests.post", side_effect=mocked_requests_post)
 @mock.patch("requests.patch", side_effect=mocked_requests_patch)
-def test_download_eumetsat_data_parallel(m,n,o):  # noqa
+def test_download_eumetsat_data_parallel(m,n,o, zip_file):  # noqa
 
     # https://stackoverflow.com/questions/70425526/mocking-methods-called-within-multiprocessing-doesnt-work-on-mac
     multiprocessing.set_start_method('fork', force=True)

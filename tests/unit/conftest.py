@@ -6,6 +6,9 @@ export PYTHONPATH=${PYTHONPATH}:/tests
 
 import json
 import logging
+import os, zipfile
+
+import pytest
 
 
 class RawResponse:
@@ -142,3 +145,20 @@ def mocked_requests_patch(*args, **kwargs):
         with open(f"{folder}/{filename}") as json_file:
             data = json.load(json_file)
             return MockResponse(data, 200)
+
+@pytest.fixture(scope="session")
+def zip_file():
+    """Return a zip file"""
+
+    zfName = 'tests/unit/data/test.zip'
+    if os.path.exists(zfName):
+        os.remove(zfName)
+        
+    foo = zipfile.ZipFile(zfName, 'w')
+    # Adding files from directory 'files'
+    for root, dirs, files in os.walk('tests/unit/data/raw'):
+        for f in files:
+            foo.write(os.path.join(root, f))
+    foo.close()
+
+    return "tests/unit/data/test.zip"
