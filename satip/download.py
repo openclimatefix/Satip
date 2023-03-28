@@ -66,6 +66,7 @@ def download_eumetsat_data(
     number_of_processes: int = 0,
     product: Union[str, List[str]] = ["rss", "cloud"],
     enforce_full_days: bool = True,
+    sleep_time: Optional[int] = 600
 ):
     """Downloads EUMETSAT RSS and Cloud Masks
 
@@ -88,6 +89,7 @@ def download_eumetsat_data(
                            i.e. no matter how you set the time of the end_date,
                            you will always get a full day. Set to False to get
                            incomplete days to strictly adhere to your start/end_date set.
+        sleep_time: Random sleep time used for downloading data, to avoid rate limiting
 
     """
     # Get authentication
@@ -142,6 +144,7 @@ def download_eumetsat_data(
                     repeat(product_id),
                     repeat(dm),
                 ),
+                sleep_time
             ):
                 # As soon as a day is done, start doing sanity checks and moving it along
                 _sanity_check_files_and_move_to_directory(
@@ -151,7 +154,7 @@ def download_eumetsat_data(
             # Want to go from most recent into the past
             for time_range in reversed(times_to_use):
                 inputs = [time_range, product_id, dm]
-                _download_time_range(inputs)
+                _download_time_range(inputs, sleep_time=sleep_time)
                 # Sanity check, able to open/right size and move to correct directory
                 _sanity_check_files_and_move_to_directory(
                     directory=download_directory, product_id=product_id
@@ -159,17 +162,17 @@ def download_eumetsat_data(
 
 
 def _download_time_range(
-    x: Tuple[Tuple[datetime, datetime], str, eumetsat.DownloadManager]
+    x: Tuple[Tuple[datetime, datetime], str, eumetsat.DownloadManager], sleep_time: int = 600
 ) -> None:
     time_range, product_id, download_manager = x
     start_time, end_time = time_range
     log.debug(f"Fetching data for {format_dt_str(start_time)} - {format_dt_str(end_time)}")
     # To help stop with rate limiting
-    time.sleep(np.random.randint(0, 30))
+    time.sleep(np.random.randint(0, sleep_time))
     complete = False
     while not complete:
         try:
-            time.sleep(np.random.randint(0, 600))
+            time.sleep(np.random.randint(0, sleep_time))
             download_manager.download_date_range(
                 format_dt_str(start_time),
                 format_dt_str(end_time),
@@ -178,7 +181,7 @@ def _download_time_range(
             complete = True
         except requests.exceptions.ConnectionError:
             # Retry again after 10 minutes, should then continue working if intermittent
-            time.sleep(600)
+            time.sleep(sleep_time)
             download_manager.download_date_range(
                 format_dt_str(start_time),
                 format_dt_str(end_time),
@@ -224,9 +227,15 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
     Returns:
         The number of incomplete files deleted
     """
+
     pattern = "*.nat" if product_id == RSS_ID else "*.grb"
+
+    log.info("Checking files in directory", directory=directory, pattern=pattern)
+
     fs: fsspec.AbstractFileSystem = fsspec.open(directory).fs
     new_files = fs.glob(os.path.join(directory, pattern))
+
+    log.info(f'Found {len(new_files)} files')
 
     date_func = (
         _eumetsat_native_filename_to_datetime
@@ -234,6 +243,7 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
         else _eumetsat_cloud_name_to_datetime
     )
     if product_id == RSS_ID:
+        log.debug('Processing RSS images in parallel')
         pool = multiprocessing.Pool()  # Use as many CPU cores as possible
         results = pool.starmap_async(
             _process_rss_images, zip(new_files, repeat(directory), repeat(fs), repeat(date_func))
@@ -241,6 +251,7 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
         results.wait()
     else:
         for f in new_files:
+            log.debug("Processing file", file=f)
             base_name = _get_basename(f)
             file_date = date_func(base_name)
             file_size = eumetsat.get_filesize_megabytes(f)
@@ -258,6 +269,7 @@ def _sanity_check_files_and_move_to_directory(directory: str, product_id: str) -
                 if not fs.exists(os.path.join(directory, file_date.strftime(format="%Y/%m/%d"))):
                     fs.mkdir(os.path.join(directory, file_date.strftime(format="%Y/%m/%d")))
                 # Only move if the correct size
+                log.debug("Moving file to final location", file=f)
                 fs.move(
                     f, os.path.join(directory, file_date.strftime(format="%Y/%m/%d"), base_name)
                 )
