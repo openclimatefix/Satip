@@ -14,7 +14,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:MSG15-RSS",
             "rel": "collection/details",
-            "numberOfProducts": 1409450.0
+            "numberOfProducts": 1409473.0
         },
         {
             "type": "Link",
@@ -22,7 +22,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:ASCSZR1B",
             "rel": "collection/details",
-            "numberOfProducts": 111847
+            "numberOfProducts": 111877
         },
         {
             "type": "Link",
@@ -30,7 +30,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:ASCSZF1B",
             "rel": "collection/details",
-            "numberOfProducts": 110490
+            "numberOfProducts": 110520
         },
         {
             "type": "Link",
@@ -62,7 +62,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MULT:HIRSL1",
             "rel": "collection/details",
-            "numberOfProducts": 129327
+            "numberOfProducts": 129342
         },
         {
             "type": "Link",
@@ -70,7 +70,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:CLM-IODC",
             "rel": "collection/details",
-            "numberOfProducts": 214635
+            "numberOfProducts": 214739
         },
         {
             "type": "Link",
@@ -78,7 +78,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0412",
             "rel": "collection/details",
-            "numberOfProducts": 54350
+            "numberOfProducts": 54546
         },
         {
             "type": "Link",
@@ -102,7 +102,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:ASCSZO1B",
             "rel": "collection/details",
-            "numberOfProducts": 111846
+            "numberOfProducts": 111876
         },
         {
             "type": "Link",
@@ -110,7 +110,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:GOMEL1",
             "rel": "collection/details",
-            "numberOfProducts": 39806
+            "numberOfProducts": 39836
         },
         {
             "type": "Link",
@@ -126,7 +126,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0406",
             "rel": "collection/details",
-            "numberOfProducts": 56893
+            "numberOfProducts": 56992
         },
         {
             "type": "Link",
@@ -134,7 +134,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0410",
             "rel": "collection/details",
-            "numberOfProducts": 24167
+            "numberOfProducts": 24203
         },
         {
             "type": "Link",
@@ -142,7 +142,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0413",
             "rel": "collection/details",
-            "numberOfProducts": 47069
+            "numberOfProducts": 47136
         },
         {
             "type": "Link",
@@ -150,7 +150,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0415",
             "rel": "collection/details",
-            "numberOfProducts": 56629
+            "numberOfProducts": 56723
         },
         {
             "type": "Link",
@@ -158,7 +158,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0416",
             "rel": "collection/details",
-            "numberOfProducts": 462347
+            "numberOfProducts": 462964
         },
         {
             "type": "Link",
@@ -166,7 +166,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:RSS-CLM",
             "rel": "collection/details",
-            "numberOfProducts": 1302262.0
+            "numberOfProducts": 1302280.0
         },
         {
             "type": "Link",
@@ -222,7 +222,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:GLB-SST-NC",
             "rel": "collection/details",
-            "numberOfProducts": 4682
+            "numberOfProducts": 4684
         },
         {
             "type": "Link",
@@ -230,7 +230,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:CLM",
             "rel": "collection/details",
-            "numberOfProducts": 697894
+            "numberOfProducts": 698000
         },
         {
             "type": "Link",
@@ -238,7 +238,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0408",
             "rel": "collection/details",
-            "numberOfProducts": 20841
+            "numberOfProducts": 20878
         },
         {
             "type": "Link",
@@ -246,7 +246,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0409",
             "rel": "collection/details",
-            "numberOfProducts": 379757
+            "numberOfProducts": 380386
         },
         {
             "type": "Link",
@@ -254,7 +254,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:IASSND02",
             "rel": "collection/details",
-            "numberOfProducts": 138105
+            "numberOfProducts": 138135
         },
         {
             "type": "Link",
@@ -262,7 +262,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:HRSEVIRI",
             "rel": "collection/details",
-            "numberOfProducts": 707706
+            "numberOfProducts": 707810
         },
         {
             "type": "Link",
@@ -270,7 +270,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:IASIL1C-ALL",
             "rel": "collection/details",
-            "numberOfProducts": 84995
+            "numberOfProducts": 85025
         },
         {
             "type": "Link",
@@ -278,7 +278,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:MSG:HRSEVIRI-IODC",
             "rel": "collection/details",
-            "numberOfProducts": 214896
+            "numberOfProducts": 215000
         },
         {
             "type": "Link",
@@ -286,7 +286,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:MHSL1",
             "rel": "collection/details",
-            "numberOfProducts": 149156
+            "numberOfProducts": 149186
         },
         {
             "type": "Link",
@@ -358,7 +358,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0407",
             "rel": "collection/details",
-            "numberOfProducts": 327774
+            "numberOfProducts": 328368
         },
         {
             "type": "Link",
@@ -366,7 +366,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0411",
             "rel": "collection/details",
-            "numberOfProducts": 817827
+            "numberOfProducts": 819126
         },
         {
             "type": "Link",
@@ -374,7 +374,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0417",
             "rel": "collection/details",
-            "numberOfProducts": 462371
+            "numberOfProducts": 462988
         },
         {
             "type": "Link",
@@ -390,7 +390,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:SOMO12",
             "rel": "collection/details",
-            "numberOfProducts": 143324
+            "numberOfProducts": 143354
         },
         {
             "type": "Link",
@@ -398,7 +398,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:SOMO25",
             "rel": "collection/details",
-            "numberOfProducts": 143324
+            "numberOfProducts": 143354
         },
         {
             "type": "Link",
@@ -406,7 +406,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:OSI-104",
             "rel": "collection/details",
-            "numberOfProducts": 104156
+            "numberOfProducts": 104187
         },
         {
             "type": "Link",
@@ -414,7 +414,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:AMSUL1",
             "rel": "collection/details",
-            "numberOfProducts": 150003
+            "numberOfProducts": 150033
         },
         {
             "type": "Link",
@@ -422,7 +422,7 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:METOP:AVHRRL1",
             "rel": "collection/details",
-            "numberOfProducts": 150025
+            "numberOfProducts": 150055
         },
         {
             "type": "Link",
@@ -486,8 +486,8 @@
             "mediaType": "application/json",
             "title": "EO:EUM:DAT:0414",
             "rel": "collection/details",
-            "numberOfProducts": 47072
+            "numberOfProducts": 47139
         }
     ],
-    "numberOfProducts": 14674581.0
+    "numberOfProducts": 14681453.0
 }

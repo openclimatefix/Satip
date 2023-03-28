@@ -18,8 +18,8 @@ from satip.utils import (
     load_cloudmask_to_dataarray,
     load_native_to_dataarray,
     save_dataarray_to_zarr,
+    save_native_to_zarr,
 )
-
 
 
 @pytest.mark.parametrize("area", ["UK", "RSS"])
@@ -52,6 +52,18 @@ def test_load_native_to_dataarray(area):  # noqa D102
     )
     assert type(rss_dataarray) == xarray.DataArray
     assert type(hrv_dataarray) == xarray.DataArray
+
+
+def test_save_native_to_zarr():  # noqa D102
+    # RSS does seem to about 45 seconds
+
+    rss_filename = (
+        os.path.realpath(os.path.dirname(__file__))
+        + "/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat"
+    )
+
+    save_native_to_zarr([rss_filename], use_rescaler=True)
+
 
 def test_save_dataarray_to_zarr():  # noqa D102
 

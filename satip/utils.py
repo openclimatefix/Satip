@@ -932,6 +932,8 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if file_time > history_time:
             log.debug("Moving file into latest folder")
             # Move HRV and non-HRV to new place
+            if not os.path.exists(f"{save_dir}/latest"):
+                os.mkdir(f"{save_dir}/latest")
             filename = f"{save_dir}/latest/{date.split('/')[-1]}"
             if filesystem.exists(filename):
                 log.debug(f"File already in latest folder, so not moving {filename}")
@@ -939,7 +941,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
-            log.debug("Removing file over 2 days over")
+            log.debug(f"Removing file over 2 days over from {history_time=} {file_time=}")
             filesystem.rm(date)
 
     finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
@@ -986,13 +988,14 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
         return False
 
 
-def collate_files_into_latest(save_dir: str, using_backup: bool = False):
+def collate_files_into_latest(save_dir: str, using_backup: bool = False, save_s3:bool = True):
     """
     Convert individual files into single latest file for HRV and non-HRV
 
     Args:
         save_dir: Directory where data is being saved
         using_backup: Whether the input data is made up of the 15 minutely  backup data or not
+        save_s3: save data to s3 or not
 
     """
     filesystem = fsspec.open(save_dir).fs
@@ -1005,7 +1008,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{save_dir}/latest/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating HRV files {filename}")
-    hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+
+    if save_s3:
+        hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+
     log.debug(hrv_files)
     dataset = (
         xr.open_mfdataset(
@@ -1042,7 +1048,10 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = list(
         filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
     )
-    nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+
+    if save_s3:
+        nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+
     log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(

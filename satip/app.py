@@ -1,5 +1,6 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
+import logging
 import os
 import tempfile
 from typing import Optional
@@ -127,6 +128,37 @@ def run(
 
     utils.setupLogging()
 
+    app(
+        api_key=api_key,
+        api_secret=api_secret,
+        save_dir_native=save_dir_native,
+        history=history,
+        db_url=db_url,
+        use_rescaler=use_rescaler,
+        start_time=start_time,
+        cleanup=cleanup,
+        use_backup=use_backup,
+        maximum_n_datasets=maximum_n_datasets,
+        save_dir=save_dir,
+    )
+
+
+def app(
+    api_key,
+    api_secret,
+    save_dir,
+    save_dir_native: Optional[str] = "./raw",
+    history: Optional[str] = "60 minutes",
+    db_url: Optional[str] = None,
+    use_rescaler: bool = False,
+    start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
+    cleanup: bool = False,
+    use_backup: bool = False,
+    maximum_n_datasets: int = -1,
+    save_s3: bool = True,
+):
+    """Run main application"""
+
     try:
 
         log.info(
@@ -196,8 +228,9 @@ def run(
                     )
 
                 # 2. Load nat files to one Xarray Dataset
+
                 native_files = (
-                    list(glob.glob(os.path.join(tmpdir, "*.nat")))
+                    list(glob.glob(os.path.join(tmpdir, "**", "*.nat"), recursive=True))
                     if not use_backup
                     else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
                 )
@@ -222,7 +255,9 @@ def run(
 
         if updated_data:
             # Collate files into single NetCDF file
-            utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
+            utils.collate_files_into_latest(
+                save_dir=save_dir, using_backup=use_backup, save_s3=save_s3
+            )
             log.debug("Collated files", memory=utils.getMemory())
 
             # 4. update table to show when this data has been pulled

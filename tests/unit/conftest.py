@@ -150,6 +150,15 @@ def mocked_requests_patch(*args, **kwargs):
 def zip_file():
     """Return a zip file"""
 
+    # decompress bz2 file
+    import bz2
+    bz2_file = 'tests/unit/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat.bz2'
+    newfilepath = 'tests/unit/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat'
+    with open(newfilepath, 'wb') as new_file, bz2.BZ2File(bz2_file, 'rb') as file:
+        for data in iter(lambda : file.read(100 * 1024), b''):
+            new_file.write(data)
+
+
     zfName = 'tests/unit/data/test.zip'
     if os.path.exists(zfName):
         os.remove(zfName)
