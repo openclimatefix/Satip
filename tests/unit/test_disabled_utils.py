@@ -44,7 +44,7 @@ def test_load_native_to_dataarray(area):  # noqa D102
 
     rss_filename = (
         os.path.realpath(os.path.dirname(__file__))
-        + "/data/raw/MSG3-SEVI-MSG15-0100-NA-20221220155415.490000000Z-NA.nat"
+        + "/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat.bz2"
     )
 
     rss_dataarray, hrv_dataarray = load_native_to_dataarray(
@@ -57,7 +57,7 @@ def test_save_dataarray_to_zarr():  # noqa D102
 
     rss_filename = (
         os.path.realpath(os.path.dirname(__file__))
-        + "/data/raw/MSG3-SEVI-MSG15-0100-NA-20221220155415.490000000Z-NA.nat"
+        + "/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat.bz2"
     )
 
     # The following is a bit ugly, but since we do not want to lump two tests into one
