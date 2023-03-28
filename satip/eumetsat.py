@@ -357,7 +357,8 @@ class DownloadManager:  # noqa: D205
             # Download the raw data
             try:
                 self.download_single_dataset(dataset_link)
-                log.debug(f"Downloaded {dataset_id} successfully to {self.data_dir}", parent="DownloadManager")
+                log.debug(f"Downloaded {dataset_id} successfully to {self.data_dir}",
+                          parent="DownloadManager")
             except HTTPError:
                 log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
                 self.request_access_token()
