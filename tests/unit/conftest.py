@@ -153,7 +153,7 @@ def zip_file():
     zfName = 'tests/unit/data/test.zip'
     if os.path.exists(zfName):
         os.remove(zfName)
-        
+
     foo = zipfile.ZipFile(zfName, 'w')
     # Adding files from directory 'files'
     for root, dirs, files in os.walk('tests/unit/data/raw'):
