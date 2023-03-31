@@ -18,7 +18,7 @@ jobs:
       - name: Do some Ubunutu specific installs for Python 3.10
         if: runner.os == 'Linux'
         run: |
-          sudo apt install libgeos-dev libbz2-dev
+          sudo apt install libgeos-dev libbz2-dev bzip2-devel
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
