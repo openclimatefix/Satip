@@ -5,6 +5,7 @@ export PYTHONPATH=${PYTHONPATH}:/tests
 """
 
 import json
+import bz2
 import logging
 import os, zipfile
 
@@ -151,7 +152,6 @@ def zip_file():
     """Return a zip file"""
 
     # decompress bz2 file
-    import bz2
     bz2_file = 'tests/unit/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat.bz2'
     newfilepath = 'tests/unit/data/raw/MSG3-SEVI-MSG15-0100-NA-20200601120416.752000000Z-NA.nat'
     with open(newfilepath, 'wb') as new_file, bz2.BZ2File(bz2_file, 'rb') as file:
