@@ -3,7 +3,6 @@ import xarray as xr
 import satpy
 from satpy import Scene
 from satip.eumetsat import DownloadManager
-from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne
 from satip.serialize import serialize_attrs
 from satip.utils import convert_scene_to_dataarray
@@ -18,22 +17,26 @@ import json
 def download_data(last_zarr_time):
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
-    download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
-    start_date = pd.Timestamp.utcnow()
-    date_range = pd.date_range(start=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                               end=pd.Timestamp(last_zarr_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
+    download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="/mnt/disks/data/native_files/")
+    start_date = pd.Timestamp.utcnow().tz_convert('UTC').to_pydatetime().replace(tzinfo=None)
+    last_zarr_time = pd.Timestamp(last_zarr_time).to_pydatetime().replace(tzinfo=None)
+    start_str = last_zarr_time.strftime("%Y-%m-%d")
+    end_str = start_date.strftime("%Y-%m-%d")
+    date_range = pd.date_range(start=start_str,
+                               end=end_str,
                                freq="1D")
     for date in date_range:
         start_date = pd.Timestamp(date) - pd.Timedelta("1min")
         end_date = pd.Timestamp(date) + pd.Timedelta("1min")
         datasets = download_manager.identify_available_datasets(
-            start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=end_date.strftime("%Y-%m-%d-%H-%M-%S"),
+            start_date=start_date.tz_localize(None).strftime("%Y-%m-%d-%H-%M-%S"),
+            end_date=end_date.tz_localize(None).strftime("%Y-%m-%d-%H-%M-%S"),
         )
         download_manager.download_datasets(datasets)
 
+def list_native_files():
     # Get native files in order
-    native_files = list(glob.glob("./native_files/*"))
+    native_files = list(glob.glob("/mnt/disks/data/native_files/*.nat"))
     native_files.sort()
     return native_files
 
@@ -174,7 +177,7 @@ def write_to_zarr(dataset, zarr_name, mode, chunks):
         "a": {"append_dim": "time"},
     }
     extra_kwargs = mode_extra_kwargs[mode]
-    dataset.chunk(chunks).to_zarr(
+    dataset.isel(x_geostationary=slice(0,5548)).chunk(chunks).to_zarr(
         zarr_name, compute=True, **extra_kwargs, consolidated=True, mode=mode
     )
 
@@ -208,7 +211,8 @@ if __name__ == "__main__":
     zarr_times = xr.open_zarr(non_zarr_path).sortby("time").time.values
     hrv_zarr_times = xr.open_zarr(zarr_path).sortby("time").time.values
     last_zarr_time = zarr_times[-1]
-    native_files = download_data(last_zarr_time)
+    download_data(last_zarr_time)
+    native_files = list_native_files()
     datasets = []
     hrv_datasets = []
     for f in native_files:
@@ -216,19 +220,16 @@ if __name__ == "__main__":
         if dataset is not None:
             datasets.append(dataset)
         if len(datasets) == 12:
-            write_to_zarr(xr.concat(datasets, dim="time"), non_zarr_path, "a", chunks={"time": 12})
-            write_to_zarr(
-                xr.concat(hrv_datasets, dim="time"), zarr_path, "a", chunks={"time": 12}
-            )
+            write_to_zarr(xr.concat(datasets, dim="time"), non_zarr_path, "a", chunks={"time": 12,})
             datasets = []
     for f in native_files:
         dataset = open_and_scale_data_hrv(hrv_zarr_times, f)
         if dataset is not None:
-            datasets = preprocess_function(dataset)
+            dataset = preprocess_function(dataset)
             hrv_datasets.append(dataset)
         if len(hrv_datasets) == 12:
             write_to_zarr(
-                xr.concat(hrv_datasets, dim="time"), zarr_path, "a", chunks={"time": 12}
+                xr.concat(hrv_datasets, dim="time"), zarr_path, "a", chunks={"time": 12,}
             )
             hrv_datasets = []
     rewrite_zarr_times(non_zarr_path)
