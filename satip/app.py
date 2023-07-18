@@ -7,6 +7,7 @@ from typing import Optional
 import click
 import pandas as pd
 import structlog
+import random
 from nowcasting_datamodel.connection import DatabaseConnection
 from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
@@ -182,7 +183,7 @@ def run(
                         memory=utils.getMemory(),
                     )
                     datasets = datasets[0:maximum_n_datasets]
-
+                random.shuffle(datasets) # Shuffle so subsequent runs might download different data
                 updated_data = True
                 if use_backup:
                     download_manager.download_tailored_datasets(
