@@ -1,13 +1,13 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
 import os
+import random
 import tempfile
 from typing import Optional
 
 import click
 import pandas as pd
 import structlog
-import random
 from nowcasting_datamodel.connection import DatabaseConnection
 from nowcasting_datamodel.models.base import Base_Forecast
 from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
