@@ -1,6 +1,7 @@
 """ Application that pulls data from the EUMETSAT API and saves to a zarr file"""
 import glob
 import os
+import random
 import tempfile
 from typing import Optional
 
@@ -182,7 +183,7 @@ def run(
                         memory=utils.getMemory(),
                     )
                     datasets = datasets[0:maximum_n_datasets]
-
+                random.shuffle(datasets) # Shuffle so subsequent runs might download different data
                 updated_data = True
                 if use_backup:
                     download_manager.download_tailored_datasets(
