@@ -694,7 +694,7 @@ def eumetsat_filename_to_datetime(inner_tar_name):
         eumetsat_filename_to_datetime(filename)
     """
 
-    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0100-NA-(\d*)\.")
+    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0[01]00-NA-(\d*)\.")
     title_match = p.match(inner_tar_name)
     date_str = title_match.group(1)
     return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
