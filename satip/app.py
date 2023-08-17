@@ -189,6 +189,7 @@ def run(
                 if use_backup:
                     # Check before downloading each tailored dataset, as it can take awhile
                     for dset in datasets:
+                        print(dset)
                         dset = utils.filter_dataset_ids_on_current_files(dset, save_dir)
                         if len(dset) > 0:
                             download_manager.download_tailored_datasets(
@@ -198,6 +199,7 @@ def run(
                 else:
                     # Check before downloading each tailored dataset, as it can take awhile
                     for dset in datasets:
+                        print(dset)
                         dset = utils.filter_dataset_ids_on_current_files(dset, save_dir)
                         if len(dset) > 0:
                             download_manager.download_datasets(
