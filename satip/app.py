@@ -148,7 +148,8 @@ def run(
                 download_manager.cleanup_datatailor()
                 return
             start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
-            log.info(f"Fetching datasets for {start_date} - {start_time}", memory=utils.get_memory())
+            log.info(f"Fetching datasets for {start_date} - {start_time}",
+                     memory=utils.get_memory())
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
