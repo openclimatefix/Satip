@@ -133,7 +133,7 @@ def run(
         log.info(
             f'Running application and saving to "{save_dir}"',
             version=satip.__version__,
-            memory=utils.getMemory(),
+            memory=utils.get_memory(),
         )
         # 1. Get data from API, download native files
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -144,11 +144,11 @@ def run(
                 native_file_dir=save_dir_native,
             )
             if cleanup:
-                log.debug("Running Data Tailor Cleanup", memory=utils.getMemory())
+                log.debug("Running Data Tailor Cleanup", memory=utils.get_memory())
                 download_manager.cleanup_datatailor()
                 return
             start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
-            log.info(f"Fetching datasets for {start_date} - {start_time}", memory=utils.getMemory())
+            log.info(f"Fetching datasets for {start_date} - {start_time}", memory=utils.get_memory())
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
@@ -158,7 +158,7 @@ def run(
                 log.warn(
                     f"No RSS Imagery available or using backup ({use_backup=}), "
                     f"falling back to 15-minutely data",
-                    memory=utils.getMemory(),
+                    memory=utils.get_memory(),
                 )
                 datasets = download_manager.identify_available_datasets(
                     start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
@@ -170,26 +170,30 @@ def run(
             # if both final files don't exist, then we should make sure we run the whole process
             datasets = utils.filter_dataset_ids_on_current_files(datasets, save_dir)
             log.info(
-                f"Files to download after filtering: {len(datasets)}", memory=utils.getMemory()
+                f"Files to download after filtering: {len(datasets)}", memory=utils.get_memory()
             )
 
             if len(datasets) == 0:
-                log.info("No files to download, exiting", memory=utils.getMemory())
+                log.info("No files to download, exiting", memory=utils.get_memory())
                 updated_data = False
             else:
                 if maximum_n_datasets != -1:
                     log.debug(
                         f"Ony going to get at most {maximum_n_datasets} datasets",
-                        memory=utils.getMemory(),
+                        memory=utils.get_memory(),
                     )
                     datasets = datasets[0:maximum_n_datasets]
                 random.shuffle(datasets) # Shuffle so subsequent runs might download different data
                 updated_data = True
                 if use_backup:
-                    download_manager.download_tailored_datasets(
-                        datasets,
-                        product_id="EO:EUM:DAT:MSG:HRSEVIRI",
-                    )
+                    # Check before downloading each tailored dataset, as it can take awhile
+                    for dset in datasets:
+                        dset = utils.filter_dataset_ids_on_current_files([dset], save_dir)
+                        if len(dset) > 0:
+                            download_manager.download_tailored_datasets(
+                                [dset],
+                                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                            )
                 else:
                     download_manager.download_datasets(
                         datasets,
@@ -204,7 +208,7 @@ def run(
                 )
                 log.debug(
                     "Saving native files to Zarr: " + native_files.__str__(),
-                    memory=utils.getMemory(),
+                    memory=utils.get_memory(),
                 )
                 # Save to S3
                 utils.save_native_to_zarr(
@@ -224,7 +228,7 @@ def run(
         if updated_data:
             # Collate files into single NetCDF file
             utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
-            log.debug("Collated files", memory=utils.getMemory())
+            log.debug("Collated files", memory=utils.get_memory())
 
             # 4. update table to show when this data has been pulled
             if db_url is not None:
@@ -232,7 +236,7 @@ def run(
                 with connection.get_session() as session:
                     update_latest_input_data_last_updated(session=session, component="satellite")
 
-        log.info("Finished Running application", memory=utils.getMemory())
+        log.info("Finished Running application", memory=utils.get_memory())
 
     except Exception as e:
         log.error(f"Error caught during run: {e}", exc_info=True)
