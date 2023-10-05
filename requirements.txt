@@ -42,7 +42,7 @@ h5netcdf==1.1.0
 h5py==3.8.0
 HeapDict==1.0.1
 idna==3.4
-imagecodecs==2022.9.26
+imagecodecs==2023.9.18
 importlib-metadata==5.2.0
 Jinja2==3.1.2
 jmespath==1.0.1
