@@ -214,7 +214,7 @@ def dataset_id_to_link(collection_id, data_id, access_token):
         str containing the URL for the dataset request.
     """
     return (
-        "https://api.eumetsat.int/data/download/collections/"
+        "https://api.eumetsat.int/data/download/1.0.0/collections/"
         + f"{urllib.parse.quote(collection_id)}/products/{urllib.parse.quote(data_id)}"
         + "?access_token="
         + access_token
