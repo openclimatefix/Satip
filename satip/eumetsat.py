@@ -123,7 +123,7 @@ def query_data_products(
         r: Response from the request
     """
 
-    search_url = API_ENDPOINT + "/data/search-products/0.4.0/os"
+    search_url = API_ENDPOINT + "/data/search-products/1.0.0/os"
 
     params = {
         "format": "json",
