@@ -18,6 +18,7 @@ from satip.utils import (
     load_cloudmask_to_dataarray,
     load_native_to_dataarray,
     save_dataarray_to_zarr,
+    data_quality_filter,
 )
 
 USER_KEY = os.environ.get("EUMETSAT_USER_KEY")
@@ -95,3 +96,18 @@ class TestSatipUtils(unittest.TestCase):
             zarr_mode="w",
         )
         self.assertEqual(1, len(list(glob.glob(zarr_path))))
+
+    def test_data_quality_filter(self):
+        test_dataset_zeros = xarray.Dataset({
+            "data": (("time", "y", "x"), np.zeros(100, 100, 100))
+        })
+
+        out = data_quality_filter(test, 0.9)
+        self.assertFalse(out)
+
+        test_dataset_ones = xarray.Dataset({
+            "data": (("time", "y", "x"), np.ones(100, 100, 100))
+        })
+
+        out = data_quality_filter(test, 0.9)
+        self.assertTrue(out)
