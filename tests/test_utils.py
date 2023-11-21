@@ -111,4 +111,3 @@ class TestSatipUtils(unittest.TestCase):
 
         out = data_quality_filter(test, 0.9)
         self.assertTrue(out)
-
