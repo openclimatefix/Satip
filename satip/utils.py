@@ -425,6 +425,9 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     log.debug("Saved HRV to NetCDF", memory=get_memory())
 
 def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool:
+    """
+    Filter out datasets with a high fraction of zeros"
+    """
     for var in ds.data_vars:
         fraction_of_zeros = np.isclose(ds[var], 0.0).mean()
         if fraction_of_zeros > threshold_fraction:
