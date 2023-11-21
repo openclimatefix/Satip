@@ -431,7 +431,8 @@ def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool
     for var in ds.data_vars:
         fraction_of_zeros = np.isclose(ds[var], 0.0).mean()
         if fraction_of_zeros > threshold_fraction:
-            log.debug(f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros (threshold {threshold_fraction})")
+            log.debug(f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros"\
+                      f" (threshold {threshold_fraction})")
             return False
 
 def get_nonhrv_dataset_from_scene(
