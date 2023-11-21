@@ -410,6 +410,13 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     hrv_dataset.attrs.update(attrs)
     log.debug("Converted HRV to DataArray", memory=get_memory())
     now_time = pd.Timestamp(hrv_dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+
+    # Check for data quality
+    if not data_quality_filter(hrv_dataset):
+        del hrv_dataset
+        gc.collect()
+        return
+
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
     log.debug(f"Saving HRV netcdf in {save_file}", memory=get_memory())
     save_to_zarr_to_s3(hrv_dataset, save_file)
@@ -417,6 +424,12 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     gc.collect()
     log.debug("Saved HRV to NetCDF", memory=get_memory())
 
+def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool:
+    for var in ds.data_vars:
+        fraction_of_zeros = np.isclose(ds[var], 0.0).mean()
+        if fraction_of_zeros > threshold_fraction:
+            log.debug(f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros (threshold {threshold_fraction})")
+            return False
 
 def get_nonhrv_dataset_from_scene(
     filename: str, scaler, use_rescaler: bool, save_dir, using_backup
@@ -508,6 +521,12 @@ def get_nonhrv_dataset_from_scene(
     dataset.attrs.update(attrs)
     log.debug("Deleted return list", memory=get_memory())
     now_time = pd.Timestamp(dataset["time"].values[0]).strftime("%Y%m%d%H%M")
+
+    if not data_quality_filter(dataset):
+        del dataset
+        gc.collect()
+        return
+
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
     log.debug(f"Saving non-HRV netcdf in {save_file}", memory=get_memory())
     save_to_zarr_to_s3(dataset, save_file)
