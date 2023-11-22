@@ -99,14 +99,14 @@ class TestSatipUtils(unittest.TestCase):
 
     def test_data_quality_filter(self):
         test = xarray.Dataset({
-            "data": (("time", "y", "x"), np.zeros(100, 100, 100))
+            "data": (("time", "y", "x"), np.zeros((100, 100, 100)))
         })
 
         out = data_quality_filter(test, 0.9)
         self.assertFalse(out)
 
         test = xarray.Dataset({
-            "data": (("time", "y", "x"), np.ones(100, 100, 100))
+            "data": (("time", "y", "x"), np.ones((100, 100, 100)))
         })
 
         out = data_quality_filter(test, 0.9)
