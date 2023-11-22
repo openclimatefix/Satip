@@ -105,7 +105,7 @@ class TestSatipUtils(unittest.TestCase):
         out = data_quality_filter(test, 0.9)
         self.assertFalse(out)
 
-        test_dataset_ones = xarray.Dataset({
+        test = xarray.Dataset({
             "data": (("time", "y", "x"), np.ones(100, 100, 100))
         })
 
