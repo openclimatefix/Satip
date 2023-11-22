@@ -13,6 +13,7 @@ import unittest
 from pathlib import Path
 
 import xarray
+import numpy as np
 
 from satip.utils import (
     load_cloudmask_to_dataarray,
@@ -39,7 +40,6 @@ class TestSatipUtils(unittest.TestCase):
                 user_key=USER_KEY,
                 user_secret=USER_SECRET,
                 data_dir=os.getcwd(),
-                logger_name="Plotting_test",
             )
 
             # Download one set of RSS data and one cloudmask and store them on disk:
@@ -98,7 +98,7 @@ class TestSatipUtils(unittest.TestCase):
         self.assertEqual(1, len(list(glob.glob(zarr_path))))
 
     def test_data_quality_filter(self):
-        test_dataset_zeros = xarray.Dataset({
+        test = xarray.Dataset({
             "data": (("time", "y", "x"), np.zeros(100, 100, 100))
         })
 
