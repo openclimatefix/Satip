@@ -428,11 +428,11 @@ def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool
     """
     Filter out datasets with a high fraction of zeros
 
-      Args: 
+    Args:
         ds: Dataset to check
         threshold_fraction: Fraction of 0's where the data quality is too low, so fail the check
 
-      Returns:
+    Returns:
         False, if the data contains too many zeros
         True, if not
     """
