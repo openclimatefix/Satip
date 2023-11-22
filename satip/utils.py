@@ -426,7 +426,15 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
 
 def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool:
     """
-    Filter out datasets with a high fraction of zeros"
+    Filter out datasets with a high fraction of zeros
+
+      Args: 
+        ds: Dataset to check
+        threshold_fraction: Fraction of 0's where the data quality is too low, so fail the check
+
+      Returns:
+        False, if the data contains too many zeros
+        True, if not
     """
     for var in ds.data_vars:
         fraction_of_zeros = np.isclose(ds[var], 0.0).mean()
@@ -434,6 +442,7 @@ def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool
             log.debug(f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros"\
                       f" (threshold {threshold_fraction})")
             return False
+    return True
 
 def get_nonhrv_dataset_from_scene(
     filename: str, scaler, use_rescaler: bool, save_dir, using_backup
