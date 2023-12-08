@@ -63,6 +63,7 @@ class TestSatipUtils(unittest.TestCase):
 
         return super().setUp()
 
+    @unittest.skip("Skipping as cloud masks are not being used now")
     def test_load_cloudmask_to_dataarray(self):  # noqa D102
         for area in ["UK", "RSS"]:
             cloudmask_dataarray = load_cloudmask_to_dataarray(

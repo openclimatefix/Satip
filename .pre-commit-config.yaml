@@ -25,3 +25,4 @@ repos:
     hooks:
       - id: prettier
         types: [yaml]
+        entry: env PRETTIER_LEGACY_CLI=1 prettier

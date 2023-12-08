@@ -10,12 +10,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           cache: "pip"
-      - name: Do some Ubunutu specific installs for Python 3.10
+      - name: Do some Ubunutu specific installs for Python 3.11
         if: runner.os == 'Linux'
         run: |
           sudo apt install libgeos-dev libeccodes-dev
@@ -43,7 +43,7 @@ jobs:
           echo "Will be looking at coverage of dir  ${{ inputs.pytest_cov_dir }}"
           #
           # install pytest-cov
-          pip install coverage==6.2 # https://github.com/nedbat/coveragepy/issues/1312
+          pip install coverage
           pip install pytest-cov
           #
           # make PYTESTCOV
