@@ -6,7 +6,7 @@ FROM ubuntu:latest
 
 
 ENV CONDA_ENV_NAME=satip
-ENV PYTHON_VERSION=3.12
+ENV PYTHON_VERSION=3.11
 
 
 # Basic setup
