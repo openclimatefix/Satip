@@ -51,8 +51,8 @@ def test_data_tailor_identify_available_datasets():
         )
 
         datasets = download_manager.identify_available_datasets(
-            start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=end_date.strftime("%Y-%m-%d-%H-%M-%S"),
+            start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+            end_date=end_date.strftime("%Y-%m-%d-%H:%M:%S"),
             product_id="EO:EUM:DAT:MSG:HRSEVIRI",
         )
 
@@ -77,8 +77,8 @@ def test_data_tailor():
         )
 
         datasets = download_manager.identify_available_datasets(
-            start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-            end_date=end_date.strftime("%Y-%m-%d-%H-%M-%S"),
+            start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+            end_date=end_date.strftime("%Y-%m-%d-%H:%M:%S"),
             product_id="EO:EUM:DAT:MSG:HRSEVIRI",
         )
 
