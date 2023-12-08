@@ -13,7 +13,7 @@ jobs:
       - name: Set up Python 3.12
         uses: actions/setup-python@v3
         with:
-          python-version: "3.12"
+          python-version: "3.11"
           cache: "pip"
       - name: Do some Ubunutu specific installs for Python 3.12
         if: runner.os == 'Linux'
