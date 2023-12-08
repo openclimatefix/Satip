@@ -151,8 +151,8 @@ def run(
             log.info(f"Fetching datasets for {start_date} - {start_time}",
                      memory=utils.get_memory())
             datasets = download_manager.identify_available_datasets(
-                start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
+                start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+                end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
             )
             # Check if any RSS imagery is available, if not, fall back to 15 minutely data
             if (len(datasets) == 0) or use_backup:
@@ -162,8 +162,8 @@ def run(
                     memory=utils.get_memory(),
                 )
                 datasets = download_manager.identify_available_datasets(
-                    start_date=start_date.strftime("%Y-%m-%d-%H-%M-%S"),
-                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H-%M-%S"),
+                    start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
                     product_id="EO:EUM:DAT:MSG:HRSEVIRI",
                 )
                 use_backup = True
