@@ -43,7 +43,7 @@ jobs:
           echo "Will be looking at coverage of dir  ${{ inputs.pytest_cov_dir }}"
           #
           # install pytest-cov
-          pip install coverage==6.2 # https://github.com/nedbat/coveragepy/issues/1312
+          pip install coverage
           pip install pytest-cov
           #
           # make PYTESTCOV
