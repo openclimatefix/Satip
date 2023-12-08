@@ -46,31 +46,6 @@ API_TAILORED_DOWNLOAD_ENDPOINT = API_ENDPOINT + "/epcs/download"
 DATA_TAILOR_TIMEOUT_LIMIT_MINUTES = 15
 
 
-# TODO: This function is not used anywhere in the code, suggest to remove.
-def build_url_string(url, parameters):
-    """
-    Builds a url string from a parameters dictionary
-
-    Args:
-        url (str):         the base URL
-        parameters (dict): the query parameters
-
-    Return:
-        url (str):         the query ready URL
-    """
-    init = True
-    for key, value in parameters.items():
-        if init:
-            url = url + "?"
-            init = False
-        else:
-            url = url + "&"
-
-        url = url + key + "=" + value
-
-    return url
-
-
 def _request_access_token(user_key, user_secret):
     """
     Requests an access token from the EUMETSAT data API

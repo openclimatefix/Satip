@@ -36,7 +36,7 @@ def download_data(last_zarr_time):
 
 def list_native_files():
     # Get native files in order
-    native_files = list(glob.glob("/mnt/disks/data/native_files/*.nat"))
+    native_files = list(glob.glob("/mnt/disks/data/native_files/*/*.nat"))
     native_files.sort()
     return native_files
 
@@ -85,7 +85,7 @@ def open_and_scale_data_hrv(zarr_times, f):
     hrv_dataset["data"] = hrv_dataset["data"].astype(np.float16)
 
     if hrv_dataset.time.values[0] in zarr_times:
-        print("Skipping")
+        print(f"Skipping: {hrv_dataset.time.values[0]}")
         return None
 
     return hrv_dataset
@@ -166,7 +166,7 @@ def open_and_scale_data_nonhrv(zarr_times, f):
     dataset["data"] = dataset.data.astype(np.float16)
 
     if dataset.time.values[0] in zarr_times:
-        print("Skipping")
+        print(f"Skipping: {dataset.time.values[0]}")
         return None
 
     return dataset
@@ -211,19 +211,28 @@ if __name__ == "__main__":
     zarr_times = xr.open_zarr(non_zarr_path).sortby("time").time.values
     hrv_zarr_times = xr.open_zarr(zarr_path).sortby("time").time.values
     last_zarr_time = zarr_times[-1]
-    download_data(last_zarr_time)
+    #download_data(last_zarr_time)
     native_files = list_native_files()
     datasets = []
     hrv_datasets = []
+    """
     for f in native_files:
-        dataset = open_and_scale_data_nonhrv(zarr_times, f)
+        try:
+            dataset = open_and_scale_data_nonhrv(zarr_times, f)
+        except:
+            continue
         if dataset is not None:
             datasets.append(dataset)
         if len(datasets) == 12:
             write_to_zarr(xr.concat(datasets, dim="time"), non_zarr_path, "a", chunks={"time": 12,})
             datasets = []
+    """
+    """
     for f in native_files:
-        dataset = open_and_scale_data_hrv(hrv_zarr_times, f)
+        try:
+            dataset = open_and_scale_data_hrv(hrv_zarr_times, f)
+        except:
+            continue
         if dataset is not None:
             dataset = preprocess_function(dataset)
             hrv_datasets.append(dataset)
@@ -232,5 +241,8 @@ if __name__ == "__main__":
                 xr.concat(hrv_datasets, dim="time"), zarr_path, "a", chunks={"time": 12,}
             )
             hrv_datasets = []
+    """
+    """
     rewrite_zarr_times(non_zarr_path)
     rewrite_zarr_times(zarr_path)
+    """
