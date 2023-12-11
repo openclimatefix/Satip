@@ -57,7 +57,7 @@ ndindex==1.7
 netCDF4==1.6.5
 nowcasting-datamodel==1.5.26
 numcodecs==0.12.1
-numpy==1.23.2
+numpy==1.26.2
 ocf-blosc2==0.0.4
 packaging==23.2
 pandas==2.1.3
