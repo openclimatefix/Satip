@@ -57,7 +57,7 @@ In order to contribute to development or just test-run some scripts, you will ne
 The following command will download the last 2 hours of RSS imagery into NetCDF files at the specified location
 
 ```bash
-python satip/app.py --api-key=<EUMETSAT API Key> --api-secret=<EUMETSAT API Secret> --save-dr="/path/to/saving/files/" --history="2 hours"
+python satip/app.py --api-key=<EUMETSAT API Key> --api-secret=<EUMETSAT API Secret> --save-dir="/path/to/saving/files/" --history="2 hours"
 ```
 
 To download more historical data, the command below will download the native files, compress with bz2, and save into a subdirectory.
