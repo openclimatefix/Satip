@@ -52,6 +52,7 @@ warnings.filterwarnings(
     ),
 )
 
+LATEST_DIR = "latest"
 
 def setupLogging() -> None:
     """Instantiate the structlog package to produce JSON logs."""
@@ -344,7 +345,7 @@ def do_v15_rescaling(
     dataarray: xr.DataArray, mins: np.ndarray, maxs: np.ndarray, variable_order: list
 ) -> xr.DataArray:
     """
-    Performs old version of cocmpression, same as v15 dataset
+    Performs old version of compression, same as v15 dataset
 
     Args:
         dataarray: Input DataArray
@@ -925,6 +926,21 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     return datasets
 
 
+def get_latest_subdir_path(save_dir: str, mkdir=False) -> str:
+    """
+    gets the latest dir path based on a give save_dir,
+
+    Args:
+        save_dir: Directory where data is being saved
+        mkdir: if True, generate latest directory if it doesn't exist
+    """
+    latest_dir = os.path.join(save_dir, LATEST_DIR)
+    # TODO(tpughe): add unit test, add method to filesystem module
+    if not os.path.isdir(latest_dir) and mkdir:
+        os.mkdir(latest_dir, 777)
+    return latest_dir
+
+
 def move_older_files_to_different_location(save_dir: str, history_time: pd.Timestamp):
     """
     Move older files in save_dir to a different location
@@ -934,12 +950,14 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         history_time: History time to keep files
 
     """
+    latest_dir = get_latest_subdir_path(save_dir, True)
+
     filesystem = fsspec.open(save_dir).fs
 
     # Now to move into latest
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
 
-    log.info(f"Checking {save_dir}/ for moving newer files into {save_dir}/latest/")
+    log.info(f"Checking {save_dir}/ for moving newer files into {latest_dir}")
 
     # get datetimes of the finished files
 
@@ -964,18 +982,18 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if file_time > history_time:
             log.debug("Moving file into latest folder")
             # Move HRV and non-HRV to new place
-            filename = f"{save_dir}/latest/{date.split('/')[-1]}"
+            filename = f"{latest_dir}/{date.split('/')[-1]}"
             if filesystem.exists(filename):
                 log.debug(f"File already in latest folder, so not moving {filename}")
             else:
-                filesystem.move(date, f"{save_dir}/latest/{date.split('/')[-1]}")
+                filesystem.move(date, f"{latest_dir}/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
             # Delete files over 2 days old
             log.debug("Removing file over 2 days over")
             filesystem.rm(date)
 
-    finished_files = filesystem.glob(f"{save_dir}/latest/*.zarr.zip")
-    log.info(f"Checking {save_dir}/latest/ for older files")
+    finished_files = filesystem.glob(f"{latest_dir}/*.zarr.zip")
+    log.info(f"Checking {latest_dir} for older files")
     # get datetimes of the finished files
     for date in finished_files:
         log.debug(f"Looking at file {date}")
@@ -1002,9 +1020,10 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
 
 def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
-    """Check that both final finles exists"""
-    hrv_filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
-    filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
+    """Check that both final files exists"""
+    latest_dir = get_latest_subdir_path(save_dir)
+    hrv_filename = f"{latest_dir}/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
+    filename = f"{latest_dir}/latest{'_15' if using_backup else ''}.zarr.zip"
 
     log.debug(f"Checking {hrv_filename} and or {filename} exists")
 
@@ -1024,18 +1043,19 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
 
     Args:
         save_dir: Directory where data is being saved
-        using_backup: Whether the input data is made up of the 15 minutely  backup data or not
+        using_backup: Whether the input data is made up of the 15 minutely backup data or not
 
     """
     filesystem = fsspec.open(save_dir).fs
+    latest_dir = get_latest_subdir_path(save_dir)
     hrv_files = list(
-        filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}hrv_2*.zarr.zip")
+        filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}hrv_2*.zarr.zip")
     )
     if not hrv_files:  # Empty set of files, don't do anything
         return
     # Add S3 to beginning of each URL
-    filename = f"{save_dir}/latest/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
-    filename_temp = f"{save_dir}/latest/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
+    filename = f"{latest_dir}/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
+    filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating HRV files {filename}")
     hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
     log.debug(hrv_files)
