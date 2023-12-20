@@ -874,8 +874,10 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     finished_files_not_latest = list(filesystem.glob(f"{save_dir}/*.zarr.zip"))
     log.debug(f"Found {len(finished_files_not_latest)} already downloaded in data folder")
 
-    filesystem_latest = fsspec.open(save_dir + "/latest").fs
-    finished_files_latest = list(filesystem_latest.glob(f"{save_dir}/latest/*.zarr.zip"))
+    latest_dir = get_latest_subdir_path(save_dir)
+
+    filesystem_latest = fsspec.open(latest_dir).fs
+    finished_files_latest = list(filesystem_latest.glob(f"{latest_dir}/*.zarr.zip"))
     log.debug(f"Found {len(finished_files_latest)} already downloaded in latest folder")
 
     finished_files = finished_files_not_latest + finished_files_latest
@@ -1088,11 +1090,11 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
     log.debug(f"{filename} {new_times}")
 
-    filename = f"{save_dir}/latest/latest{'_15' if using_backup else ''}.zarr.zip"
-    filename_temp = f"{save_dir}/latest/tmp_{secrets.token_hex(6)}.zarr.zip"
+    filename = f"{latest_dir}/latest{'_15' if using_backup else ''}.zarr.zip"
+    filename_temp = f"{latest_dir}/tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating non-HRV files {filename}")
     nonhrv_files = list(
-        filesystem.glob(f"{save_dir}/latest/{'15_' if using_backup else ''}2*.zarr.zip")
+        filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
     )
     nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
     log.debug(nonhrv_files)
