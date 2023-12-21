@@ -46,7 +46,7 @@ pre-commit install
 ### Development Environment
 
 In order to contribute:
-- it's recommend that you use a Linux-based OS, as currently this is the OS on which all CI/CD testing, production, and development is performed. Instructions in the README may not work as expected on other OS.
+- it's recommend that you use a Linux-based OS. This is currently used for all CI/CD testing, production, and development.
 - At the time of writing (21-Dec-23), the Python version used is 3.11 with work being done to update to Python 3.12. This is subject to updates over time.
 
 ## Operation
