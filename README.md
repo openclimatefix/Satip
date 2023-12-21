@@ -11,6 +11,7 @@
 
 <br>
 
+
 ### Installation
 
 To install the `satip` library please run:
@@ -41,6 +42,12 @@ If you plan to work on the development of Satip then also consider installing th
 conda install pytest flake8 jedi mypy black pre-commit
 pre-commit install
 ```
+
+### Development Environment
+
+In order to contribute:
+- it's recommend that you use a Linux-based OS, as currently this is the OS on which all CI/CD testing, production, and development is performed. Instructions in the README may not work as expected on other OS.
+- At the time of writing (21-Dec-23), the Python version used is 3.11 with work being done to update to Python 3.12. This is subject to updates over time.
 
 ## Operation
 
