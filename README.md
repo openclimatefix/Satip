@@ -11,6 +11,7 @@
 
 <br>
 
+
 ### Installation
 
 To install the `satip` library please run:
@@ -27,7 +28,7 @@ pip install -e .
 
 #### Conda
 
-Or, if you want to use `conda` from the a cloned Satip repository:
+Or, if you want to use `conda` from a cloned Satip repository:
 
 ```bash
 conda env create -f environment.yml
@@ -42,6 +43,12 @@ conda install pytest flake8 jedi mypy black pre-commit
 pre-commit install
 ```
 
+### Development Environment
+
+In order to contribute:
+- it's recommended that you use a Linux-based OS. This is currently used for all CI/CD testing, production, and development.
+- At the time of writing (21-Dec-23), the Python version used is 3.11 with work being done to update to Python 3.12. This is subject to updates over time.
+
 ## Operation
 
 ### Getting your own API key
@@ -49,7 +56,7 @@ pre-commit install
 In order to contribute to development or just test-run some scripts, you will need your own Eumetsat-API-key. Please follow these steps:
 
 1. Go to https://eoportal.eumetsat.int and register an account.
-2. You can log in and got to https://data.eumetsat.int/ to check available data services. From there go to your profile and choose the option "API key" or go to https://api.eumetsat.int/api-key/ directly.
+2. You can log in and go to https://data.eumetsat.int/ to check available data services. From there go to your profile and choose the option "API key" or go to https://api.eumetsat.int/api-key/ directly.
 3. Please make sure that you added the key and secret to your user's environment variables.
 
 ### Downloading EUMETSAT Data
