@@ -1,4 +1,6 @@
 data/raw/*
+raw/MSG3-SEVI-MSG15-0100-NA-*
+temp_hrit
 data/intermediate/*
 data/EUMETSAT_metadata.db
 **/*.nat

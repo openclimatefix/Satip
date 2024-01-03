@@ -52,8 +52,6 @@ warnings.filterwarnings(
     ),
 )
 
-LATEST_DIR = "latest"
-
 def setupLogging() -> None:
     """Instantiate the structlog package to produce JSON logs."""
 
@@ -936,10 +934,13 @@ def get_latest_subdir_path(save_dir: str, mkdir=False) -> str:
         save_dir: Directory where data is being saved
         mkdir: if True, generate latest directory if it doesn't exist
     """
-    latest_dir = os.path.join(save_dir, LATEST_DIR)
-    # TODO(tpughe): add unit test, add method to filesystem module
-    if not os.path.isdir(latest_dir) and mkdir:
-        os.mkdir(latest_dir, 777)
+
+    LATEST_DIR_NAME = "latest"
+    filesystem = fsspec.open(save_dir).fs
+    latest_dir = os.path.join(save_dir, LATEST_DIR_NAME)
+    # TODO(tpughe): add unit test
+    if not filesystem.exists(latest_dir) and mkdir:
+        filesystem.mkdir(latest_dir)
     return latest_dir
 
 
