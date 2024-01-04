@@ -97,6 +97,13 @@ The live service uses `app.py` as the entrypoint for running the live data downl
 
 To run tests, simply run ```pytest .``` from the root of the repository. To generate the test plots, run ```python scripts/generate_test_plots.py```.
 
+### Environmental Variables
+Some tests require environmental variables to be set that would be passed in by command line argument when running the code in production. These are as follows:
+ - `EUMETSAT_USER_KEY`: the EUMETSAT API key
+ - `EUMETSAT_USER_SECRET`: the EUMETSAT API secret
+
+ These can be added using the `export` command in your shell environment. To add these permanently, the export statements can be added to the configuration file for the shell environment (e.g. "~/.bashrc" if using bash).
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):

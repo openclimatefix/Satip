@@ -20,6 +20,8 @@ from satip.utils import (
     load_native_to_dataarray,
     save_dataarray_to_zarr,
     data_quality_filter,
+    get_latest_subdir_path,
+    LATEST_DIR_NAME,
 )
 
 USER_KEY = os.environ.get("EUMETSAT_USER_KEY")
@@ -112,3 +114,19 @@ class TestSatipUtils(unittest.TestCase):
 
         out = data_quality_filter(test, 0.9)
         self.assertTrue(out)
+
+    def test_get_latest_subdir_path(self):
+
+        data_folder_name = "ut_tmp_data"
+        expected_latest_folder = os.path.join(data_folder_name, LATEST_DIR_NAME)
+        if os.path.exists(expected_latest_folder):
+            os.rmdir(expected_latest_folder)
+        latest_path = get_latest_subdir_path(data_folder_name)
+        self.assertEqual(expected_latest_folder, latest_path)
+
+        self.assertFalse(os.path.exists(latest_path))
+        latest_path = get_latest_subdir_path(data_folder_name, mkdir=True)
+        self.assertEqual(expected_latest_folder, latest_path)
+        self.assertTrue(os.path.exists(latest_path))
+        os.rmdir(latest_path)
+        os.rmdir(data_folder_name)

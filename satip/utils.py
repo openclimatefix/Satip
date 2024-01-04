@@ -36,6 +36,7 @@ from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
+LATEST_DIR_NAME = "latest"
 log = structlog.get_logger()
 
 warnings.filterwarnings("ignore", message="divide by zero encountered in true_divide")
@@ -935,7 +936,6 @@ def get_latest_subdir_path(save_dir: str, mkdir=False) -> str:
         mkdir: if True, generate latest directory if it doesn't exist
     """
 
-    LATEST_DIR_NAME = "latest"
     filesystem = fsspec.open(save_dir).fs
     latest_dir = os.path.join(save_dir, LATEST_DIR_NAME)
     # TODO(tpughe): add unit test
