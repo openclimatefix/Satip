@@ -938,7 +938,6 @@ def get_latest_subdir_path(save_dir: str, mkdir=False) -> str:
 
     filesystem = fsspec.open(save_dir).fs
     latest_dir = os.path.join(save_dir, LATEST_DIR_NAME)
-    # TODO(tpughe): add unit test
     if not filesystem.exists(latest_dir) and mkdir:
         filesystem.mkdir(latest_dir)
     return latest_dir
