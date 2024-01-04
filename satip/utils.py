@@ -877,7 +877,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
     filesystem_latest = fsspec.open(latest_dir).fs
     finished_files_latest = list(filesystem_latest.glob(f"{latest_dir}/*.zarr.zip"))
-    log.debug(f"Found {len(finished_files_latest)} already downloaded in latest folder")
+    log.debug(f"Found {len(finished_files_latest)} already downloaded in {LATEST_DIR_NAME} folder")
 
     finished_files = finished_files_not_latest + finished_files_latest
     log.debug(f"Found {len(finished_files)} already downloaded")
@@ -982,11 +982,11 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time > history_time:
-            log.debug("Moving file into latest folder")
+            log.debug("Moving file into {LATEST_DIR_NAME} folder")
             # Move HRV and non-HRV to new place
             filename = f"{latest_dir}/{date.split('/')[-1]}"
             if filesystem.exists(filename):
-                log.debug(f"File already in latest folder, so not moving {filename}")
+                log.debug(f"File already in {LATEST_DIR_NAME} folder, so not moving {filename}")
             else:
                 filesystem.move(date, f"{latest_dir}/{date.split('/')[-1]}")
         elif file_time < (history_time - pd.Timedelta("2 days")):
@@ -1016,7 +1016,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
                 utc=True,
             )
         if file_time < history_time:
-            log.debug("Moving file out of latest folder")
+            log.debug("Moving file out of {LATEST_DIR_NAME} folder")
             # Move HRV and non-HRV to new place
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
