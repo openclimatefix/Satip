@@ -158,6 +158,7 @@ log.txt
 rss.zarr
 cloud.zarr
 hrv.zarr
+*.zarr.zip
 hrv_RSS.png
 hrv_UK.png
 rss_RSS.png
