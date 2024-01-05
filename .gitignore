@@ -1,4 +1,6 @@
 data/raw/*
+raw/MSG3-SEVI-MSG15-0100-NA-*
+temp_hrit
 data/intermediate/*
 data/EUMETSAT_metadata.db
 **/*.nat
@@ -156,6 +158,7 @@ log.txt
 rss.zarr
 cloud.zarr
 hrv.zarr
+*.zarr.zip
 hrv_RSS.png
 hrv_UK.png
 rss_RSS.png
