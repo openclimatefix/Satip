@@ -6,3 +6,9 @@ python:
     - method: pip
       path: .
     - requirements: docs/requirements.txt
+
+# the build.os and build.tools section is mandatory
+build:
+  os: ubuntu-20.04  # for consistency, matches the one used for CI
+  tools:
+    python: "3.7"
