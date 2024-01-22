@@ -11,4 +11,4 @@ python:
 build:
   os: ubuntu-20.04  # for consistency, matches the one used for CI
   tools:
-    python: "3.7"
+    python: "3.9"
