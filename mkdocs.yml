@@ -1,0 +1,5 @@
+site_name: Satip
+site_url: https://github.com/openclimatefix/Satip
+nav:
+  - Home: README.md
+theme: readthedocs
