@@ -816,16 +816,22 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
-    """Save xarray to netcdf in s3
+def save_to_zarr(dataset: xr.Dataset, filename: str, backend: str = 's3'):
+    """Save Xarray to Zarr with support for different backends.
 
-    1. Save in temp local dir
-    2. upload to s3
-    :param dataset: The Xarray Dataset to be save
-    :param filename: The s3 filename
+    Parameters:
+    - dataset (xr.Dataset): The Xarray Dataset to be saved.
+    - filename (str): The filename or path where the Zarr data will be saved.
+    - backend (str): The backend to use for saving (e.g., 's3', 'gcs', 'file', etc.).
+
+    Raises:
+    - ValueError: If an unsupported backend is provided.
     """
-
     gc.collect()
+    
+    if backend not in ['s3', 'gcs', 'file', 'local', 'custom_backend']:
+        raise ValueError(f"Unsupported backend: {backend}")
+
     log.info(f"Saving file to {filename}", memory=get_memory())
 
     with tempfile.TemporaryDirectory() as dir:
@@ -845,9 +851,10 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-        # save to s3
-        filesystem = fsspec.open(filename).fs
-        filesystem.put(path, filename)
+
+        # Save to the specified backend
+        fs = fsspec.filesystem(backend)
+        fs.put(path, filename)
 
 
 def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
