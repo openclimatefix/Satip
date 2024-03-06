@@ -828,7 +828,7 @@ def save_to_zarr(dataset: xr.Dataset, filename: str, backend: str = 's3'):
     - ValueError: If an unsupported backend is provided.
     """
     gc.collect()
-    
+
     if backend not in ['s3', 'gcs', 'file', 'local', 'custom_backend']:
         raise ValueError(f"Unsupported backend: {backend}")
 
