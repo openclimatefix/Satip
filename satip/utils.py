@@ -849,7 +849,15 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
 
         # Save to the specified backend
-        filesystem = fsspec.open(filename, target_options={"storage_options": {"token": "<YOUR_TOKEN_FROM_ENV_VARS>"}}).fs
+        filesystem = fsspec.open(
+            filename,
+            target_options={
+                "storage_options": {
+                    "token": "env"
+                }
+            }
+        ).fs
+
         filesystem.put(path, filename)
 
 
