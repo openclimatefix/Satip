@@ -816,17 +816,19 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
-    """Save xarray to netcdf in s3
+def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
+    """Save xarray to netcdf using various backends
 
-    1. Save in temp local dir
-    2. upload to s3
-    :param dataset: The Xarray Dataset to be save
-    :param filename: The s3 filename
+    1. Save in a temporary local directory.
+    2. Upload to the specified backend (default is S3).
+    
+    :param dataset: The Xarray Dataset to be saved.
+    :param filename: The target filename.
+    :param backend: The fsspec backend to use (default is "s3").
     """
 
     gc.collect()
-    log.info(f"Saving file to {filename}", memory=get_memory())
+    log.info(f"Saving file to {filename} using backend: {backend}", memory=get_memory())
 
     with tempfile.TemporaryDirectory() as dir:
         # save locally
@@ -845,8 +847,9 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-        # save to s3
-        filesystem = fsspec.open(filename).fs
+       
+        # Save to the specified backend
+        filesystem = fsspec.open(filename, target_options={"storage_options": {"token": "<YOUR_TOKEN_FROM_ENV_VARS>"}}).fs
         filesystem.put(path, filename)
 
 
