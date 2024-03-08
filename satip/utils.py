@@ -821,7 +821,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
 
     1. Save in a temporary local directory.
     2. Upload to the specified backend (default is S3).
-    
+
     :param dataset: The Xarray Dataset to be saved.
     :param filename: The target filename.
     :param backend: The fsspec backend to use (default is "s3").
@@ -847,7 +847,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-       
+
         # Save to the specified backend
         filesystem = fsspec.open(filename, target_options={"storage_options": {"token": "<YOUR_TOKEN_FROM_ENV_VARS>"}}).fs
         filesystem.put(path, filename)
