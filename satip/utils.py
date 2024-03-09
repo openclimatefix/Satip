@@ -36,8 +36,6 @@ from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
-from dotenv import load_dotenv
-
 # Assigning secrets from the .env file
 STORAGE_BACKEND_TOKEN = os.getenv('STORAGE_BACKEND_TOKEN')
 
