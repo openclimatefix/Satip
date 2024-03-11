@@ -36,9 +36,6 @@ from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
-# Assigning secrets from the .env file
-STORAGE_BACKEND_TOKEN = os.getenv('STORAGE_BACKEND_TOKEN')
-
 
 LATEST_DIR_NAME = "latest"
 log = structlog.get_logger()
@@ -820,7 +817,7 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
+def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str, backend: str = "s3"):
     """Save xarray to netcdf using various backends
 
     1. Save in a temporary local directory.
@@ -857,7 +854,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = "s3"):
             filename,
             target_options={
                 "storage_options": {
-                    "token": STORAGE_BACKEND_TOKEN
+                    "token": os.getenv('STORAGE_BACKEND_TOKEN')
                 }
             }
         ).fs
