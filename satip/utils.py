@@ -817,12 +817,12 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
 
 
 def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str):
-    """Save xarray to netcdf in s3
+    """Save xarray to netcdf in a Database of your choice, by default: s3
 
     1. Save in temp local dir
-    2. upload to s3
+    2. upload to the Database
     :param dataset: The Xarray Dataset to be save
-    :param filename: The s3 filename
+    :param filename: The Database filename
     """
 
     gc.collect()
@@ -845,7 +845,7 @@ def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str):
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-        # save to s3
+        # save to Database
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
 
