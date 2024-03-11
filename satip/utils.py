@@ -419,7 +419,7 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
 
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
     log.debug(f"Saving HRV netcdf in {save_file}", memory=get_memory())
-    save_to_zarr_to_s3(hrv_dataset, save_file)
+    save_to_zarr_to_backend(hrv_dataset, save_file)
     del hrv_dataset
     gc.collect()
     log.debug("Saved HRV to NetCDF", memory=get_memory())
@@ -542,7 +542,7 @@ def get_nonhrv_dataset_from_scene(
 
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
     log.debug(f"Saving non-HRV netcdf in {save_file}", memory=get_memory())
-    save_to_zarr_to_s3(dataset, save_file)
+    save_to_zarr_to_backend(dataset, save_file)
     del dataset
     gc.collect()
     log.debug(f"Saved non-HRV file {save_file}", memory=get_memory())
@@ -1086,7 +1086,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     log.debug(dataset.time.values)
-    save_to_zarr_to_s3(dataset, filename_temp)
+    save_to_zarr_to_backend(dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
     log.debug(f"{filename_temp}  {new_times}")
 
@@ -1123,7 +1123,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     log.debug(o_dataset.time.values)
-    save_to_zarr_to_s3(o_dataset, filename_temp)
+    save_to_zarr_to_backend(o_dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
     log.debug(f"{filename_temp} {new_times}")
 
