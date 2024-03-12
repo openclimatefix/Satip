@@ -816,19 +816,17 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str, backend: str = "s3"):
-    """Save xarray to netcdf using various backends
+def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str):
+    """Save xarray to netcdf in a Database of your choice, by default: s3
 
-    1. Save in a temporary local directory.
-    2. Upload to the specified backend (default is S3).
-
-    :param dataset: The Xarray Dataset to be saved.
-    :param filename: The target filename.
-    :param backend: The fsspec backend to use (default is "s3").
+    1. Save in temp local dir
+    2. upload to the Database
+    :param dataset: The Xarray Dataset to be save
+    :param filename: The Database filename
     """
 
     gc.collect()
-    log.info(f"Saving file to {filename} using backend: {backend}", memory=get_memory())
+    log.info(f"Saving file to {filename}", memory=get_memory())
 
     with tempfile.TemporaryDirectory() as dir:
         # save locally
@@ -847,17 +845,8 @@ def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str, backend: str = "
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-
-        # Save to the specified backend
-        filesystem = fsspec.open(
-            filename,
-            target_options={
-                "storage_options": {
-                    "token": os.getenv('STORAGE_BACKEND_TOKEN')
-                }
-            }
-        ).fs
-
+        # save to Database
+        filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
 
 
@@ -1049,15 +1038,36 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
         log.debug(f"Either {hrv_filename} or {filename} dont exists")
         return False
 
+def add_backend_to_filenames(files, backend):
+    """
+    Add the backend prefix to file URLs based on the specified backend.
 
-def collate_files_into_latest(save_dir: str, using_backup: bool = False):
+    Args:
+        files (list): List of file URLs.
+        backend (str): Backend type, e.g., "s3", "gs", "az", or "local".
+
+    Returns:
+        list: List of file URLs with proper backend prefixes.
+    """
+    if backend == "s3":
+        return [f"zip:///::s3://{str(f)}" for f in files]
+    elif backend == "gs":
+        return [f"zip:///::gs://{str(f)}" for f in files]
+    elif backend == "az":
+        return [f"zip:///::az://{str(f)}" for f in files]
+    elif backend == "local":
+        return [str(f) for f in files]
+    else:
+        raise ValueError(f"Unsupported backend: {backend}")
+
+def collate_files_into_latest(save_dir: str, using_backup: bool = False, backend: str = "s3"):
     """
     Convert individual files into single latest file for HRV and non-HRV
 
     Args:
         save_dir: Directory where data is being saved
         using_backup: Whether the input data is made up of the 15 minutely backup data or not
-
+        backend: Backend type, e.g., "s3", "gs", "az", or "local"
     """
     filesystem = fsspec.open(save_dir).fs
     latest_dir = get_latest_subdir_path(save_dir)
@@ -1066,11 +1076,11 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     )
     if not hrv_files:  # Empty set of files, don't do anything
         return
-    # Add S3 to beginning of each URL
+    # Add prefix to beginning of each URL
     filename = f"{latest_dir}/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating HRV files {filename}")
-    hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+    hrv_files = add_backend_to_filenames(hrv_files, backend)  # Added backend prefix for hrv files
     log.debug(hrv_files)
     dataset = (
         xr.open_mfdataset(
@@ -1107,7 +1117,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = list(
         filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
     )
-    nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+    nonhrv_files = add_backend_to_filenames(nonhrv_files, backend)  # Added backend prefix for nonhrv files
     log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(
