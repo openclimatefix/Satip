@@ -816,7 +816,7 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr(dataset: xr.Dataset, filename: str, backend: str = 's3'):
+def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str, backend: str = 's3'):
     """Save Xarray to Zarr with support for different backends.
 
     Parameters:
