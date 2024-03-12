@@ -1117,7 +1117,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False, backend
     nonhrv_files = list(
         filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
     )
-    nonhrv_files = add_backend_to_filenames(nonhrv_files, backend)  # Added backend prefix for nonhrv files
+    nonhrv_files = add_backend_to_filenames(nonhrv_files, backend)  # backend prefix for nonhrv
     log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(
