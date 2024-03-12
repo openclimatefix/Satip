@@ -419,7 +419,7 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
 
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}hrv_{now_time}.zarr.zip")
     log.debug(f"Saving HRV netcdf in {save_file}", memory=get_memory())
-    save_to_zarr_to_s3(hrv_dataset, save_file)
+    save_to_zarr_to_backend(hrv_dataset, save_file)
     del hrv_dataset
     gc.collect()
     log.debug("Saved HRV to NetCDF", memory=get_memory())
@@ -542,7 +542,7 @@ def get_nonhrv_dataset_from_scene(
 
     save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
     log.debug(f"Saving non-HRV netcdf in {save_file}", memory=get_memory())
-    save_to_zarr_to_s3(dataset, save_file)
+    save_to_zarr_to_backend(dataset, save_file)
     del dataset
     gc.collect()
     log.debug(f"Saved non-HRV file {save_file}", memory=get_memory())
@@ -816,13 +816,13 @@ def create_markdown_table(table_info: dict, index_name: str = "Id") -> str:
     return md_str
 
 
-def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
-    """Save xarray to netcdf in s3
+def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str):
+    """Save xarray to netcdf in a Database of your choice, by default: s3
 
     1. Save in temp local dir
-    2. upload to s3
+    2. upload to the Database
     :param dataset: The Xarray Dataset to be save
-    :param filename: The s3 filename
+    :param filename: The Database filename
     """
 
     gc.collect()
@@ -845,7 +845,7 @@ def save_to_zarr_to_s3(dataset: xr.Dataset, filename: str):
         log.debug(f"New times for {path}: {new_times}", memory=get_memory())
 
         log.debug(f"Saved to temporary file {path}, now pushing to {filename}", memory=get_memory())
-        # save to s3
+        # save to Database
         filesystem = fsspec.open(filename).fs
         filesystem.put(path, filename)
 
@@ -1038,15 +1038,36 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
         log.debug(f"Either {hrv_filename} or {filename} dont exists")
         return False
 
+def add_backend_to_filenames(files, backend):
+    """
+    Add the backend prefix to file URLs based on the specified backend.
 
-def collate_files_into_latest(save_dir: str, using_backup: bool = False):
+    Args:
+        files (list): List of file URLs.
+        backend (str): Backend type, e.g., "s3", "gs", "az", or "local".
+
+    Returns:
+        list: List of file URLs with proper backend prefixes.
+    """
+    if backend == "s3":
+        return [f"zip:///::s3://{str(f)}" for f in files]
+    elif backend == "gs":
+        return [f"zip:///::gs://{str(f)}" for f in files]
+    elif backend == "az":
+        return [f"zip:///::az://{str(f)}" for f in files]
+    elif backend == "local":
+        return [str(f) for f in files]
+    else:
+        raise ValueError(f"Unsupported backend: {backend}")
+
+def collate_files_into_latest(save_dir: str, using_backup: bool = False, backend: str = "s3"):
     """
     Convert individual files into single latest file for HRV and non-HRV
 
     Args:
         save_dir: Directory where data is being saved
         using_backup: Whether the input data is made up of the 15 minutely backup data or not
-
+        backend: Backend type, e.g., "s3", "gs", "az", or "local"
     """
     filesystem = fsspec.open(save_dir).fs
     latest_dir = get_latest_subdir_path(save_dir)
@@ -1055,11 +1076,11 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     )
     if not hrv_files:  # Empty set of files, don't do anything
         return
-    # Add S3 to beginning of each URL
+    # Add prefix to beginning of each URL
     filename = f"{latest_dir}/hrv_latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating HRV files {filename}")
-    hrv_files = ["zip:///::s3://" + str(f) for f in hrv_files]
+    hrv_files = add_backend_to_filenames(hrv_files, backend)  # Added backend prefix for hrv files
     log.debug(hrv_files)
     dataset = (
         xr.open_mfdataset(
@@ -1075,7 +1096,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     log.debug(dataset.time.values)
-    save_to_zarr_to_s3(dataset, filename_temp)
+    save_to_zarr_to_backend(dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
     log.debug(f"{filename_temp}  {new_times}")
 
@@ -1096,7 +1117,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
     nonhrv_files = list(
         filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
     )
-    nonhrv_files = ["zip:///::s3://" + str(f) for f in nonhrv_files]
+    nonhrv_files = add_backend_to_filenames(nonhrv_files, backend)  # backend prefix for nonhrv
     log.debug(nonhrv_files)
     o_dataset = (
         xr.open_mfdataset(
@@ -1112,7 +1133,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False):
         .drop_duplicates("time")
     )
     log.debug(o_dataset.time.values)
-    save_to_zarr_to_s3(o_dataset, filename_temp)
+    save_to_zarr_to_backend(o_dataset, filename_temp)
     new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
     log.debug(f"{filename_temp} {new_times}")
 
