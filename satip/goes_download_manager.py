@@ -59,6 +59,12 @@ class GOESDownloadManager:
         """
         G = GOES(satellite=satellite, product=product, domain=domain)
         current_time = start_time
+
+        # Determine time increment based on product/domain
+        time_increment = 1  # Default time increment (minutes)
+        if product == 'ABI-L1b-RadC' and domain == 'F':
+            time_increment = 10
+
         while current_time <= end_time:
             try:
                 # Download the data
@@ -75,7 +81,7 @@ class GOESDownloadManager:
                 # Check if data for current acquisition time already exists
                 if os.path.exists(filepath):
                     logging.info(f"Data for {date_string} already exists. Skipping.")
-                    current_time += datetime.timedelta(minutes=1)
+                    current_time += datetime.timedelta(minutes=time_increment)
                     continue
 
                 # Save to NetCDF
@@ -85,7 +91,7 @@ class GOESDownloadManager:
             except Exception as e:
                 logging.error(f"Error downloading GOES data for {current_time}: {e}")
 
-            current_time += datetime.timedelta(minutes=1)
+            current_time += datetime.timedelta(minutes=time_increment)
 
         logging.info("Completed GOES data download.")
 
