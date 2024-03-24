@@ -81,7 +81,7 @@ class GOESDownloadManager:
         logging.info("Completed GOES data download.")
 
 if __name__ == "__main__":
-    # Example usage
+
     data_dir = "path to data directory"
     log_directory = "path to log directory"
     start_time = datetime.datetime(2023, 1, 1, 0, 0)
