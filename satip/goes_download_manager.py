@@ -82,8 +82,8 @@ class GOESDownloadManager:
 
 if __name__ == "__main__":
     # Example usage
-    data_dir = "/path/to/your/data/directory"
-    log_directory = "/path/to/your/log/directory"
+    data_dir = "path to data directory"
+    log_directory = "path to log directory"
     start_time = datetime.datetime(2023, 1, 1, 0, 0)
     end_time = datetime.datetime(2023, 1, 1, 1, 0)
     manager = GOESDownloadManager(data_dir, log_directory)
