@@ -46,7 +46,7 @@ class GOESDownloadManager:
                 logging.error(f"Error creating directory {directory}: {e}")
                 raise
     def download_goes_data(self, start_time, end_time, product='ABI-L1b-RadC',
-                           domain='F', satellite=16):
+                       domain='F', satellite=16):
         """
         Download GOES data for a specified time range and product.
 
@@ -64,10 +64,19 @@ class GOESDownloadManager:
                 # Download the data
                 ds = G.nearesttime(current_time)
 
-                # Format the date string for filename
-                date_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+                # Get acquisition time from the dataset
+                acquisition_time = ds.time.data.item()
+
+                # Format the acquisition time for filename
+                date_string = acquisition_time.strftime("%Y-%m-%d_%H-%M-%S")
                 filename = f"goes_data_{date_string}.nc"
                 filepath = os.path.join(self.data_dir, filename)
+
+                # Check if data for current acquisition time already exists
+                if os.path.exists(filepath):
+                    logging.info(f"Data for {date_string} already exists. Skipping.")
+                    current_time += datetime.timedelta(minutes=1)
+                    continue
 
                 # Save to NetCDF
                 ds.to_netcdf(filepath)
@@ -79,6 +88,7 @@ class GOESDownloadManager:
             current_time += datetime.timedelta(minutes=1)
 
         logging.info("Completed GOES data download.")
+
 
 if __name__ == "__main__":
 
