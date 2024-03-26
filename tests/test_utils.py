@@ -24,6 +24,7 @@ from satip.utils import (
     LATEST_DIR_NAME,
 )
 
+from satip.eumetsat import EUMETSATDownloadManager
 USER_KEY = os.environ.get("EUMETSAT_USER_KEY")
 USER_SECRET = os.environ.get("EUMETSAT_USER_SECRET")
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
@@ -38,7 +39,7 @@ class TestSatipUtils(unittest.TestCase):
         if len(list(glob.glob(os.path.join(os.getcwd(), "*.nat")))) == 0:
             from satip import eumetsat
 
-            download_manager = eumetsat.DownloadManager(
+            download_manager = EUMETSATDownloadManager(
                 user_key=USER_KEY,
                 user_secret=USER_SECRET,
                 data_dir=os.getcwd(),
