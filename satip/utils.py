@@ -12,13 +12,13 @@ import datetime
 import gc
 import glob
 import os
-from stat import S_ISDIR
 import secrets
 import shutil
 import subprocess
 import tempfile
 import warnings
 from pathlib import Path
+from stat import S_ISDIR
 from typing import Any, Tuple
 from zipfile import ZipFile
 
@@ -54,6 +54,7 @@ warnings.filterwarnings(
     ),
 )
 
+
 def setupLogging() -> None:
     """Instantiate the structlog package to produce JSON logs."""
 
@@ -78,6 +79,7 @@ def setupLogging() -> None:
         ],
     )
 
+
 def check_path_is_exists_and_directory(path) -> bool:
     """
     Check if the provided path exists AND is a directory
@@ -90,14 +92,15 @@ def check_path_is_exists_and_directory(path) -> bool:
     """
     try:
         mode = os.lstat(path).st_mode
-    except:
-        log.error(f"No such file or directory: {path}")
+    except Exception as e:
+        log.error(f"Error caught during run: {e}", exc_info=True)
     mode = os.lstat(path).st_mode
     if S_ISDIR(mode):
         return True
     else:
         log.error("Provided path is a file")
         raise SystemExit(0)
+
 
 def format_dt_str(datetime_string):
     """Helper function to get a consistently formatted string."""
@@ -379,7 +382,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2 ** 10) - 1
+    upper_bound = (2**10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -445,6 +448,7 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
     gc.collect()
     log.debug("Saved HRV to NetCDF", memory=get_memory())
 
+
 def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool:
     """
     Filter out datasets with a high fraction of zeros
@@ -460,10 +464,13 @@ def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool
     for var in ds.data_vars:
         fraction_of_zeros = np.isclose(ds[var], 0.0).mean()
         if fraction_of_zeros > threshold_fraction:
-            log.debug(f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros"\
-                      f" (threshold {threshold_fraction})")
+            log.debug(
+                f"Ignoring dataset {ds} as {var} has {fraction_of_zeros} fraction of zeros"
+                f" (threshold {threshold_fraction})"
+            )
             return False
     return True
+
 
 def get_nonhrv_dataset_from_scene(
     filename: str, scaler, use_rescaler: bool, save_dir, using_backup
@@ -736,7 +743,7 @@ def save_dataarray_to_zarr(
 
     compression_algos = {
         "bz2": numcodecs.get_codec(dict(id="bz2", level=5)),
-        "blosc2": Blosc2(cname="zstd", clevel=5)
+        "blosc2": Blosc2(cname="zstd", clevel=5),
     }
     compression_algo = compression_algos[compressor_name]
 
@@ -1059,6 +1066,7 @@ def check_both_final_files_exists(save_dir: str, using_backup: bool = False):
         log.debug(f"Either {hrv_filename} or {filename} dont exists")
         return False
 
+
 def add_backend_to_filenames(files, backend):
     """
     Add the backend prefix to file URLs based on the specified backend.
@@ -1080,6 +1088,7 @@ def add_backend_to_filenames(files, backend):
         return [str(f) for f in files]
     else:
         raise ValueError(f"Unsupported backend: {backend}")
+
 
 def collate_files_into_latest(save_dir: str, using_backup: bool = False, backend: str = "s3"):
     """
@@ -1135,9 +1144,7 @@ def collate_files_into_latest(save_dir: str, using_backup: bool = False, backend
     filename = f"{latest_dir}/latest{'_15' if using_backup else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating non-HRV files {filename}")
-    nonhrv_files = list(
-        filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip")
-    )
+    nonhrv_files = list(filesystem.glob(f"{latest_dir}/{'15_' if using_backup else ''}2*.zarr.zip"))
     nonhrv_files = add_backend_to_filenames(nonhrv_files, backend)  # backend prefix for nonhrv
     log.debug(nonhrv_files)
     o_dataset = (
