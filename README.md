@@ -1,6 +1,6 @@
 # Satip
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
@@ -112,14 +112,17 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://www.jacobbieker.com"><img src="https://avatars.githubusercontent.com/u/7170359?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jacob Bieker</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=jacobbieker" title="Code">💻</a></td>
-    <td align="center"><a href="http://jack-kelly.com"><img src="https://avatars.githubusercontent.com/u/460756?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jack Kelly</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=JackKelly" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/AyrtonB"><img src="https://avatars.githubusercontent.com/u/29051639?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Ayrton Bourn</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=AyrtonB" title="Code">💻</a></td>
-    <td align="center"><a href="http://laurencewatson.com"><img src="https://avatars.githubusercontent.com/u/1125376?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Laurence Watson</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=Rabscuttler" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/notger"><img src="https://avatars.githubusercontent.com/u/1180540?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Notger Heinz</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=notger" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/peterdudfield"><img src="https://avatars.githubusercontent.com/u/34686298?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Peter Dudfield</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=peterdudfield" title="Documentation">📖</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.jacobbieker.com"><img src="https://avatars.githubusercontent.com/u/7170359?v=4?s=100" width="100px;" alt="Jacob Bieker"/><br /><sub><b>Jacob Bieker</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=jacobbieker" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://jack-kelly.com"><img src="https://avatars.githubusercontent.com/u/460756?v=4?s=100" width="100px;" alt="Jack Kelly"/><br /><sub><b>Jack Kelly</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=JackKelly" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AyrtonB"><img src="https://avatars.githubusercontent.com/u/29051639?v=4?s=100" width="100px;" alt="Ayrton Bourn"/><br /><sub><b>Ayrton Bourn</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=AyrtonB" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://laurencewatson.com"><img src="https://avatars.githubusercontent.com/u/1125376?v=4?s=100" width="100px;" alt="Laurence Watson"/><br /><sub><b>Laurence Watson</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=Rabscuttler" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/notger"><img src="https://avatars.githubusercontent.com/u/1180540?v=4?s=100" width="100px;" alt="Notger Heinz"/><br /><sub><b>Notger Heinz</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=notger" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/peterdudfield"><img src="https://avatars.githubusercontent.com/u/34686298?v=4?s=100" width="100px;" alt="Peter Dudfield"/><br /><sub><b>Peter Dudfield</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=peterdudfield" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/norbline"><img src="https://avatars.githubusercontent.com/u/39647420?v=4?s=100" width="100px;" alt="Azah Norbline"/><br /><sub><b>Azah Norbline</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=norbline" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->
