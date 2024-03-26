@@ -17,7 +17,6 @@ import re
 import shutil
 import time
 import urllib
-import warnings
 import zipfile
 from io import BytesIO
 from urllib.error import HTTPError
@@ -29,16 +28,8 @@ import structlog
 
 from satip import utils
 from satip.data_store import dateset_it_to_filename
-from satip.goes_download_manager import GOESDownloadManager
 
 log = structlog.stdlib.get_logger()
-
-# Suppress FutureWarning related to 'H' argument
-warnings.filterwarnings('ignore', category=FutureWarning)
-# constants for different data sources
-EUMETSAT_PROVIDER = "EUMETSAT"
-GOES_PROVIDER = "GOES"
-
 
 
 API_ENDPOINT = "https://api.eumetsat.int"
@@ -204,6 +195,36 @@ def dataset_id_to_link(collection_id, data_id, access_token):
         + "?access_token="
         + access_token
     )
+
+def get_filesize_megabytes(filename):
+    """Returns filesize in megabytes"""
+    filesize_bytes = os.path.getsize(filename)
+    return filesize_bytes / 1e6
+
+
+def eumetsat_filename_to_datetime(inner_tar_name):
+    """Extracts datetime from EUMETSAT filename.
+
+    Takes a file from the EUMETSAT API and returns
+    the date and time part of the filename.
+
+    Args:
+        inner_tar_name: Filename part which contains the datetime information.
+
+    Usage example:
+        eumetsat_filename_to_datetime(filename)
+    """
+
+    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0[01]00-NA-(\d*)\.")
+    title_match = p.match(inner_tar_name)
+    date_str = title_match.group(1)
+    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
+
+
+def eumetsat_cloud_name_to_datetime(filename: str):
+    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
+    date_str = filename.split("0100-0100-")[-1].split(".")[0]
+    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
 
 
 
@@ -656,94 +677,3 @@ class EUMETSATDownloadManager:
 
             except Exception as e:
                 log.warn(f"Failed deleting customization {jobID}: {e}", exc_info=True)
-
-
-def get_filesize_megabytes(filename):
-    """Returns filesize in megabytes"""
-    filesize_bytes = os.path.getsize(filename)
-    return filesize_bytes / 1e6
-
-
-def eumetsat_filename_to_datetime(inner_tar_name):
-    """Extracts datetime from EUMETSAT filename.
-
-    Takes a file from the EUMETSAT API and returns
-    the date and time part of the filename.
-
-    Args:
-        inner_tar_name: Filename part which contains the datetime information.
-
-    Usage example:
-        eumetsat_filename_to_datetime(filename)
-    """
-
-    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0[01]00-NA-(\d*)\.")
-    title_match = p.match(inner_tar_name)
-    date_str = title_match.group(1)
-    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
-
-
-def eumetsat_cloud_name_to_datetime(filename: str):
-    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
-    date_str = filename.split("0100-0100-")[-1].split(".")[0]
-    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
-
-
-class DownloadManager:
-    """
-    Main download manager class to handle both EUMETSAT
-
-    and GOES data downloading based on the provider.
-    """
-
-    def __init__(self, provider, user_key=None,
-                user_secret=None, data_dir=None,
-                log_directory=None):
-        """
-        Initialize the DownloadManager.
-
-        Args:
-            provider (str): Provider name ('EUMETSAT' or 'GOES').
-            user_key (str): User key for accessing data (for EUMETSAT).
-            user_secret (str): User secret for accessing data (for EUMETSAT).
-            data_dir (str): Directory to save downloaded data.
-            log_directory (str): Directory to save logs.
-        """
-        self.provider = provider
-
-        if self.provider == "EUMETSAT":
-            self.download_manager = EUMETSATDownloadManager(user_key, user_secret,
-                                                            data_dir, log_directory)
-        elif self.provider == "GOES":
-            self.download_manager = GOESDownloadManager(data_dir, log_directory)
-        else:
-            raise ValueError("Invalid provider. Supported providers are 'EUMETSAT' and 'GOES'.")
-
-    def download_data(self, start_time, end_time):
-        """
-        Download data for the specified time range.
-
-        Args:
-            start_time (datetime): Start of the download period.
-            end_time (datetime): End of the download period.
-        """
-        if self.provider == "GOES":
-            self.download_manager.download_goes_data(start_time, end_time)
-
-
-# Example usage
-if __name__ == "__main__":
-    provider = "GOES"
-    user_key = "your_user_key"
-    user_secret = "your_user_secret"
-    data_dir = "path to data directory"
-    log_directory = "path to log diirectory"
-
-    start_time = datetime.datetime(2024, 3, 1, 0, 0)
-    end_time = datetime.datetime(2024, 3, 1, 6, 0)
-
-    if data_dir is not None:
-        manager = DownloadManager(provider, None, None, data_dir, log_directory)
-        manager.download_data(start_time, end_time)
-    else:
-        print("Error: 'data_dir' is not properly set.")
