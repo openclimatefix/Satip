@@ -67,6 +67,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "TomPughe",
+      "name": "Tom Pughe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/147526382?v=4",
+      "profile": "https://github.com/TomPughe",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

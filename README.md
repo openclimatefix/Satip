@@ -1,6 +1,6 @@
 # Satip
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
@@ -121,6 +121,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/notger"><img src="https://avatars.githubusercontent.com/u/1180540?v=4?s=100" width="100px;" alt="Notger Heinz"/><br /><sub><b>Notger Heinz</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=notger" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/peterdudfield"><img src="https://avatars.githubusercontent.com/u/34686298?v=4?s=100" width="100px;" alt="Peter Dudfield"/><br /><sub><b>Peter Dudfield</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=peterdudfield" title="Documentation">📖</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/norbline"><img src="https://avatars.githubusercontent.com/u/39647420?v=4?s=100" width="100px;" alt="Azah Norbline"/><br /><sub><b>Azah Norbline</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=norbline" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TomPughe"><img src="https://avatars.githubusercontent.com/u/147526382?v=4?s=100" width="100px;" alt="Tom Pughe"/><br /><sub><b>Tom Pughe</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=TomPughe" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
