@@ -94,13 +94,3 @@ class GOESDownloadManager:
             current_time += datetime.timedelta(minutes=time_increment)
 
         logging.info("Completed GOES data download.")
-
-
-if __name__ == "__main__":
-
-    data_dir = "path to data directory"
-    log_directory = "path to log directory"
-    start_time = datetime.datetime(2023, 1, 1, 0, 0)
-    end_time = datetime.datetime(2023, 1, 1, 1, 0)
-    manager = GOESDownloadManager(data_dir, log_directory)
-    manager.download_goes_data(start_time, end_time)
