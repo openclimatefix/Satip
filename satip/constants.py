@@ -1,4 +1,4 @@
-'''Constants for utils.py'''
+"""Constants for utils.py"""
 import numpy as np
 
 # Define satellite bands and their min and max values
