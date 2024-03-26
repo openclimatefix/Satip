@@ -130,6 +130,17 @@ def run(
 
     try:
 
+        if save_dir != "./":
+            log.info("Checking if save_dir directory exists")
+            if utils.check_path_is_exists_and_directory(save_dir):
+                log.info("save_dir directory exists, continuing execution")
+        
+        if save_dir_native != "./raw":
+            log.info("Checking if save_dir_native directory exists")
+            if utils.check_path_is_exists_and_directory(save_dir_native):
+                log.info("save_dir_native directory exists, continuing execution")
+
+
         log.info(
             f'Running application and saving to "{save_dir}"',
             version=satip.__version__,

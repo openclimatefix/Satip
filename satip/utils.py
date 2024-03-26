@@ -12,6 +12,7 @@ import datetime
 import gc
 import glob
 import os
+from stat import S_ISDIR
 import secrets
 import shutil
 import subprocess
@@ -77,6 +78,26 @@ def setupLogging() -> None:
         ],
     )
 
+def check_path_is_exists_and_directory(path) -> bool:
+    """
+    Check if the provided path exists AND is a directory
+
+    Args:
+        path: The path to check
+
+    Returns:
+        Bool whether the path exists AND is a directory
+    """
+    try:
+        mode = os.lstat(path).st_mode
+    except:
+        log.error(f"No such file or directory: {path}")
+    mode = os.lstat(path).st_mode
+    if S_ISDIR(mode):
+        return True
+    else:
+        log.error("Provided path is a file")
+        raise SystemExit(0)
 
 def format_dt_str(datetime_string):
     """Helper function to get a consistently formatted string."""
