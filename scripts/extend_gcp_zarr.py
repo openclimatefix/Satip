@@ -2,7 +2,7 @@ import ocf_blosc2
 import xarray as xr
 import satpy
 from satpy import Scene
-from satip.eumetsat import DownloadManager
+from satip.eumetsat import EUMETSATDownloadManager
 from satip.scale_to_zero_to_one import ScaleToZeroToOne
 from satip.serialize import serialize_attrs
 from satip.utils import convert_scene_to_dataarray
@@ -17,7 +17,7 @@ import json
 def download_data(last_zarr_time):
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
-    download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="/mnt/disks/data/native_files/")
+    download_manager = EUMETSATDownloadManager(user_key=api_key, user_secret=api_secret, data_dir="/mnt/disks/data/native_files/")
     start_date = pd.Timestamp.utcnow().tz_convert('UTC').to_pydatetime().replace(tzinfo=None)
     last_zarr_time = pd.Timestamp(last_zarr_time).to_pydatetime().replace(tzinfo=None)
     start_str = last_zarr_time.strftime("%Y-%m-%d")
