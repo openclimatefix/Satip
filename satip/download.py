@@ -28,6 +28,7 @@ import structlog
 import yaml
 
 from satip import eumetsat
+from satip.eumetsat import EUMETSATDownloadManager
 from satip.utils import format_dt_str
 
 log = structlog.stdlib.get_logger()
@@ -110,7 +111,7 @@ def download_eumetsat_data(
         end_date = datetime.now()
 
     # Download the data
-    dm = eumetsat.DownloadManager(user_key, user_secret, download_directory, download_directory)
+    dm = EUMETSATDownloadManager(user_key, user_secret, download_directory, download_directory)
     products_to_use = []
     if "rss" in product:
         products_to_use.append(RSS_ID)
@@ -159,7 +160,7 @@ def download_eumetsat_data(
 
 
 def _download_time_range(
-    x: Tuple[Tuple[datetime, datetime], str, eumetsat.DownloadManager]
+    x: Tuple[Tuple[datetime, datetime], str, EUMETSATDownloadManager]
 ) -> None:
     time_range, product_id, download_manager = x
     start_time, end_time = time_range
