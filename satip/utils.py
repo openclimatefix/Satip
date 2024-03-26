@@ -35,6 +35,7 @@ from satpy import Scene
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
+from satip.constants import ALL_BANDS, NON_HRV_BANDS, SCALER_MINS, SCALER_MAXS, HRV_SCALER_MIN, HRV_SCALER_MAX
 
 LATEST_DIR_NAME = "latest"
 log = structlog.get_logger()
@@ -128,52 +129,12 @@ def load_native_to_dataarray(
         Returns Xarray DataArray if script worked, else returns None
     """
     hrv_scaler = ScaleToZeroToOne(
-        variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
+        variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN
     )
     scaler = ScaleToZeroToOne(
-        mins=np.array(
-            [
-                -2.5118103,
-                -64.83977,
-                63.404694,
-                2.844452,
-                199.10002,
-                -17.254883,
-                -26.29155,
-                -1.1009827,
-                -2.4184198,
-                199.57048,
-                198.95093,
-            ]
-        ),
-        maxs=np.array(
-            [
-                69.60857,
-                339.15588,
-                340.26526,
-                317.86752,
-                313.2767,
-                315.99194,
-                274.82297,
-                93.786545,
-                101.34922,
-                249.91806,
-                286.96323,
-            ]
-        ),
-        variable_order=[
-            "IR_016",
-            "IR_039",
-            "IR_087",
-            "IR_097",
-            "IR_108",
-            "IR_120",
-            "IR_134",
-            "VIS006",
-            "VIS008",
-            "WV_062",
-            "WV_073",
-        ],
+        mins=SCALER_MINS,
+        maxs=SCALER_MAXS,
+        variable_order=NON_HRV_BANDS,
     )
     if filename.suffix == ".bz2":
         try:
@@ -193,19 +154,7 @@ def load_native_to_dataarray(
         ]
     )
     scene.load(
-        [
-            "IR_016",
-            "IR_039",
-            "IR_087",
-            "IR_097",
-            "IR_108",
-            "IR_120",
-            "IR_134",
-            "VIS006",
-            "VIS008",
-            "WV_062",
-            "WV_073",
-        ]
+        NON_HRV_BANDS
     )
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds empirically for have no NaN values from off disk image,
@@ -398,8 +347,8 @@ def get_dataset_from_scene(filename: str, hrv_scaler, use_rescaler: bool, save_d
         hrv_dataarray = do_v15_rescaling(
             hrv_dataarray,
             variable_order=["HRV"],
-            maxs=np.array([103.90016]),
-            mins=np.array([-1.2278595]),
+            maxs=HRV_SCALER_MAX,
+            mins=HRV_SCALER_MIN,
         )
     hrv_dataarray = hrv_dataarray.transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
@@ -454,22 +403,7 @@ def get_nonhrv_dataset_from_scene(
         scene = load_native_from_zip(filename)
     else:
         scene = load_hrit_from_zip(filename, sections=list(range(6, 9)))
-    scene.load(
-        [
-            "IR_016",
-            "IR_039",
-            "IR_087",
-            "IR_097",
-            "IR_108",
-            "IR_120",
-            "IR_134",
-            "VIS006",
-            "VIS008",
-            "WV_062",
-            "WV_073",
-        ],
-        generate=False,
-    )
+    scene.load(NON_HRV_BANDS, generate=False,)
     log.debug(f"Loaded non-hrv file: {filename}", memory=get_memory())
     dataarray: xr.DataArray = convert_scene_to_dataarray(
         scene, band="IR_016", area="UK", calculate_osgb=True
@@ -482,49 +416,9 @@ def get_nonhrv_dataset_from_scene(
     else:
         dataarray = do_v15_rescaling(
             dataarray,
-            mins=np.array(
-                [
-                    -2.5118103,
-                    -64.83977,
-                    63.404694,
-                    2.844452,
-                    199.10002,
-                    -17.254883,
-                    -26.29155,
-                    -1.1009827,
-                    -2.4184198,
-                    199.57048,
-                    198.95093,
-                ]
-            ),
-            maxs=np.array(
-                [
-                    69.60857,
-                    339.15588,
-                    340.26526,
-                    317.86752,
-                    313.2767,
-                    315.99194,
-                    274.82297,
-                    93.786545,
-                    101.34922,
-                    249.91806,
-                    286.96323,
-                ]
-            ),
-            variable_order=[
-                "IR_016",
-                "IR_039",
-                "IR_087",
-                "IR_097",
-                "IR_108",
-                "IR_120",
-                "IR_134",
-                "VIS006",
-                "VIS008",
-                "WV_062",
-                "WV_073",
-            ],
+            mins=SCALER_MINS,
+            maxs=SCALER_MAXS,
+            variable_order=NON_HRV_BANDS,
         )
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.chunk((1, 256, 256, 1))
@@ -574,20 +468,7 @@ def load_native_from_zip(filename: str) -> Scene:
 
 def save_native_to_zarr(
     list_of_native_files: list,
-    bands: list = [
-        "HRV",
-        "IR_016",
-        "IR_039",
-        "IR_087",
-        "IR_097",
-        "IR_108",
-        "IR_120",
-        "IR_134",
-        "VIS006",
-        "VIS008",
-        "WV_062",
-        "WV_073",
-    ],
+    bands: list = ALL_BANDS,
     save_dir: str = "./",
     use_rescaler: bool = False,
     using_backup: bool = False,
@@ -609,52 +490,12 @@ def save_native_to_zarr(
     )
 
     scaler = ScaleToZeroToOne(
-        mins=np.array(
-            [
-                -2.5118103,
-                -64.83977,
-                63.404694,
-                2.844452,
-                199.10002,
-                -17.254883,
-                -26.29155,
-                -1.1009827,
-                -2.4184198,
-                199.57048,
-                198.95093,
-            ]
-        ),
-        maxs=np.array(
-            [
-                69.60857,
-                339.15588,
-                340.26526,
-                317.86752,
-                313.2767,
-                315.99194,
-                274.82297,
-                93.786545,
-                101.34922,
-                249.91806,
-                286.96323,
-            ]
-        ),
-        variable_order=[
-            "IR_016",
-            "IR_039",
-            "IR_087",
-            "IR_097",
-            "IR_108",
-            "IR_120",
-            "IR_134",
-            "VIS006",
-            "VIS008",
-            "WV_062",
-            "WV_073",
-        ],
+        mins=SCALER_MINS,
+        maxs=SCALER_MAXS,
+        variable_order=NON_HRV_BANDS,
     )
     hrv_scaler = ScaleToZeroToOne(
-        variable_order=["HRV"], maxs=np.array([103.90016]), mins=np.array([-1.2278595])
+        variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN
     )
     for f in list_of_native_files:
         log.debug(f"Processing {f}", memory=get_memory())
