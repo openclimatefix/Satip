@@ -58,6 +58,24 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "norbline",
+      "name": "Azah Norbline",
+      "avatar_url": "https://avatars.githubusercontent.com/u/39647420?v=4",
+      "profile": "https://github.com/norbline",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "TomPughe",
+      "name": "Tom Pughe",
+      "avatar_url": "https://avatars.githubusercontent.com/u/147526382?v=4",
+      "profile": "https://github.com/TomPughe",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -65,5 +83,7 @@
   "projectOwner": "openclimatefix",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs",
+  "commitConvention": "angular"
 }
