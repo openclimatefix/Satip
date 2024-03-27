@@ -76,21 +76,23 @@ class TestSatipUtils:
             )
             assert isinstance(cloudmask_dataarray, xarray.DataArray)
 
-    def test_load_native_to_dataarray(self):  # noqa D102
+    def test_load_native_to_dataarray(self, setUp):  # noqa D102
+        rss_filename, _ = setUp
         for area in ["UK", "RSS"]:
             rss_dataarray, hrv_dataarray = load_native_to_dataarray(
-                Path(self.rss_filename), temp_directory=Path(os.getcwd()), area=area
+                Path(rss_filename), temp_directory=Path(os.getcwd()), area=area
             )
             assert isinstance(rss_dataarray, xarray.DataArray)
             assert isinstance(hrv_dataarray, xarray.DataArray)
 
-    def test_save_dataarray_to_zarr(self):  # noqa D102
+    def test_save_dataarray_to_zarr(self, setUp):  # noqa D102
+        rss_filename, _ = setUp
         # The following is a bit ugly, but since we do not want to lump two tests into one
         # test function but save_dataarray_to_zarr depends on a dataarray being loaded,
         # we have to reload the dataarray here. This means that this test can theoretically
         # fail for two reasons: Either the data-loading failed, or the data-saving failed.
         rss_dataarray, _ = load_native_to_dataarray(
-            Path(self.rss_filename), temp_directory=Path(os.getcwd()), area="UK"
+            Path(rss_filename), temp_directory=Path(os.getcwd()), area="UK"
         )
 
         zarr_path = os.path.join(os.getcwd(), "tmp.zarr")
