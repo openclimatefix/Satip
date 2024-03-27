@@ -76,6 +76,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "JasonFengGit",
+      "name": "Zhenbang Feng",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40121574?v=4",
+      "profile": "https://huggingface.co/64bits",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
