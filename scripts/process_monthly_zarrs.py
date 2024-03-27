@@ -12,7 +12,7 @@ import xarray as xr
 from satpy import Scene
 from tqdm import tqdm
 
-from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
+from satip.eumetsat import EUMETSATDownloadManager, eumetsat_filename_to_datetime
 from satip.jpeg_xl_float_with_nans import JpegXlFloatWithNaNs
 from satip.scale_to_zero_to_one import ScaleToZeroToOne
 from satip.serialize import serialize_attrs
@@ -32,7 +32,7 @@ def func(datasets_and_tuples_and_return_data):
         datasets = [datasets]
         api_key = os.environ["SAT_API_KEY"]
         api_secret = os.environ["SAT_API_SECRET"]
-        download_manager = DownloadManager(
+        download_manager = EUMETSATDownloadManager(
             user_key=api_key, user_secret=api_secret, data_dir=tmpdir
         )
         download_manager.download_datasets(datasets)
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     date_range = pd.date_range(start="2011-01-01 00:00", end="2019-01-01 00:00", freq="1M")
     api_key = os.environ["SAT_API_KEY"]
     api_secret = os.environ["SAT_API_SECRET"]
-    download_manager = DownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
+    download_manager = EUMETSATDownloadManager(user_key=api_key, user_secret=api_secret, data_dir="./")
     first = True
     for date in date_range[::-1]:
         start_date = pd.Timestamp(date) - pd.Timedelta("1M")

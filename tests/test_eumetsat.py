@@ -5,7 +5,7 @@ import tempfile
 from datetime import datetime, timezone, timedelta
 import pandas as pd
 
-from satip.eumetsat import DownloadManager, eumetsat_filename_to_datetime
+from satip.eumetsat import EUMETSATDownloadManager, eumetsat_filename_to_datetime
 
 
 def test_download_manager_setup():
@@ -14,7 +14,7 @@ def test_download_manager_setup():
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        _ = DownloadManager(
+        _ = EUMETSATDownloadManager(
             user_key=user_key,
             user_secret=user_secret,
             data_dir=tmpdirname,
@@ -43,7 +43,7 @@ def test_data_tailor_identify_available_datasets():
     end_date = datetime.now(tz=timezone.utc)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        download_manager = DownloadManager(
+        download_manager = EUMETSATDownloadManager(
             user_key=user_key,
             user_secret=user_secret,
             data_dir=tmpdirname,
@@ -69,7 +69,7 @@ def test_data_tailor():
     end_date = datetime.now(tz=timezone.utc)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        download_manager = DownloadManager(
+        download_manager = EUMETSATDownloadManager(
             user_key=user_key,
             user_secret=user_secret,
             data_dir=tmpdirname,

@@ -31,6 +31,7 @@ from satip.data_store import dateset_it_to_filename
 
 log = structlog.stdlib.get_logger()
 
+
 API_ENDPOINT = "https://api.eumetsat.int"
 
 # Data Store searching endpoint
@@ -195,13 +196,41 @@ def dataset_id_to_link(collection_id, data_id, access_token):
         + access_token
     )
 
+def get_filesize_megabytes(filename):
+    """Returns filesize in megabytes"""
+    filesize_bytes = os.path.getsize(filename)
+    return filesize_bytes / 1e6
 
-class DownloadManager:  # noqa: D205
+
+def eumetsat_filename_to_datetime(inner_tar_name):
+    """Extracts datetime from EUMETSAT filename.
+
+    Takes a file from the EUMETSAT API and returns
+    the date and time part of the filename.
+
+    Args:
+        inner_tar_name: Filename part which contains the datetime information.
+
+    Usage example:
+        eumetsat_filename_to_datetime(filename)
     """
-    The DownloadManager class
 
-    provides a handler for downloading data from the EUMETSAT API,
-     managing: retrieval, logging and metadata
+    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0[01]00-NA-(\d*)\.")
+    title_match = p.match(inner_tar_name)
+    date_str = title_match.group(1)
+    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
+
+
+def eumetsat_cloud_name_to_datetime(filename: str):
+    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
+    date_str = filename.split("0100-0100-")[-1].split(".")[0]
+    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
+
+
+
+class EUMETSATDownloadManager:
+    """
+    Manager class for downloading EUMETSAT data.
     """
 
     def __init__(
@@ -648,34 +677,3 @@ class DownloadManager:  # noqa: D205
 
             except Exception as e:
                 log.warn(f"Failed deleting customization {jobID}: {e}", exc_info=True)
-
-
-def get_filesize_megabytes(filename):
-    """Returns filesize in megabytes"""
-    filesize_bytes = os.path.getsize(filename)
-    return filesize_bytes / 1e6
-
-
-def eumetsat_filename_to_datetime(inner_tar_name):
-    """Extracts datetime from EUMETSAT filename.
-
-    Takes a file from the EUMETSAT API and returns
-    the date and time part of the filename.
-
-    Args:
-        inner_tar_name: Filename part which contains the datetime information.
-
-    Usage example:
-        eumetsat_filename_to_datetime(filename)
-    """
-
-    p = re.compile(r"^MSG[1234]-SEVI-MSG15-0[01]00-NA-(\d*)\.")
-    title_match = p.match(inner_tar_name)
-    date_str = title_match.group(1)
-    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")
-
-
-def eumetsat_cloud_name_to_datetime(filename: str):
-    """Takes a file from the EUMETSAT API and returns the it's datetime part for Cloud mask files"""
-    date_str = filename.split("0100-0100-")[-1].split(".")[0]
-    return datetime.datetime.strptime(date_str, "%Y%m%d%H%M%S")

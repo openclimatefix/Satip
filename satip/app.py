@@ -14,7 +14,7 @@ from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 import satip
 from satip import utils
-from satip.eumetsat import DownloadManager
+from satip.eumetsat import EUMETSATDownloadManager
 
 log = structlog.stdlib.get_logger()
 
@@ -137,7 +137,7 @@ def run(
         )
         # 1. Get data from API, download native files
         with tempfile.TemporaryDirectory() as tmpdir:
-            download_manager = DownloadManager(
+            download_manager = EUMETSATDownloadManager(
                 user_key=api_key,
                 user_secret=api_secret,
                 data_dir=tmpdir,

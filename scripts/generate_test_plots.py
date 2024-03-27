@@ -15,7 +15,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import xarray as xr
 
-from satip import eumetsat
+from satip import EUMETSATDownloadManager
 from satip.utils import (
     load_cloudmask_to_dataarray,
     load_native_to_dataarray,
@@ -34,7 +34,7 @@ def generate_test_plots():
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
 
-    download_manager = eumetsat.DownloadManager(
+    download_manager = EUMETSATDownloadManager(
         user_key=user_key,
         user_secret=user_secret,
         data_dir=os.getcwd(),
