@@ -129,6 +129,15 @@ def run(
     utils.setupLogging()
 
     try:
+        if save_dir != "./":
+            log.info("Checking if save_dir directory exists")
+            if utils.check_path_is_exists_and_directory(save_dir):
+                log.info("save_dir directory exists, continuing execution")
+
+        if save_dir_native != "./raw":
+            log.info("Checking if save_dir_native directory exists")
+            if utils.check_path_is_exists_and_directory(save_dir_native):
+                log.info("save_dir_native directory exists, continuing execution")
 
         log.info(
             f'Running application and saving to "{save_dir}"',
@@ -148,8 +157,9 @@ def run(
                 download_manager.cleanup_datatailor()
                 return
             start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
-            log.info(f"Fetching datasets for {start_date} - {start_time}",
-                     memory=utils.get_memory())
+            log.info(
+                f"Fetching datasets for {start_date} - {start_time}", memory=utils.get_memory()
+            )
             datasets = download_manager.identify_available_datasets(
                 start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
                 end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
@@ -184,7 +194,7 @@ def run(
                         memory=utils.get_memory(),
                     )
                     datasets = datasets[0:maximum_n_datasets]
-                random.shuffle(datasets) # Shuffle so subsequent runs might download different data
+                random.shuffle(datasets)  # Shuffle so subsequent runs might download different data
                 updated_data = True
                 if use_backup:
                     # Check before downloading each tailored dataset, as it can take awhile
