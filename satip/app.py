@@ -87,7 +87,7 @@ log = structlog.stdlib.get_logger()
     "--use-backup",
     envvar="USE_BACKUP",
     default=False,
-    help="Option not to sue the RSS imaginary. If True, use the 15 mins data. ",
+    help="Option not to use the RSS imaginary. If True, use the 15 mins data. ",
     type=click.BOOL,
 )
 @click.option(
