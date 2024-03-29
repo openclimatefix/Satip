@@ -127,20 +127,3 @@ class GOESDownloadManager:
             print(f"Archival data saved to {output_file}")
         else:
             print("Failed to download archival data. Check if the requested data is available.")
-
-# Example usage
-if __name__ == "__main__":
-    data_dir = "goes_data"  # Output directory
-    log_directory = "logs"   # Log directory
-
-    goes_manager = GOESDownloadManager(data_dir, log_directory)
-
-    # Define time range
-    start_time = datetime.datetime(2024, 3, 1, 0, 0)  # Start date
-    end_time = datetime.datetime(2024, 3, 1, 6, 0)    # End date
-
-    # # Download real-time data
-    # goes_manager.download_goes_data(start_time, end_time)
-
-    # Download archival data
-    goes_manager.download_archival_goes_data(start_time, end_time, satellite="16", channel="C13")
