@@ -4,6 +4,7 @@ import os
 import tempfile
 from datetime import datetime, timezone, timedelta
 import pandas as pd
+
 from satip.eumetsat import EUMETSATDownloadManager, eumetsat_filename_to_datetime
 
 
@@ -56,6 +57,7 @@ def test_data_tailor_identify_available_datasets():
         )
 
         assert len(datasets) > 0
+
 
 def test_data_tailor():
     """If there were a test here, there would also be a docstring here."""
