@@ -18,6 +18,7 @@ import shutil
 import time
 import urllib
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from urllib.error import HTTPError
 
@@ -28,7 +29,6 @@ import structlog
 
 from satip import utils
 from satip.data_store import dateset_it_to_filename
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 log = structlog.stdlib.get_logger()
 
