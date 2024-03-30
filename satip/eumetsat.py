@@ -413,9 +413,7 @@ class EUMETSATDownloadManager:
         projection,
         attempts=2,
     ):
-        """
-        Attempts to download a dataset, retrying once if an exception occurs, 
-        possibly due to an expired access token.
+        """Attempts to download a dataset, retrying once if an exception occurs
 
         Args:
             dataset_id: Dataset ID to download
@@ -465,7 +463,7 @@ class EUMETSATDownloadManager:
             roi: Region of Interest, None if want the whole original area
             file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
             projection: Projection of the stored data, defaults to 'geographic'
-            parallel: Boolean indicating whether the download process should be executed in parallel.
+            parallel: Boolean indicating if the download process should be executed in parallel
         """
 
         # Identifying dataset ids to download
