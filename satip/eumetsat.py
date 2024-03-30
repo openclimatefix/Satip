@@ -414,7 +414,8 @@ class EUMETSATDownloadManager:
         attempts=2,
     ):
         """
-        Attempts to download a dataset, retrying once if an exception occurs, possibly due to an expired access token.
+        Attempts to download a dataset, retrying once if an exception occurs, 
+        possibly due to an expired access token.
 
         Args:
             dataset_id: Dataset ID to download
@@ -437,7 +438,10 @@ class EUMETSATDownloadManager:
             except Exception as e:
                 if attempt < attempts - 1:
                     # Log and retry, possibly refreshing the token
-                    log.debug("Attempting to refresh the EUMETSAT access token and retry download", parent="DownloadManager")
+                    log.debug(
+                        "Attempting to refresh the EUMETSAT access token and retry download", 
+                        parent="DownloadManager"
+                    )
                     self.request_access_token()
                 else:
                     # Final attempt failed, raise exception
@@ -461,6 +465,7 @@ class EUMETSATDownloadManager:
             roi: Region of Interest, None if want the whole original area
             file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
             projection: Projection of the stored data, defaults to 'geographic'
+            parallel: Boolean indicating whether the download process should be executed in parallel.
         """
 
         # Identifying dataset ids to download
@@ -490,7 +495,10 @@ class EUMETSATDownloadManager:
                     try:
                         future.result()
                     except Exception as e:
-                        log.error(f"Failed to download dataset after retrying: {e}", parent="DownloadManager")
+                        log.error(
+                            f"Failed to download dataset after retrying: {e}", 
+                            parent="DownloadManager"
+                        )
         else:
             for dataset_id in dataset_ids:
                 # Download the raw data
@@ -503,7 +511,10 @@ class EUMETSATDownloadManager:
                         projection=projection,
                     )
                 except Exception:
-                    log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
+                    log.debug(
+                        "The EUMETSAT access token has been refreshed", 
+                        parent="DownloadManager"
+                    )
                     self.request_access_token()
                     self._download_single_tailored_dataset(
                         dataset_id,
