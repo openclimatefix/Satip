@@ -414,7 +414,7 @@ class EUMETSATDownloadManager:
         attempts=2,
     ):
         """
-        Attempts to download a dataset, retrying once if an exception occurs, 
+        Attempts to download a dataset, retrying once if an exception occurs,
         possibly due to an expired access token.
 
         Args:
@@ -439,7 +439,7 @@ class EUMETSATDownloadManager:
                 if attempt < attempts - 1:
                     # Log and retry, possibly refreshing the token
                     log.debug(
-                        "Attempting to refresh the EUMETSAT access token and retry download", 
+                        "Attempting to refresh the EUMETSAT access token and retry download",
                         parent="DownloadManager"
                     )
                     self.request_access_token()
@@ -496,7 +496,7 @@ class EUMETSATDownloadManager:
                         future.result()
                     except Exception as e:
                         log.error(
-                            f"Failed to download dataset after retrying: {e}", 
+                            f"Failed to download dataset after retrying: {e}",
                             parent="DownloadManager"
                         )
         else:
@@ -512,7 +512,7 @@ class EUMETSATDownloadManager:
                     )
                 except Exception:
                     log.debug(
-                        "The EUMETSAT access token has been refreshed", 
+                        "The EUMETSAT access token has been refreshed",
                         parent="DownloadManager"
                     )
                     self.request_access_token()
