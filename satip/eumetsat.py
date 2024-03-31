@@ -452,8 +452,7 @@ class EUMETSATDownloadManager:
         roi: str = None,
         file_format: str = "hrit",
         projection: str = None,
-        parallel: bool = False,
-        concurrency: int = 3,
+        concurrency: int = 1,
     ):
         """
         Query the data tailor service and write the requested ROI data to disk
@@ -464,9 +463,8 @@ class EUMETSATDownloadManager:
             roi: Region of Interest, None if want the whole original area
             file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
             projection: Projection of the stored data, defaults to 'geographic'
-            parallel: Boolean indicating if the download process should be executed in parallel
-            concurrency: maximum concurrency for parallel download if parallel = True,
-                defaults to 3 because the data tailor only takes 3 jobs at a time
+            concurrency: concurrency for parallel download, defaults to 1. concurrency should not
+                exceed 3 because the data tailor only takes 3 jobs at a time
         """
 
         # Identifying dataset ids to download
@@ -479,50 +477,25 @@ class EUMETSATDownloadManager:
                 parent="DownloadManager",
             )
             return
-        if parallel:
-            with ThreadPoolExecutor(max_workers=concurrency) as executor:
-                futures = [
-                    executor.submit(
-                        self.download_single_tailored_dataset_with_retry,
-                        dataset_id,
-                        product_id,
-                        roi,
-                        file_format,
-                        projection,
-                    ) for dataset_id in dataset_ids
-                ]
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            futures = [
+                executor.submit(
+                    self.download_single_tailored_dataset_with_retry,
+                    dataset_id,
+                    product_id,
+                    roi,
+                    file_format,
+                    projection,
+                ) for dataset_id in dataset_ids
+            ]
 
-                for future in as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception as e:
-                        log.error(
-                            f"Failed to download dataset after retrying: {e}",
-                            parent="DownloadManager"
-                        )
-        else:
-            for dataset_id in dataset_ids:
-                # Download the raw data
+            for future in as_completed(futures):
                 try:
-                    self._download_single_tailored_dataset(
-                        dataset_id,
-                        product_id=product_id,
-                        roi=roi,
-                        file_format=file_format,
-                        projection=projection,
-                    )
-                except Exception:
-                    log.debug(
-                        "The EUMETSAT access token has been refreshed",
+                    future.result()
+                except Exception as e:
+                    log.error(
+                        f"Failed to download dataset after retrying: {e}",
                         parent="DownloadManager"
-                    )
-                    self.request_access_token()
-                    self._download_single_tailored_dataset(
-                        dataset_id,
-                        product_id=product_id,
-                        roi=roi,
-                        file_format=file_format,
-                        projection=projection,
                     )
 
     def _download_single_tailored_dataset(
