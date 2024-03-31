@@ -453,6 +453,7 @@ class EUMETSATDownloadManager:
         file_format: str = "hrit",
         projection: str = None,
         parallel: bool = False,
+        concurrency: int = 3,
     ):
         """
         Query the data tailor service and write the requested ROI data to disk
@@ -464,6 +465,8 @@ class EUMETSATDownloadManager:
             file_format: File format to request, multiple options, primarily 'netcdf4' and 'geotiff'
             projection: Projection of the stored data, defaults to 'geographic'
             parallel: Boolean indicating if the download process should be executed in parallel
+            concurrency: maximum concurrency for parallel download if parallel = True,
+                defaults to 3 because the data tailor only takes 3 jobs at a time
         """
 
         # Identifying dataset ids to download
@@ -477,7 +480,7 @@ class EUMETSATDownloadManager:
             )
             return
         if parallel:
-            with ThreadPoolExecutor() as executor:
+            with ThreadPoolExecutor(max_workers=concurrency) as executor:
                 futures = [
                     executor.submit(
                         self.download_single_tailored_dataset_with_retry,
