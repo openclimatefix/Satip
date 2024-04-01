@@ -170,7 +170,6 @@ def _download_time_range(
     complete = False
     while not complete:
         try:
-            time.sleep(np.random.randint(0, 600))
             download_manager.download_date_range(
                 format_dt_str(start_time),
                 format_dt_str(end_time),
