@@ -1,6 +1,6 @@
 # Satip
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
@@ -124,6 +124,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/TomPughe"><img src="https://avatars.githubusercontent.com/u/147526382?v=4?s=100" width="100px;" alt="Tom Pughe"/><br /><sub><b>Tom Pughe</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=TomPughe" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://huggingface.co/64bits"><img src="https://avatars.githubusercontent.com/u/40121574?v=4?s=100" width="100px;" alt="Zhenbang Feng"/><br /><sub><b>Zhenbang Feng</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=JasonFengGit" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

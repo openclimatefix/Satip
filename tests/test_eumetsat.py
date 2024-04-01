@@ -83,12 +83,13 @@ def test_data_tailor():
         )
 
         assert len(datasets) > 0
-        # only download one dataset
-        datasets = datasets[0:1]
 
+        datasets = datasets[0:3]
+        #print(datasets)
         download_manager.download_tailored_datasets(
             datasets,
             product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+            concurrency=3
         )
 
         native_files = list(glob.glob(os.path.join(tmpdirname, "*HRSEVIRI")))
