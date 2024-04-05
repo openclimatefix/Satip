@@ -8,8 +8,8 @@ def test_download_goes_15_data():
     download_manager = GOESDownloadManager(data_dir="data")
 
     # Define time range
-    start_date = datetime(2024, 3, 1)
-    end_date = datetime(2024, 3, 2)
+    start_date = datetime(2010, 3, 1)
+    end_date = datetime(2018, 3, 2)
 
     # Specify satellite (GOES-15)
     satellite = "15"
