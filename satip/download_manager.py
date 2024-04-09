@@ -16,8 +16,6 @@ import warnings
 
 import structlog
 
-from satip.eumetsat import EUMETSATDownloadManager
-from satip.goes_download_manager import GOESDownloadManager
 
 log = structlog.stdlib.get_logger()
 
@@ -55,7 +53,7 @@ class DownloadManager:
 
     """
 
-    def __init__(self, provider, user_key=None,
+    def __init__(self, provider: str = "EUMETSAT", user_key=None,
                 user_secret=None, data_dir=None,
                 log_directory=None):
         """
@@ -71,9 +69,11 @@ class DownloadManager:
         self.provider = provider
 
         if self.provider == "EUMETSAT":
+            from satip.eumetsat import EUMETSATDownloadManager
             self.download_manager = EUMETSATDownloadManager(user_key, user_secret,
                                                             data_dir, log_directory)
         elif self.provider == "GOES":
+            from satip.goes_download_manager import GOESDownloadManager
             self.download_manager = GOESDownloadManager(data_dir, log_directory)
         else:
             raise ValueError("Invalid provider. Supported providers are 'EUMETSAT' and 'GOES'.")
