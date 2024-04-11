@@ -16,7 +16,3 @@ def test_download_goes_15_data():
 
     # Download archival GOES-15 data
     download_manager.download_archival_goes_data(start_date, end_date, satellite)
-
-# Run the test case
-if __name__ == "__main__":
-    test_download_goes_15_data()
