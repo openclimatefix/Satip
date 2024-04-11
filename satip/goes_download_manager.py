@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 
+import requests
 from goes2go import GOES
 
 
@@ -94,3 +95,75 @@ class GOESDownloadManager:
             current_time += datetime.timedelta(minutes=time_increment)
 
         logging.info("Completed GOES data download.")
+
+    def check_url_for_goes_data(self, url):
+        """
+        Check if the provided URL contains the GOES-8 to GOES-15 data.
+        """
+        response = requests.get(url)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    def download_archival_goes_data(self, start_date, end_date, satellite):
+        """
+        Download archival GOES data for a specified time range and satellite.
+
+        Args:
+            start_date (datetime): Start of the download period.
+            end_date (datetime): End of the download period.
+            satellite (str): GOES satellite range,
+            e.g., '8-15' for GOES-8 to GOES-15 or '15' for GOES-15.
+        """
+        # Construct base URL
+        base_url = "https://www.aev.class.noaa.gov/saa/products/search?datatype_family=GVAR_IMG"
+
+        # Check if the provided URL contains the desired data
+        if self.check_url_for_goes_data(base_url):
+            # If satellite is a range
+            if '-' in satellite:
+                # Extract start and end satellite numbers
+                start_satellite, end_satellite = map(int, satellite.split('-'))
+
+                # Iterate over the range of satellites
+                for sat_num in range(start_satellite, end_satellite + 1):
+                    # Construct URL for each satellite
+                    url = f"{base_url}/GOES-{sat_num}"
+                    print(f"Checking data availability for GOES-{sat_num}...")
+
+                    # Download data
+                    print(f"Downloading archival data from {url}...")
+                    response = requests.get(url)
+
+                    if response.status_code == 200:
+                        # Save data to file
+                        output_file = os.path.join(self.data_dir,
+                                                   f"goes_archival_data_{sat_num}.nc")
+                        with open(output_file, 'wb') as f:
+                            f.write(response.content)
+                        print(f"Archival data saved to {output_file}")
+                    else:
+                        print(f"Failed to download archival data for GOES-{sat_num}.")
+            else:
+                # Extract satellite number
+                sat_num = int(satellite)
+
+                # Construct URL for the specified satellite
+                url = f"{base_url}/GOES-{sat_num}"
+                print(f"Checking data availability for GOES-{sat_num}...")
+
+                # Download data
+                print(f"Downloading archival data from {url}...")
+                response = requests.get(url)
+
+                if response.status_code == 200:
+                    # Save data to file
+                    output_file = os.path.join(self.data_dir, f"goes_archival_data_{sat_num}.nc")
+                    with open(output_file, 'wb') as f:
+                        f.write(response.content)
+                    print(f"Archival data saved to {output_file}")
+                else:
+                    print(f"Failed to download archival data for GOES-{sat_num}.")
+        else:
+            print("The URL does not contain the desired GOES data")
