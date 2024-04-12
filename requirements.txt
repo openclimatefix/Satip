@@ -38,7 +38,7 @@ frozenlist==1.4.1
 fsspec==2024.2.0
 greenlet==3.0.3
 h5py==3.10.0
-idna==3.6
+idna==3.7
 importlib-metadata==7.0.1
 iniconfig==2.0.0
 Jinja2==3.1.3
