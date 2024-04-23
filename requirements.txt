@@ -37,6 +37,7 @@ freezegun==1.4.0
 frozenlist==1.4.1
 fsspec==2024.2.0
 greenlet==3.0.3
+goes2go==2024.4.0
 h5py==3.10.0
 idna==3.6
 importlib-metadata==7.0.1
