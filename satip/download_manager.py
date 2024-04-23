@@ -16,7 +16,6 @@ import warnings
 
 import structlog
 
-
 log = structlog.stdlib.get_logger()
 
 # Suppress FutureWarning related to 'H' argument
