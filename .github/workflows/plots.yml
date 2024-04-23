@@ -30,8 +30,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install eccodes numpy matplotlib rasterio satpy[all] cartopy satip distutils
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
+          $CONDA/bin/pip install -e .
 
       - name: Run plotting script
         env:
