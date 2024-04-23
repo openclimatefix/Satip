@@ -15,7 +15,7 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import xarray as xr
 
-from satip import EUMETSATDownloadManager
+from satip.eumetsat import EUMETSATDownloadManager
 from satip.utils import (
     load_cloudmask_to_dataarray,
     load_native_to_dataarray,
@@ -38,18 +38,18 @@ def generate_test_plots():
         user_key=user_key,
         user_secret=user_secret,
         data_dir=os.getcwd(),
-        logger_name="Plotting_test",
+        # logger_name="Plotting_test",
     )
 
     # Get 1 RSS native file and 1 cloud mask file
-    download_manager.download_date_range(
-        start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", product_id=RSS_ID
-    )
+    # download_manager.download_date_range(
+    #     start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:00:00", product_id=RSS_ID
+    # )
 
     # 1 Cloud mask
-    download_manager.download_date_range(
-        start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:02:00", product_id=CLOUD_ID
-    )
+    # download_manager.download_date_range(
+    #     start_date="2020-06-01 11:59:00", end_date="2020-06-01 12:02:00", product_id=CLOUD_ID
+    # )
 
     # Store filenames just downloaded to later convert them to Xarray DataArray:
     rss_filenames = list(glob.glob(os.path.join(os.getcwd(), "*.nat")))
@@ -107,7 +107,7 @@ def generate_test_plots():
         save_dataarray_to_zarr(
             rss_dataarray,
             zarr_path=os.path.join(os.getcwd(), "rss.zarr"),
-            compressor_name="jpeg-xl",
+            compressor_name="bz2",
             zarr_mode="w",
         )
         del rss_dataarray
@@ -115,7 +115,7 @@ def generate_test_plots():
         save_dataarray_to_zarr(
             hrv_dataarray,
             zarr_path=os.path.join(os.getcwd(), "hrv.zarr"),
-            compressor_name="jpeg-xl",
+            compressor_name="bz2",
             zarr_mode="w",
         )
         del hrv_dataarray
