@@ -68,11 +68,11 @@ def setUp() -> None:  # noqa D102
 class TestSatipUtils:
     """Tests for satip.utils."""
 
-    @pytest.mark.skip("Skipping as cloud masks are not being used now")
-    def test_load_cloudmask_to_dataarray(self):  # noqa D102
+    def test_load_cloudmask_to_dataarray(self, setUp):  # noqa D102
+        _, cloud_mask_filename = setUp
         for area in ["UK", "RSS"]:
             cloudmask_dataarray = load_cloudmask_to_dataarray(
-                Path(self.cloud_mask_filename), temp_directory=Path(os.getcwd()), area=area
+                Path(cloud_mask_filename), temp_directory=Path(os.getcwd()), area=area
             )
             assert isinstance(cloudmask_dataarray, xarray.DataArray)
 
