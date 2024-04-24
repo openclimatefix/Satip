@@ -420,10 +420,10 @@ if __name__ == "__main__":
     pool.join()
     for result in results:
         log.info(f"Processed {result} data")
-    
+
     pool
 
-    
+
 """
 Jacob's old script!
 
