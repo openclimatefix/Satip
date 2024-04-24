@@ -6,6 +6,7 @@ import xarray as xr
 import numpy as np
 from typing import Literal
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 import argparse
 import multiprocessing
 import os
@@ -358,6 +359,10 @@ def _rewrite_zarr_times(output_name):
 
 
 if __name__ == "__main__":
+    # Prevent logs interfering with progressbar
+    logging_redirect_tqdm(loggers=[log])
+
+    # Get running args
     args = parser.parse_args()
     prog_start = dt.datetime.utcnow()
     log.info(f"{str(prog_start)}: Running with args: {args}")
