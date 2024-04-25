@@ -5,9 +5,12 @@ Consolidates the old cli_downloader, backfill_hrv and backfill_nonhrv scripts.
 import argparse
 import dataclasses
 import datetime as dt
+import json
 import logging
 import multiprocessing
 import os
+import pathlib
+import shutil
 import subprocess
 import sys
 from typing import Literal
@@ -17,6 +20,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from ocf_blosc2 import Blosc2
+from satpy import Scene
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
@@ -208,7 +212,7 @@ def process_scans(
         zarr_times = [last_zarr_time, last_zarr_time]
 
     # Get native files in order
-    native_files = list(glob.glob(f"{sat_config.native_path}*/*.nat"))
+    native_files = list(pathlib.Path(sat_config.native_path).glob("*/*.nat"))
     log.info(f"Found {len(native_files)} native files at {sat_config.native_path}")
     native_files.sort()
 
@@ -224,7 +228,7 @@ def process_scans(
     datasets: list[xr.Dataset] = []
     for f in native_files:
         try:
-            dataset: xr.Dataset | None = _open_and_scale_data(zarr_times, f, dstype)
+            dataset: xr.Dataset | None = _open_and_scale_data(zarr_times, f.as_posix(), dstype)
         except Exception as e:
             log.error(f"Exception: {e}")
             continue
@@ -234,10 +238,12 @@ def process_scans(
         # Append to zarrs in hourly chunks (12 sets of 5 minute datasets)
         # * This is so zarr doesn't complain about mismatching chunk sizes
         if len(datasets) == 12:
-            mode = "w"
             if os.path.exists(zarr_path):
                 mode = "a"
-            write_to_zarr(
+            else:
+                mode = "w"
+                log.debug(f"No zarr store found for year. Creating new store at {zarr_path}.")
+            _write_to_zarr(
                 xr.concat(datasets, dim="time"),
                 zarr_path,
                 mode,
@@ -266,7 +272,7 @@ def _open_and_scale_data(
     )
     # The reader is the same for each satellite as the sensor is the same
     # * Hence "severi" in all cases
-    scene = Scene(filenames={"severi_l1b_native": [f]})
+    scene = Scene(filenames={"seviri_l1b_native": [f]})
     scene.load([c.variable for c in CHANNELS[dstype]])
     da: xr.DataArray = convert_scene_to_dataarray(
         scene, band=CHANNELS[dstype][0].variable, area="RSS", calculate_osgb=False,
@@ -280,8 +286,8 @@ def _open_and_scale_data(
     ds: xr.Dataset = da.to_dataset(name="data")
     ds["data"] = ds.data.astype(np.float16)
 
-    if dataset.time.values[0] in zarr_times:
-        log.debug(f"Skipping: {dataset.time.values[0]}")
+    if ds.time.values[0] in zarr_times:
+        log.debug(f"Skipping: {ds.time.values[0]}")
         return None
 
     return ds
@@ -329,8 +335,8 @@ def _rewrite_zarr_times(output_name):
     # Combine time coords
     ds = xr.open_zarr(output_name)
 
-	# Prevent numcodecs string error
-	# See https://github.com/pydata/xarray/issues/3476#issuecomment-1205346130
+  # Prevent numcodecs string error
+  # See https://github.com/pydata/xarray/issues/3476#issuecomment-1205346130
     for v in list(ds.coords.keys()):
         if ds.coords[v].dtype == object:
             ds[v].encoding.clear()
@@ -408,6 +414,8 @@ if __name__ == "__main__":
     cache.set('secs_per_scan', new_average_secs_per_scan)
     log.info(f"Completed download for args: {args} in {str(runtime)} (avg {new_average_secs_per_scan} secs per scan)")
 
+    log.info("Converting raw data to HRV and non-HRV Zarr Stores")
+
     # Process the HRV and non-HRV data
     pool = multiprocessing.Pool()
     results = pool.starmap(
@@ -421,58 +429,3 @@ if __name__ == "__main__":
     pool.join()
     for result in results:
         log.info(f"Processed {result} data")
-
-    pool
-
-
-"""
-Jacob's old script!
-
-last_zarr_time = pd.Timestamp("2024-01-01T00:00:00.000000000")
-#start_zarr_time = pd.Timestamp("2024-01-01T00:00:00.000000000")
-start_date = (
-    pd.Timestamp.utcnow().tz_convert("UTC").to_pydatetime().replace(tzinfo=None)
-)
-start_zarr_time = pd.Timestamp(start_date).to_pydatetime().replace(tzinfo=None)
-last_zarr_time = pd.Timestamp(last_zarr_time).to_pydatetime().replace(tzinfo=None)
-start_str = last_zarr_time.strftime("%Y-%m-%d")
-end_str = start_zarr_time.strftime("%Y-%m-%d")
-print(start_str)
-print(end_str)
-date_range = pd.date_range(start=start_str, end=end_str, freq="5min")
-print(date_range)
-for date in date_range:
-    start_date = pd.Timestamp(date) - pd.Timedelta("5min")
-    end_date = pd.Timestamp(date) + pd.Timedelta("5min")
-    process = subprocess.run(
-        [
-            "eumdac",
-            "--set-credentials",
-            "SWdEnLvOlVTVGli1An1nKJ3NcV0a",
-            "gUQe0ej7H_MqQVGF4cd7wfQWcawa",
-            "\n"
-        ]
-    )
-    end_date_time = end_date.tz_localize(None).strftime("%Y-%m-%dT%H:%M:%S")
-    start_date_time = start_date.tz_localize(None).strftime("%Y-%m-%dT%H:%M:%S")
-
-    print(start_date_time)
-    print(end_date_time)
-    process = subprocess.run(
-        [
-            "eumdac",
-            "download",
-            "-c",
-            "EO:EUM:DAT:MSG:MSG15-RSS",
-            "-s",
-            f"{end_date_time}",
-            "-e",
-            f"{end_date_time}",
-            "-o",
-            "/mnt/disks/sat/native_files/",
-            "--entry",
-            "*.nat",
-            "-y"
-        ]
-    )
-"""
