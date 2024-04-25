@@ -438,4 +438,3 @@ if __name__ == "__main__":
     new_average_secs_per_scan: int = int((secs_per_scan + (runtime.total_seconds() / len(scan_times))) / 2)
     cache.set('secs_per_scan', new_average_secs_per_scan)
     log.info(f"Completed archive for args: {args}. ({new_average_secs_per_scan} seconds per scan).")
-
