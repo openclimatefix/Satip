@@ -476,4 +476,3 @@ for date in date_range:
         ]
     )
 """
-
