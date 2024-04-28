@@ -1,6 +1,6 @@
 # Satip
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-11-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
@@ -127,6 +127,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://huggingface.co/64bits"><img src="https://avatars.githubusercontent.com/u/40121574?v=4?s=100" width="100px;" alt="Zhenbang Feng"/><br /><sub><b>Zhenbang Feng</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=JasonFengGit" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/jsbaasi"><img src="https://avatars.githubusercontent.com/u/72830904?v=4?s=100" width="100px;" alt="jsbaasi"/><br /><sub><b>jsbaasi</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=jsbaasi" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/suleman1412"><img src="https://avatars.githubusercontent.com/u/37236131?v=4?s=100" width="100px;" alt="Suleman Karigar"/><br /><sub><b>Suleman Karigar</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=suleman1412" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://richasharma.co.in/"><img src="https://avatars.githubusercontent.com/u/41283476?v=4?s=100" width="100px;" alt="Richa"/><br /><sub><b>Richa</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=14Richa" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
