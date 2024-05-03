@@ -103,7 +103,7 @@ structlog==24.1.0
 tblib==3.0.0
 toolz==0.12.1
 tornado==6.4
-tqdm==4.66.2
+tqdm==4.66.3
 trollimage==1.23.1
 trollsift==0.5.1
 typing_extensions==4.10.0
