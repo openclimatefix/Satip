@@ -1,4 +1,4 @@
-"""Tests for the Satip-utils.
+"""Unit Tests for the Satip-utils.
 
 Please note that at the moment, these tests are marked disabled for two reasons:
 a) There is a weird installation-bug which makes it such that on identical github-workflows,
