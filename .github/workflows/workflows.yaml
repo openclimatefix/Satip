@@ -55,15 +55,34 @@ jobs:
           # echo results and save env var for other jobs
           echo "pytest-cov options that will be used are: $PYTESTCOV"
           echo "PYTESTCOV=$PYTESTCOV" >> $GITHUB_ENV
-      - name: Run pytest
+      
+      - name: Run unit tests 
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
-          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG"
+          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test" 
           echo "Will be running this command: $PYTEST_COMMAND"
           eval $PYTEST_COMMAND
+
       - name: Show coverage
         run: coverage report -m
+
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: false
+
+      - name: Run integration tests 
+        run: |
+          export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
+          export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
+          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test" 
+          echo "Will be running this command: $PYTEST_COMMAND"
+          eval $PYTEST_COMMAND
+
+      - name: Show coverage
+        run: coverage report -m
+
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
         with:
