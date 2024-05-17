@@ -58,8 +58,6 @@ jobs:
       
       - name: Run unit tests 
         run: |
-          export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
-          export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
           export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test" 
           echo "Will be running this command: $PYTEST_UNIT_COMMAND"
           eval $PYTEST_UNIT_COMMAND
