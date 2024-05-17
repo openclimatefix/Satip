@@ -56,9 +56,9 @@ jobs:
           echo "pytest-cov options that will be used are: $PYTESTCOV"
           echo "PYTESTCOV=$PYTESTCOV" >> $GITHUB_ENV
       
-      - name: Run unit tests 
+      - name: Run unit tests
         run: |
-          export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test" 
+          export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test"
           echo "Will be running this command: $PYTEST_UNIT_COMMAND"
           eval $PYTEST_UNIT_COMMAND
 
@@ -70,11 +70,11 @@ jobs:
         with:
           fail_ci_if_error: false
 
-      - name: Run integration tests 
+      - name: Run integration tests
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
-          export PYTEST_INTEGRATION_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test" 
+          export PYTEST_INTEGRATION_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test"
           echo "Will be running this command: $PYTEST_INTEGRATION_COMMAND"
           eval $PYTEST_INTEGRATION_COMMAND
 
