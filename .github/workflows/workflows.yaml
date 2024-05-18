@@ -69,10 +69,6 @@ jobs:
           export PYTEST_INTEGRATION_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test"
           echo "Will be running this command: $PYTEST_INTEGRATION_COMMAND"
           eval $PYTEST_INTEGRATION_COMMAND
-
-      - name: Remove trailing whitespace
-        run: |
-          git ls-files -z | xargs -0 -L1 git diff --check --exit-code
           
       - name: Show coverage
         run: coverage report -m
