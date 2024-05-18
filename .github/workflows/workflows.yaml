@@ -55,7 +55,7 @@ jobs:
           # echo results and save env var for other jobs
           echo "pytest-cov options that will be used are: $PYTESTCOV"
           echo "PYTESTCOV=$PYTESTCOV" >> $GITHUB_ENV
-
+          
       - name: Run unit tests
         run: |
           export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test"
@@ -79,5 +79,5 @@ jobs:
         run: coverage report -m
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
-        with:
+        with: 
           fail_ci_if_error: false
