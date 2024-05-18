@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Do some Ubunutu specific installs for Python 3.12
+      - name: Do some Ubuntu specific installs for Python 3.12
         if: runner.os == 'Linux'
         run: |
           sudo apt install libgeos-dev libeccodes-dev
@@ -61,13 +61,7 @@ jobs:
           export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test"
           echo "Will be running this command: $PYTEST_UNIT_COMMAND"
           eval $PYTEST_UNIT_COMMAND
-      - name: Show coverage
-        run: coverage report -m
-      - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: false
-      
+            
       - name: Run integration tests
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
@@ -75,6 +69,7 @@ jobs:
           export PYTEST_INTEGRATION_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test"
           echo "Will be running this command: $PYTEST_INTEGRATION_COMMAND"
           eval $PYTEST_INTEGRATION_COMMAND
+          
       - name: Show coverage
         run: coverage report -m
       - name: "Upload coverage to Codecov"
