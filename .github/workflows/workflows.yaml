@@ -13,18 +13,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
       - name: Set up Python 3.12
         uses: actions/setup-python@v3
         with:
           python-version: "3.12"
           cache: "pip"
-      
-      - name: Do some Ubuntu specific installs for Python 3.12
+      - name: Do some Ubunutu specific installs for Python 3.12
         if: runner.os == 'Linux'
         run: |
           sudo apt install libgeos-dev libeccodes-dev
-      
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -32,55 +29,41 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f "setup.py" ]; then pip install -e .; else export PYTHONPATH=$PYTHONPATH:./src; fi
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
-      
       - name: Setup with pytest-xdist
         run: |
           # lets get the string for how many cpus to use with pytest
           echo "Will be using 4 cpus for pytest testing"
           pip install pytest-xdist
+          #
           # make PYTESTXDIST
           export PYTESTXDIST="-n 4"
           # echo results and save env var for other jobs
           echo "pytest-xdist options that will be used are: $PYTESTXDIST"
           echo "PYTESTXDIST=$PYTESTXDIST" >> $GITHUB_ENV
-      
       - name: Setup with pytest-cov
         run: |
           # let make pytest run with coverage
           echo "Will be looking at coverage of dir  ${{ inputs.pytest_cov_dir }}"
+          #
           # install pytest-cov
           pip install coverage
           pip install pytest-cov
+          #
           # make PYTESTCOV
           export PYTESTCOV="--cov=satip --cov-report=xml"
+          #
+          # echo results and save env var for other jobs
           echo "pytest-cov options that will be used are: $PYTESTCOV"
           echo "PYTESTCOV=$PYTESTCOV" >> $GITHUB_ENV
-      
-      - name: Run unit tests
-        run: |
-          export PYTEST_UNIT_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/unit_test"
-          echo "Will be running this command: $PYTEST_UNIT_COMMAND"
-          eval $PYTEST_UNIT_COMMAND
-      
-      - name: Show coverage
-        run: coverage report -m
-      
-      - name: "Upload coverage to Codecov"
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: false
-      
-      - name: Run integration tests
+      - name: Run pytest
         run: |
           export EUMETSAT_USER_KEY="${{ secrets.EUMETSAT_USER_KEY }}"
           export EUMETSAT_USER_SECRET="${{ secrets.EUMETSAT_USER_SECRET }}"
-          export PYTEST_INTEGRATION_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG tests/integration_test"
-          echo "Will be running this command: $PYTEST_INTEGRATION_COMMAND"
-          eval $PYTEST_INTEGRATION_COMMAND
-      
+          export PYTEST_COMMAND="pytest $PYTESTCOV $PYTESTXDIST -s --log-level=DEBUG"
+          echo "Will be running this command: $PYTEST_COMMAND"
+          eval $PYTEST_COMMAND
       - name: Show coverage
         run: coverage report -m
-      
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v2
         with:
