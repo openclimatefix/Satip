@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install wheel pytest
+          python -m pip install cartopy
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f "setup.py" ]; then pip install -e .; else export PYTHONPATH=$PYTHONPATH:./src; fi
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
