@@ -38,7 +38,6 @@ jobs:
           # lets get the string for how many cpus to use with pytest
           echo "Will be using 4 cpus for pytest testing"
           pip install pytest-xdist
-          #
           # make PYTESTXDIST
           export PYTESTXDIST="-n 4"
           # echo results and save env var for other jobs
@@ -49,11 +48,9 @@ jobs:
         run: |
           # let make pytest run with coverage
           echo "Will be looking at coverage of dir  ${{ inputs.pytest_cov_dir }}"
-          #
           # install pytest-cov
           pip install coverage
           pip install pytest-cov
-          #
           # make PYTESTCOV
           export PYTESTCOV="--cov=satip --cov-report=xml"
           echo "pytest-cov options that will be used are: $PYTESTCOV"
