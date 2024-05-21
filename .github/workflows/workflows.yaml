@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Do some Ubuntu specific installs for Python 3.12
+      - name: Do some Ubunutu specific installs for Python 3.12
         if: runner.os == 'Linux'
         run: |
           sudo apt install libgeos-dev libeccodes-dev
