@@ -29,8 +29,6 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f "setup.py" ]; then pip install -e .; else export PYTHONPATH=$PYTHONPATH:./src; fi
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
-      - name: Install CartoPy
-        run: pip install cartopy
       - name: Setup with pytest-xdist
         run: |
           # lets get the string for how many cpus to use with pytest
