@@ -33,6 +33,9 @@ jobs:
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
           $CONDA/bin/pip install -e .
+          
+      - name: Install CartoPy
+        run: pip install cartopy
 
       - name: Run plotting script
         env:
