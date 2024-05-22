@@ -44,20 +44,22 @@ jobs:
         run: |
           conda create --name myenv python=${{ matrix.python-version }} -y
           echo "conda activate myenv" >> $GITHUB_ENV
+          source ~/.bashrc
           conda activate myenv
           conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
           pip install -e .
         shell: bash -l {0}
 
-      - name: Verify CartoPy Installation
+      - name: Verify Conda Environment and CartoPy Installation
         run: |
-          $CONDA/bin/python -m pip show cartopy
-          $CONDA/bin/python -c "import cartopy; print(cartopy.__version__)"
-
-      - name: Verify Python Path
-        run: |
+          source ~/.bashrc
+          conda activate myenv
+          python -m pip show cartopy
+          python -c "import cartopy; print(cartopy.__version__)"
           which python
           python --version
+          conda list
+        shell: bash -l {0}
         
       - name: Run plotting script
         env:
