@@ -33,34 +33,7 @@ jobs:
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA/bin/conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
           $CONDA/bin/pip install -e .
-          
-      - name: Set up Conda 
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-          auto-activate-base: false
 
-      - name: Create and activate Conda environment
-        run: |
-          conda create --name myenv python=${{ matrix.python-version }} -y
-          echo "conda activate myenv" >> $GITHUB_ENV
-          source ~/.bashrc
-          conda activate myenv
-          conda install eccodes numpy matplotlib rasterio satpy[all] cartopy -c conda-forge
-          pip install -e .
-        shell: bash -l {0}
-
-      - name: Verify Conda Environment and CartoPy Installation
-        run: |
-          source ~/.bashrc
-          conda activate myenv
-          python -m pip show cartopy
-          python -c "import cartopy; print(cartopy.__version__)"
-          which python
-          python --version
-          conda list
-        shell: bash -l {0}
-        
       - name: Run plotting script
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
