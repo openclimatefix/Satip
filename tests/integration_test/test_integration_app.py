@@ -1,5 +1,5 @@
 """
-Tests for the consumer app
+Integration Tests for the consumer app
 """
 import datetime
 import glob
