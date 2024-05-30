@@ -8,9 +8,6 @@ from typing import Optional
 import click
 import pandas as pd
 import structlog
-from nowcasting_datamodel.connection import DatabaseConnection
-from nowcasting_datamodel.models.base import Base_Forecast
-from nowcasting_datamodel.read.read import update_latest_input_data_last_updated
 
 import satip
 from satip import utils
@@ -244,12 +241,6 @@ def run(
             # Collate files into single NetCDF file
             utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
             log.debug("Collated files", memory=utils.get_memory())
-
-            # 4. update table to show when this data has been pulled
-            if db_url is not None:
-                connection = DatabaseConnection(url=db_url, base=Base_Forecast)
-                with connection.get_session() as session:
-                    update_latest_input_data_last_updated(session=session, component="satellite")
 
         log.info("Finished Running application", memory=utils.get_memory())
 
