@@ -18,7 +18,6 @@ import subprocess
 import tempfile
 import warnings
 from pathlib import Path
-from stat import S_ISDIR
 from typing import Any, Tuple
 from zipfile import ZipFile
 
@@ -44,6 +43,7 @@ from satip.constants import (
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
+
 
 LATEST_DIR_NAME = "latest"
 log = structlog.get_logger()
@@ -98,16 +98,10 @@ def check_path_is_exists_and_directory(path) -> bool:
     Returns:
         Bool whether the path exists AND is a directory
     """
-    try:
-        mode = os.lstat(path).st_mode
-    except Exception as e:
-        log.error(f"Error caught during run: {e}", exc_info=True)
-    mode = os.lstat(path).st_mode
-    if S_ISDIR(mode):
-        return True
-    else:
-        log.error("Provided path is a file")
-        raise SystemExit(0)
+
+    fs = fsspec.open(path).fs
+    assert fs.exists(path)
+    assert fs.isdir(path)
 
 
 def format_dt_str(datetime_string):
