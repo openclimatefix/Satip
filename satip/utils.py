@@ -18,7 +18,6 @@ import subprocess
 import tempfile
 import warnings
 from pathlib import Path
-from stat import S_ISDIR
 from typing import Any, Tuple
 from zipfile import ZipFile
 
@@ -98,16 +97,10 @@ def check_path_is_exists_and_directory(path) -> bool:
     Returns:
         Bool whether the path exists AND is a directory
     """
-    try:
-        mode = os.lstat(path).st_mode
-    except Exception as e:
-        log.error(f"Error caught during run: {e}", exc_info=True)
-    mode = os.lstat(path).st_mode
-    if S_ISDIR(mode):
-        return True
-    else:
-        log.error("Provided path is a file")
-        raise SystemExit(0)
+
+    fs = fsspec.open(path).fs
+    assert fs.exists(path)
+    assert fs.isdir(path)
 
 
 def format_dt_str(datetime_string):
