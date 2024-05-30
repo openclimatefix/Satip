@@ -44,7 +44,6 @@ from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
 
-
 LATEST_DIR_NAME = "latest"
 log = structlog.get_logger()
 
