@@ -87,7 +87,7 @@ python-geotiepoints==1.7.2
 pytz==2024.1
 PyYAML==6.0.1
 rasterio==1.3.9
-requests==2.32.0
+requests==2.31.0
 rioxarray==0.15.1
 s3fs==2024.2.0
 satpy==0.47.0
