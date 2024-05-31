@@ -131,10 +131,8 @@ def run(
             if utils.check_path_is_exists_and_directory(save_dir):
                 log.info("save_dir directory exists, continuing execution")
 
-        if save_dir_native != "./raw":
-            log.info("Checking if save_dir_native directory exists")
-            if utils.check_path_is_exists_and_directory(save_dir_native):
-                log.info("save_dir_native directory exists, continuing execution")
+        # dont check if save_dir_native exists, as it is created by the download manager
+        # and only used if the data tailor service is used
 
         log.info(
             f'Running application and saving to "{save_dir}"',
