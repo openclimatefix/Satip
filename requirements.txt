@@ -101,7 +101,7 @@ SQLAlchemy==2.0.28
 structlog==24.1.0
 tblib==3.0.0
 toolz==0.12.1
-tornado==6.4
+tornado==6.4.1
 tqdm==4.66.2
 trollimage==1.23.1
 trollsift==0.5.1
