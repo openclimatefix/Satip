@@ -1,3 +1,5 @@
+[lint]
+
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 select = ["E", "F", "D", "I"]
 ignore = ["D200","D202","D210","D212","D415","D105",]
