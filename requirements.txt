@@ -107,7 +107,7 @@ trollimage==1.23.1
 trollsift==0.5.1
 typing_extensions==4.10.0
 tzdata==2024.1
-urllib3==1.26.18
+urllib3==1.26.19
 wheel==0.42.0
 wrapt==1.16.0
 xarray==2024.2.0
