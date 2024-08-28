@@ -40,6 +40,7 @@ from satip.constants import (
     SCALER_MAXS,
     SCALER_MINS,
 )
+from satip.filenames import get_datetime_from_filename
 from satip.geospatial import GEOGRAPHIC_BOUNDS, lat_lon_to_osgb
 from satip.scale_to_zero_to_one import ScaleToZeroToOne, compress_mask
 from satip.serialize import serialize_attrs
@@ -780,13 +781,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     for date in finished_files:
         if "latest.zarr" in date or "latest_15.zarr" in date or "tmp" in date:
             continue
-        finished_datetimes.append(
-            pd.to_datetime(
-                date.replace("iodc_", "").replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
-                format="%Y%m%d%H%M",
-                errors="ignore",
-            )
-        )
+        finished_datetimes.append(get_datetime_from_filename(filename=date))
     if len(finished_datetimes) > 0:
         log.debug(f"The already downloaded finished datetime are {finished_datetimes}")
     else:
@@ -853,24 +848,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         log.debug(f"Looking at file {date}")
         if "latest.zarr" in date or "tmp" in date:
             continue
-        if "hrv" in date:
-            file_time = pd.to_datetime(
-                date.replace("iodc_", "")
-                .replace("15_", "")
-                .split(".zarr.zip")[0]
-                .split("/")[-1]
-                .split("_")[-1],
-                format="%Y%m%d%H%M",
-                errors="ignore",
-                utc=True,
-            )
-        else:
-            file_time = pd.to_datetime(
-                date.replace("iodc_", "").replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
-                format="%Y%m%d%H%M",
-                errors="ignore",
-                utc=True,
-            )
+
+        file_time = get_datetime_from_filename(date)
+
         if file_time > history_time:
             log.debug("Moving file into {LATEST_DIR_NAME} folder")
             # Move HRV and non-HRV to new place
@@ -891,20 +871,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         log.debug(f"Looking at file {date}")
         if "latest.zarr" in date or "latest_15.zarr" in date or "tmp" in date:
             continue
-        if "hrv" in date:
-            file_time = pd.to_datetime(
-                date.replace("15_", "").split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
-                format="%Y%m%d%H%M",
-                errors="ignore",
-                utc=True,
-            )
-        else:
-            file_time = pd.to_datetime(
-                date.replace("iodc_", "").replace("15_", "").split(".zarr.zip")[0].split("/")[-1],
-                format="%Y%m%d%H%M",
-                errors="ignore",
-                utc=True,
-            )
+
+        file_time = get_datetime_from_filename(date)
+
         if file_time < history_time:
             log.debug("Moving file out of {LATEST_DIR_NAME} folder")
             # Move HRV and non-HRV to new place

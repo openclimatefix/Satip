@@ -127,7 +127,7 @@ def run_click(
 ):
     """ See below for function description.
 
-    There is slight duplicate, but testing adn debugging is easier with this setup.
+    There is slight duplicate, but testing and debugging is easier with this setup.
     """
     run(
         api_key,

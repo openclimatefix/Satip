@@ -26,6 +26,7 @@ def test_save_to_netcdf():  # noqa 103
             save_dir=tmpdirname,
             use_rescaler=False,
             start_time=datetime.datetime.utcnow().isoformat(),
+            history="30 minutes",
             maximum_n_datasets=1)
 
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
@@ -66,6 +67,7 @@ def test_save_to_netcdf_now():  # noqa 103
             api_secret=user_secret,
             save_dir=tmpdirname,
             use_rescaler=False,
+            history="30 minutes",
             maximum_n_datasets=1)
 
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
@@ -79,8 +81,8 @@ def test_cleanup_now():  # noqa 103
 
         run(api_key=user_key,
             api_secret=user_secret,
-            save_dir=tmpdirname
-            ,use_rescaler=False,
+            save_dir=tmpdirname,
+            use_rescaler=False,
             cleanup=True,
             maximum_n_datasets=1)
 
@@ -128,6 +130,7 @@ def test_save_to_netcdf_rescaled():  # noqa 103
             save_dir=tmpdirname,
             use_rescaler=True,
             start_time=datetime.datetime.utcnow().isoformat(),
+            history="30 minutes",
             maximum_n_datasets=1)
 
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
@@ -145,6 +148,7 @@ def test_use_backup():  # noqa 103
             use_rescaler=False,
             start_time=datetime.datetime.utcnow().isoformat(),
             maximum_n_datasets=1,
+            history="30 minutes",
             use_hr_serviri=True)
 
         native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
