@@ -152,9 +152,7 @@ def load_native_to_dataarray(
     Returns:
         Returns Xarray DataArray if script worked, else returns None
     """
-    hrv_scaler = ScaleToZeroToOne(
-        variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN
-    )
+    hrv_scaler = ScaleToZeroToOne(variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN)
     scaler = ScaleToZeroToOne(
         mins=SCALER_MINS,
         maxs=SCALER_MAXS,
@@ -177,9 +175,7 @@ def load_native_to_dataarray(
             "HRV",
         ]
     )
-    scene.load(
-        NON_HRV_BANDS
-    )
+    scene.load(NON_HRV_BANDS)
     # HRV covers a smaller portion of the disk than other bands, so use that as the bounds
     # Selected bounds empirically for have no NaN values from off disk image,
     # and are covering the UK + a bit
@@ -332,7 +328,7 @@ def do_v15_rescaling(
     dataarray = dataarray.reindex({"variable": variable_order}).transpose(
         "time", "y_geostationary", "x_geostationary", "variable"
     )
-    upper_bound = (2**10) - 1
+    upper_bound = (2 ** 10) - 1
     new_max = maxs - mins
 
     dataarray -= mins
@@ -342,12 +338,9 @@ def do_v15_rescaling(
     return dataarray
 
 
-def get_dataset_from_scene(filename: str,
-                           hrv_scaler,
-                           use_rescaler: bool,
-                           save_dir,
-                           use_hr_serviri,
-                           use_iodc=False):
+def get_dataset_from_scene(
+    filename: str, hrv_scaler, use_rescaler: bool, save_dir, use_hr_serviri, use_iodc=False
+):
     """
     Returns the Xarray dataset from the filename
     """
@@ -450,7 +443,10 @@ def get_nonhrv_dataset_from_scene(
         scene = load_native_from_zip(filename)
     else:
         scene = load_hrit_from_zip(filename, sections=list(range(6, 9)))
-    scene.load(NON_HRV_BANDS, generate=False,)
+    scene.load(
+        NON_HRV_BANDS,
+        generate=False,
+    )
     log.debug(f"Loaded non-hrv file: {filename}", memory=get_memory())
     dataarray: xr.DataArray = convert_scene_to_dataarray(
         scene, band="IR_016", area="UK", calculate_osgb=True
@@ -543,9 +539,7 @@ def save_native_to_zarr(
         maxs=SCALER_MAXS,
         variable_order=NON_HRV_BANDS,
     )
-    hrv_scaler = ScaleToZeroToOne(
-        variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN
-    )
+    hrv_scaler = ScaleToZeroToOne(variable_order=["HRV"], maxs=HRV_SCALER_MAX, mins=HRV_SCALER_MIN)
     for f in list_of_native_files:
         log.debug(f"Processing {f}", memory=get_memory())
         if use_iodc:
@@ -861,7 +855,11 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             continue
         if "hrv" in date:
             file_time = pd.to_datetime(
-                date.replace("iodc_", "").replace("15_", "").split(".zarr.zip")[0].split("/")[-1].split("_")[-1],
+                date.replace("iodc_", "")
+                .replace("15_", "")
+                .split(".zarr.zip")[0]
+                .split("/")[-1]
+                .split("_")[-1],
                 format="%Y%m%d%H%M",
                 errors="ignore",
                 utc=True,
@@ -913,7 +911,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
             filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
 
 
-def check_both_final_files_exists(save_dir: str, use_hr_serviri: bool = False, use_iodc: bool = False):
+def check_both_final_files_exists(
+    save_dir: str, use_hr_serviri: bool = False, use_iodc: bool = False
+):
     """Check that both final files exists"""
     latest_dir = get_latest_subdir_path(save_dir)
     hrv_filename = f"{latest_dir}/hrv_latest{'_15' if use_hr_serviri else ''}.zarr.zip"
@@ -963,7 +963,7 @@ def add_backend_to_filenames(files, backend):
         raise ValueError(f"Unsupported backend: {backend}")
 
 
-def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_iodc: bool=False):
+def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_iodc: bool = False):
     """
     Convert individual files into single latest file for HRV and non-HRV
 
@@ -1029,10 +1029,13 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
     filename = f"{latest_dir}/latest{'_15' if use_hr_serviri else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating non-HRV files {filename}")
-    nonhrv_files = list(filesystem.glob(f"{latest_dir}/{'15_' if use_hr_serviri else ''}2*.zarr.zip"))
+    nonhrv_files = list(
+        filesystem.glob(f"{latest_dir}/{'15_' if use_hr_serviri else ''}2*.zarr.zip")
+    )
 
     if "s3" in save_dir:
-        nonhrv_files = add_backend_to_filenames(nonhrv_files, backend="s3")  # backend prefix for nonhrv
+        nonhrv_files = add_backend_to_filenames(nonhrv_files, backend="s3")
+        # backend prefix for nonhrv
 
     log.debug(nonhrv_files)
     o_dataset = (

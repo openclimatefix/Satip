@@ -319,12 +319,16 @@ def run(
                     save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
                 )
 
-        if not utils.check_both_final_files_exists(save_dir=save_dir, use_hr_serviri=use_hr_serviri, use_iodc=use_iodc):
+        if not utils.check_both_final_files_exists(save_dir=save_dir,
+                                                   use_hr_serviri=use_hr_serviri,
+                                                   use_iodc=use_iodc):
             updated_data = True
 
         if updated_data:
             # Collate files into single NetCDF file
-            utils.collate_files_into_latest(save_dir=save_dir, use_hr_serviri=use_hr_serviri, use_iodc=use_iodc)
+            utils.collate_files_into_latest(save_dir=save_dir,
+                                            use_hr_serviri=use_hr_serviri,
+                                            use_iodc=use_iodc)
             log.debug("Collated files", memory=utils.get_memory())
 
         log.info("Finished Running application", memory=utils.get_memory())
