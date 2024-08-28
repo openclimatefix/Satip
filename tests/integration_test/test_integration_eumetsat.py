@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 import pandas as pd
 
 from satip.eumetsat import EUMETSATDownloadManager, eumetsat_filename_to_datetime
+from satip.download import SEVIRI_IODC_ID
 
 
 def test_download_manager_setup():
@@ -107,7 +108,7 @@ def test_data_download_iodc():
         datasets = download_manager.identify_available_datasets(
             start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
             end_date=end_date.strftime("%Y-%m-%d-%H:%M:%S"),
-            product_id="EO:EUM:DAT:MSG:HRSEVIRI-IODC",
+            product_id=SEVIRI_IODC_ID,
         )
 
         assert len(datasets) > 0

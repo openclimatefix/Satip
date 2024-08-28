@@ -111,13 +111,46 @@ log = structlog.stdlib.get_logger()
     help="An option to use the IODC data instead of the RSS data.",
     type=click.BOOL,
 )
-def run(
+def run_click(
     api_key,
     api_secret,
     save_dir,
     save_dir_native,
     history,
     db_url: Optional[str] = None,
+    use_rescaler: bool = False,
+    start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
+    cleanup: bool = False,
+    use_hr_serviri: bool = False,
+    maximum_n_datasets: int = -1,
+    use_iodc: bool = False,
+):
+    """ See below for function description.
+
+    There is slight duplicate, but testing adn debugging is easier with this setup.
+    """
+    run(
+        api_key,
+        api_secret,
+        save_dir,
+        save_dir_native,
+        history,
+        use_rescaler=use_rescaler,
+        start_time=start_time,
+        cleanup=cleanup,
+        use_hr_serviri=use_hr_serviri,
+        maximum_n_datasets=maximum_n_datasets,
+        use_iodc=use_iodc
+    )
+
+
+
+def run(
+    api_key,
+    api_secret,
+    save_dir = './',
+    save_dir_native = "./raw",
+    history="60 minutes",
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
@@ -133,7 +166,6 @@ def run(
         save_dir: Save directory
         save_dir_native: where the native files are saved
         history: History time
-        db_url: URL of database
         use_rescaler: Rescale data to between 0 and 1 or not
         start_time: Start time in UTC ISO Format
         cleanup: Cleanup Data Tailor
@@ -247,7 +279,7 @@ def run(
                     for dset in datasets:
                         dset = utils.filter_dataset_ids_on_current_files([dset], save_dir)
                         if len(dset) > 0:
-                            # not we might have to change this to the data taylor
+                            # note we might have to change this to the data taylor
                             download_manager.download_datasets(
                                 dset,
                                 product_id=SEVIRI_IODC_ID,
@@ -264,9 +296,10 @@ def run(
                             )
 
                 # 2. Load nat files to one Xarray Dataset
-                if use_hr_serviri or use_iodc:
+                if use_hr_serviri:
                     native_files = list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
                 else:
+                    # RSS or IODC
                     native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
 
                 log.debug(
@@ -278,19 +311,20 @@ def run(
                     native_files,
                     save_dir=save_dir,
                     use_rescaler=use_rescaler,
-                    using_backup=use_hr_serviri,
+                    use_hr_serviri=use_hr_serviri,
+                    use_iodc=use_iodc,
                 )
                 # Move around files into and out of latest
                 utils.move_older_files_to_different_location(
                     save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
                 )
 
-        if not utils.check_both_final_files_exists(save_dir=save_dir, using_backup=use_hr_serviri or use_iodc):
+        if not utils.check_both_final_files_exists(save_dir=save_dir, use_hr_serviri=use_hr_serviri, use_iodc=use_iodc):
             updated_data = True
 
         if updated_data:
             # Collate files into single NetCDF file
-            utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_hr_serviri or use_iodc)
+            utils.collate_files_into_latest(save_dir=save_dir, use_hr_serviri=use_hr_serviri, use_iodc=use_iodc)
             log.debug("Collated files", memory=utils.get_memory())
 
         log.info("Finished Running application", memory=utils.get_memory())
@@ -301,4 +335,4 @@ def run(
 
 
 if __name__ == "__main__":
-    run()
+    run_click()
