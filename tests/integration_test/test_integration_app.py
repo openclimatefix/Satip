@@ -43,6 +43,36 @@ def test_save_to_netcdf():  # noqa 103
         assert len(native_files) > 0
 
 
+@freeze_time("2024-06-28 12:00:00")  # Date with IODC
+def test_save_to_netcdf():  # noqa 103
+    user_key = os.environ.get("EUMETSAT_USER_KEY")
+    user_secret = os.environ.get("EUMETSAT_USER_SECRET")
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        response = runner.invoke(
+            run,
+            [
+                "--api-key",
+                user_key,
+                "--api-secret",
+                user_secret,
+                "--save-dir",
+                tmpdirname,
+                "--use-rescaler",
+                False,
+                "--start-time",
+                datetime.datetime.utcnow().isoformat(),
+                "--maximum-n-datasets",
+                1,
+                "--use-iodc",
+                1
+            ],
+            catch_exceptions=False,
+        )
+        assert response.exit_code == 0, response.exception
+        native_files = list(glob.glob(os.path.join(tmpdirname, "*.zarr.zip")))
+        assert len(native_files) > 0
+
+
 def test_save_to_netcdf_now():  # noqa 103
     user_key = os.environ.get("EUMETSAT_USER_KEY")
     user_secret = os.environ.get("EUMETSAT_USER_SECRET")
@@ -169,7 +199,7 @@ def test_use_backup():  # noqa 103
                 False,
                 "--start-time",
                 datetime.datetime.utcnow().isoformat(),
-                "--use-backup",
+                "--use-hr-serviri",
                 True,
                 "--maximum-n-datasets",
                 1,

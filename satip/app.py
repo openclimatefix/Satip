@@ -1,4 +1,13 @@
-""" Application that pulls data from the EUMETSAT API and saves to a zarr file"""
+""" Application that pulls data from the EUMETSAT API and saves to a zarr file
+
+We now support
+- The 0 deg HR-SERVIRI data - https://masif.eumetsat.int/ossi/webpages/level3.html?ossi_level3_filename=seviri_0deg_hr.html&ossi_level2_filename=seviri_0deg.html
+- The 9.5 deg RSS data - https://masif.eumetsat.int/ossi/webpages/level2.html?ossi_level2_filename=seviri_rss.html
+- The 45.5 deg IODC data - https://masif.eumetsat.int/ossi/webpages/level2.html?ossi_level2_filename=seviri_iodc.html
+
+By-default we pull the RSS data, if not available we try the HR-SERVIRI.
+We have an option to just use the IODC data.
+"""
 import glob
 import os
 import random
@@ -12,6 +21,7 @@ import structlog
 import satip
 from satip import utils
 from satip.eumetsat import EUMETSATDownloadManager
+from satip.download import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
 
 log = structlog.stdlib.get_logger()
 
@@ -81,8 +91,8 @@ log = structlog.stdlib.get_logger()
     type=click.BOOL,
 )
 @click.option(
-    "--use-backup",
-    envvar="USE_BACKUP",
+    "--use-hr-serviri",
+    envvar="USE_HR_SERVIRI",
     default=False,
     help="Option not to use the RSS imaginary. If True, use the 15 mins data. ",
     type=click.BOOL,
@@ -94,6 +104,13 @@ log = structlog.stdlib.get_logger()
     help="Set the maximum number of dataset to load, default gets them all",
     type=click.INT,
 )
+@click.option(
+    "--use-iodc",
+    envvar="USE_IODC",
+    default=False,
+    help="An option to use the IODC data instead of the RSS data.",
+    type=click.BOOL,
+)
 def run(
     api_key,
     api_secret,
@@ -104,8 +121,9 @@ def run(
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
-    use_backup: bool = False,
+    use_hr_serviri: bool = False,
     maximum_n_datasets: int = -1,
+    use_iodc: bool = False,
 ):
     """Run main application
 
@@ -119,8 +137,9 @@ def run(
         use_rescaler: Rescale data to between 0 and 1 or not
         start_time: Start time in UTC ISO Format
         cleanup: Cleanup Data Tailor
-        use_backup: use 15 min data, not RSS
+        use_hr_serviri: use 15 min data, not RSS
         maximum_n_datasets: Set the maximum number of dataset to load, default gets them all
+        use_iodc: Use IODC data instead
     """
 
     utils.setupLogging()
@@ -141,37 +160,60 @@ def run(
         )
         # 1. Get data from API, download native files
         with tempfile.TemporaryDirectory() as tmpdir:
-            download_manager = EUMETSATDownloadManager(
-                user_key=api_key,
-                user_secret=api_secret,
-                data_dir=tmpdir,
-                native_file_dir=save_dir_native,
-            )
-            if cleanup:
-                log.debug("Running Data Tailor Cleanup", memory=utils.get_memory())
-                download_manager.cleanup_datatailor()
-                return
+
             start_date = pd.Timestamp(start_time, tz="UTC") - pd.Timedelta(history)
             log.info(
                 f"Fetching datasets for {start_date} - {start_time}", memory=utils.get_memory()
             )
-            datasets = download_manager.identify_available_datasets(
-                start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
-                end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
-            )
-            # Check if any RSS imagery is available, if not, fall back to 15 minutely data
-            if (len(datasets) == 0) or use_backup:
-                log.warn(
-                    f"No RSS Imagery available or using backup ({use_backup=}), "
-                    f"falling back to 15-minutely data",
+
+            if not use_iodc:
+                # if not iodc, try rss, then get hr_serviri data if not rss
+                download_manager = EUMETSATDownloadManager(
+                    user_key=api_key,
+                    user_secret=api_secret,
+                    data_dir=tmpdir,
+                    native_file_dir=save_dir_native,
+                )
+                if cleanup:
+                    log.debug("Running Data Tailor Cleanup", memory=utils.get_memory())
+                    download_manager.cleanup_datatailor()
+                    return
+
+                datasets = download_manager.identify_available_datasets(
+                    start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
+                )
+                # Check if any RSS imagery is available, if not, fall back to 15 minutely data
+                if (len(datasets) == 0) or use_hr_serviri:
+                    log.warn(
+                        f"No RSS Imagery available or using backup ({use_hr_serviri=}), "
+                        f"falling back to 15-minutely data",
+                        memory=utils.get_memory(),
+                    )
+                    datasets = download_manager.identify_available_datasets(
+                        start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+                        end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
+                        product_id=SEVIRI_ID,
+                    )
+                    use_hr_serviri = True
+            else:
+                # get the IODC data
+                log.info(
+                    f"Fetching IODC datasets for {start_date} - {start_time}",
                     memory=utils.get_memory(),
+                )
+                download_manager = EUMETSATDownloadManager(
+                    user_key=api_key,
+                    user_secret=api_secret,
+                    data_dir=tmpdir,
+                    native_file_dir=save_dir_native,
                 )
                 datasets = download_manager.identify_available_datasets(
                     start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
                     end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
-                    product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                    product_id=SEVIRI_IODC_ID,
                 )
-                use_backup = True
+
             # Filter out ones that already exist
             # if both final files don't exist, then we should make sure we run the whole process
             datasets = utils.filter_dataset_ids_on_current_files(datasets, save_dir)
@@ -191,15 +233,26 @@ def run(
                     datasets = datasets[0:maximum_n_datasets]
                 random.shuffle(datasets)  # Shuffle so subsequent runs might download different data
                 updated_data = True
-                if use_backup:
+                if use_hr_serviri:
                     # Check before downloading each tailored dataset, as it can take awhile
                     for dset in datasets:
                         dset = utils.filter_dataset_ids_on_current_files([dset], save_dir)
                         if len(dset) > 0:
                             download_manager.download_tailored_datasets(
                                 dset,
-                                product_id="EO:EUM:DAT:MSG:HRSEVIRI",
+                                product_id=SEVIRI_ID,
                             )
+                elif use_iodc:
+                    # Check before downloading each dataset, as it can take a while
+                    for dset in datasets:
+                        dset = utils.filter_dataset_ids_on_current_files([dset], save_dir)
+                        if len(dset) > 0:
+                            # not we might have to change this to the data taylor
+                            download_manager.download_datasets(
+                                dset,
+                                product_id=SEVIRI_IODC_ID,
+                            )
+
                 else:
                     # Check before downloading each tailored dataset, as it can take awhile
                     for dset in datasets:
@@ -207,15 +260,15 @@ def run(
                         if len(dset) > 0:
                             download_manager.download_datasets(
                                 dset,
-                                product_id="EO:EUM:DAT:MSG:MSG15-RSS",
+                                product_id=RSS_ID,
                             )
 
                 # 2. Load nat files to one Xarray Dataset
-                native_files = (
-                    list(glob.glob(os.path.join(tmpdir, "*.nat")))
-                    if not use_backup
-                    else list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
-                )
+                if use_hr_serviri or use_iodc:
+                    native_files = list(glob.glob(os.path.join(tmpdir, "*HRSEVIRI*")))
+                else:
+                    native_files = list(glob.glob(os.path.join(tmpdir, "*.nat")))
+
                 log.debug(
                     "Saving native files to Zarr: " + native_files.__str__(),
                     memory=utils.get_memory(),
@@ -225,19 +278,19 @@ def run(
                     native_files,
                     save_dir=save_dir,
                     use_rescaler=use_rescaler,
-                    using_backup=use_backup,
+                    using_backup=use_hr_serviri,
                 )
                 # Move around files into and out of latest
                 utils.move_older_files_to_different_location(
                     save_dir=save_dir, history_time=(start_date - pd.Timedelta("30 min"))
                 )
 
-        if not utils.check_both_final_files_exists(save_dir=save_dir, using_backup=use_backup):
+        if not utils.check_both_final_files_exists(save_dir=save_dir, using_backup=use_hr_serviri or use_iodc):
             updated_data = True
 
         if updated_data:
             # Collate files into single NetCDF file
-            utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_backup)
+            utils.collate_files_into_latest(save_dir=save_dir, using_backup=use_hr_serviri or use_iodc)
             log.debug("Collated files", memory=utils.get_memory())
 
         log.info("Finished Running application", memory=utils.get_memory())
