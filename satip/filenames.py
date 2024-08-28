@@ -1,6 +1,7 @@
 """ Function to do with filenames """
 import pandas as pd
 
+
 def get_datetime_from_filename(filename: str) -> pd.Timestamp:
     """Extract time from filename
 
