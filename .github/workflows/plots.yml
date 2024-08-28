@@ -41,7 +41,7 @@ jobs:
           EUMETSAT_USER_KEY: ${{ secrets.EUMETSAT_USER_KEY }}
           EUMETSAT_USER_SECRET: ${{ secrets.EUMETSAT_USER_SECRET }}
         run: |
-          python scripts/generate_test_plots.py
+          $CONDA/bin/python scripts/generate_test_plots.py
           cml-publish cloud_mask_UK.png --md >> report.md
           cml-publish rss_UK.png --md >> report.md
           cml-publish hrv_UK.png --md >> report.md
