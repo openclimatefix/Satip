@@ -117,7 +117,7 @@ def download_eumetsat_data(
         products_to_use.append(RSS_ID)
     if "cloud" in product:
         products_to_use.append(CLOUD_ID)
-    if ("seviri" in product) and not ('iodc' in product):
+    if ("seviri" in product) and 'iodc' not in product:
         products_to_use.append(SEVIRI_ID)
     if "seviri_iodc" in product:
         products_to_use.append(SEVIRI_IODC_ID)
