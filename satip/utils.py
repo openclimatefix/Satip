@@ -970,6 +970,7 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
     Args:
         save_dir: Directory where data is being saved
         use_hr_serviri: Whether the input data is made up of the 15 minutely backup data or not
+        use_iodc: Whether to use the IODC data or not
     """
     filesystem = fsspec.open(save_dir).fs
     latest_dir = get_latest_subdir_path(save_dir)
