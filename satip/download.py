@@ -53,7 +53,7 @@ CLOUD_FILESIZE_MB = 3.445185
 RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
 CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
 SEVIRI_ID = "EO:EUM:DAT:MSG:HRSEVIRI"
-
+SEVIRI_IODC_ID = "EO:EUM:DAT:MSG:HRSEVIRI-IODC"
 
 def download_eumetsat_data(
     download_directory,
@@ -117,8 +117,10 @@ def download_eumetsat_data(
         products_to_use.append(RSS_ID)
     if "cloud" in product:
         products_to_use.append(CLOUD_ID)
-    if "seviri" in product:
+    if ("seviri" in product) and 'iodc' not in product:
         products_to_use.append(SEVIRI_ID)
+    if "seviri_iodc" in product:
+        products_to_use.append(SEVIRI_IODC_ID)
 
     for product_id in products_to_use:
         # Do this to clear out any partially downloaded days
