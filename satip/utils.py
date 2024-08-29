@@ -451,6 +451,7 @@ def get_nonhrv_dataset_from_scene(
 
     log.debug(f"Loaded non-hrv file: {filename}", memory=get_memory())
     if not use_iodc:
+        # Note band isn't really used, but its just needs to be a valid band
         dataarray: xr.DataArray = convert_scene_to_dataarray(
             scene, band="IR_016", area="UK", calculate_osgb=True
         )
