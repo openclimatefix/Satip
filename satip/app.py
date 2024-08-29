@@ -198,8 +198,26 @@ def run(
                 f"Fetching datasets for {start_date} - {start_time}", memory=utils.get_memory()
             )
 
-            if not use_iodc:
-                # if not iodc, try rss, then get hr_serviri data if not rss
+            if use_iodc:
+                # get the IODC data
+                log.info(
+                    f"Fetching IODC datasets for {start_date} - {start_time}",
+                    memory=utils.get_memory(),
+                )
+                download_manager = EUMETSATDownloadManager(
+                    user_key=api_key,
+                    user_secret=api_secret,
+                    data_dir=tmpdir,
+                    native_file_dir=save_dir_native,
+                )
+                datasets = download_manager.identify_available_datasets(
+                    start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
+                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
+                    product_id=SEVIRI_IODC_ID,
+                )
+
+            else:
+                # try rss, then get hr_serviri data if not rss
                 download_manager = EUMETSATDownloadManager(
                     user_key=api_key,
                     user_secret=api_secret,
@@ -228,23 +246,6 @@ def run(
                         product_id=SEVIRI_ID,
                     )
                     use_hr_serviri = True
-            else:
-                # get the IODC data
-                log.info(
-                    f"Fetching IODC datasets for {start_date} - {start_time}",
-                    memory=utils.get_memory(),
-                )
-                download_manager = EUMETSATDownloadManager(
-                    user_key=api_key,
-                    user_secret=api_secret,
-                    data_dir=tmpdir,
-                    native_file_dir=save_dir_native,
-                )
-                datasets = download_manager.identify_available_datasets(
-                    start_date=start_date.strftime("%Y-%m-%d-%H:%M:%S"),
-                    end_date=pd.Timestamp(start_time, tz="UTC").strftime("%Y-%m-%d-%H:%M:%S"),
-                    product_id=SEVIRI_IODC_ID,
-                )
 
             # Filter out ones that already exist
             # if both final files don't exist, then we should make sure we run the whole process
