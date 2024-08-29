@@ -559,7 +559,7 @@ def save_native_to_zarr(
     for f in list_of_native_files:
         log.debug(f"Processing {f}", memory=get_memory())
         if use_iodc:
-            get_nonhrv_dataset_from_scene(f, hrv_scaler, False, save_dir, False, use_iodc=use_iodc)
+            get_nonhrv_dataset_from_scene(f, scaler, use_rescaler, save_dir, False, use_iodc=use_iodc)
         elif "EPCT" in f:
             log.debug(f"Processing HRIT file {f}", memory=get_memory())
             if "HRV" in f:
