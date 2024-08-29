@@ -93,6 +93,8 @@ The live service uses `app.py` as the entrypoint for running the live data downl
 
 `--use-rescaler` or `USE_RESCALER` tells whether to rescale the satellite data to between 0 and 1 or not when saving to disk. Primarily used as backwards compatibility for the current production models, all new training and production Zarrs should use the rescaled data.
 
+`--use-iodc` or `USE_IODC` is an option to get the IODC satellite data
+
 ## Testing
 
 To run tests, simply run ```pytest .``` from the root of the repository. To generate the test plots, run ```python scripts/generate_test_plots.py```.
