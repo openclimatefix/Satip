@@ -435,7 +435,7 @@ def data_quality_filter(ds: xr.Dataset, threshold_fraction: float = 0.9) -> bool
 
 
 def get_nonhrv_dataset_from_scene(
-    filename: str, scaler, use_rescaler: bool, save_dir, using_backup
+    filename: str, scaler, use_rescaler: bool, save_dir, use_hr_serviri, use_iodc:bool=False
 ):
     """
     Returns the Xarray dataset from the filename
@@ -448,21 +448,29 @@ def get_nonhrv_dataset_from_scene(
         NON_HRV_BANDS,
         generate=False,
     )
+
     log.debug(f"Loaded non-hrv file: {filename}", memory=get_memory())
-    dataarray: xr.DataArray = convert_scene_to_dataarray(
-        scene, band="IR_016", area="UK", calculate_osgb=True
-    )
+    if not use_iodc:
+        dataarray: xr.DataArray = convert_scene_to_dataarray(
+            scene, band="IR_016", area="UK", calculate_osgb=True
+        )
+    else:
+        dataarray: xr.DataArray = convert_scene_to_dataarray(
+            scene, band="IR_016", area="India", calculate_osgb=False
+        )
+
     log.debug(f"Converted non-HRV file {filename} to dataarray", memory=get_memory())
     del scene
     attrs = serialize_attrs(dataarray.attrs)
-    if use_rescaler:
-        dataarray = scaler.rescale(dataarray)
-    else:
-        dataarray = do_v15_rescaling(
-            dataarray,
-            mins=SCALER_MINS,
-            maxs=SCALER_MAXS,
-            variable_order=NON_HRV_BANDS,
+    if not use_iodc:
+        if use_rescaler:
+            dataarray = scaler.rescale(dataarray)
+        else:
+            dataarray = do_v15_rescaling(
+                dataarray,
+                mins=SCALER_MINS,
+                maxs=SCALER_MAXS,
+                variable_order=NON_HRV_BANDS,
         )
     dataarray = dataarray.transpose("time", "y_geostationary", "x_geostationary", "variable")
     dataarray = dataarray.chunk((1, 256, 256, 1))
@@ -478,7 +486,13 @@ def get_nonhrv_dataset_from_scene(
         gc.collect()
         return
 
-    save_file = os.path.join(save_dir, f"{'15_' if using_backup else ''}{now_time}.zarr.zip")
+    filename = f"hrv_{now_time}.zarr.zip"
+    if use_hr_serviri:
+        filename = f"15_{filename}"
+    if use_iodc:
+        filename = f"iodc_{now_time}.zarr.zip"
+
+    save_file = os.path.join(save_dir, filename)
     log.debug(f"Saving non-HRV netcdf in {save_file}", memory=get_memory())
     save_to_zarr_to_backend(dataset, save_file)
     del dataset
@@ -544,7 +558,7 @@ def save_native_to_zarr(
     for f in list_of_native_files:
         log.debug(f"Processing {f}", memory=get_memory())
         if use_iodc:
-            get_dataset_from_scene(f, hrv_scaler, False, save_dir, False, use_iodc=use_iodc)
+            get_nonhrv_dataset_from_scene(f, hrv_scaler, False, save_dir, False, use_iodc=use_iodc)
         elif "EPCT" in f:
             log.debug(f"Processing HRIT file {f}", memory=get_memory())
             if "HRV" in f:
