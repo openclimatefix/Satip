@@ -61,17 +61,7 @@ In order to contribute to development or just test-run some scripts, you will ne
 
 ### Downloading EUMETSAT Data
 
-The following command will download the last 2 hours of RSS imagery into NetCDF files at the specified location
-
-```bash
-python satip/app.py --api-key=<EUMETSAT API Key> --api-secret=<EUMETSAT API Secret> --save-dir="/path/to/saving/files/" --history="2 hours"
-```
-
-To download more historical data, the command below will download the native files, compress with bz2, and save into a subdirectory.
-
-```bash
-python satip/get_raw_eumetsat_data.py --user-key=<EUMETSAT API Key> --user-secret=<EUMETSAT API Secret>
-```
+We have moved this to [here](https://github.com/openclimatefix/dagster-dags/blob/main/containers/sat/download_process_sat.py)
 
 ### Converting Native files to Zarr
 `scripts/convert_native_to_zarr.py` converts EUMETSAT `.nat` files to Zarr datasets, using very mild lossy [JPEG-XL](https://en.wikipedia.org/wiki/JPEG_XL) compression. (JPEG-XL is the "new kid on the block" of image compression algorithms). JPEG-XL makes the files about a quarter the size of the equivalent `bz2` compressed files, whilst the images are visually indistinguishable. JPEG-XL cannot represent NaNs so NaNs. JPEG-XL understands float32 values in the range `[0, 1]`. NaNs are encoded as the value `0.025`. All "real" values are in the range `[0.075, 1]`. We leave a gap between "NaNs" and "real values" because there is very slight "ringing" around areas of constant value (see [this comment for more details](https://github.com/openclimatefix/Satip/issues/67#issuecomment-1036456502)). Use `satip.jpeg_xl_float_with_nans.JpegXlFloatWithNaNs` to decode the satellite data. This class will reconstruct the NaNs and rescale the data to the range `[0, 1]`.
