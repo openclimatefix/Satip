@@ -28,7 +28,14 @@ import structlog
 import yaml
 
 from satip import eumetsat
-from satip.constants import NATIVE_FILESIZE_MB, CLOUD_FILESIZE_MB, RSS_ID, CLOUD_ID, SEVIRI_ID, SEVIRI_IODC_ID
+from satip.constants import (
+    CLOUD_FILESIZE_MB,
+    CLOUD_ID,
+    NATIVE_FILESIZE_MB,
+    RSS_ID,
+    SEVIRI_ID,
+    SEVIRI_IODC_ID,
+)
 from satip.eumetsat import EUMETSATDownloadManager
 from satip.utils import format_dt_str
 
