@@ -20,7 +20,7 @@ import structlog
 
 import satip
 from satip import utils
-from satip.download import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
+from satip.constants import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
 from satip.eumetsat import EUMETSATDownloadManager
 
 log = structlog.stdlib.get_logger()

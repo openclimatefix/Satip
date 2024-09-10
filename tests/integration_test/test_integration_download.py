@@ -1,10 +1,7 @@
 """integration Tests for satip.download.py."""
 import os
-import pytest
 
-import pandas as pd
-
-from satip.download import (
+from satip.download.download import (
     download_eumetsat_data,
 )
 from satip.utils import format_dt_str

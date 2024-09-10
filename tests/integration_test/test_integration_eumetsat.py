@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 import pandas as pd
 
 from satip.eumetsat import EUMETSATDownloadManager, eumetsat_filename_to_datetime
-from satip.download import SEVIRI_IODC_ID
+from satip.constants import SEVIRI_IODC_ID
 
 
 def test_download_manager_setup():

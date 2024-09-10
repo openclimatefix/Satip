@@ -1,5 +1,5 @@
 from datetime import datetime
-from satip.goes_download_manager import GOESDownloadManager
+from satip.download.goes_download_manager import GOESDownloadManager
 
 
 # Test case for downloading GOES-15 data from CLAss

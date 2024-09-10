@@ -14,7 +14,7 @@ from datetime import datetime
 
 import click
 
-import satip.download
+import satip.download.download
 from satip.utils import format_dt_str
 
 NATIVE_FILESIZE_MB = 102.210123
@@ -100,7 +100,7 @@ def _validate_date(ctx, param, value):
 )
 def download_sat_files(*args, **kwargs):
     """Wrapper around downloader for eumetsat data to attach decorators to it."""
-    satip.download.download_eumetsat_data(*args, **kwargs)
+    satip.download.download.download_eumetsat_data(*args, **kwargs)
 
 
 if __name__ == "__main__":

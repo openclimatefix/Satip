@@ -1,15 +1,11 @@
 """Unit Tests for satip.download.py."""
-import os
-import pytest
 
 import pandas as pd
 
-from satip.download import (
+from satip.download.download import (
     _determine_datetimes_to_download_files,
     _get_missing_datetimes_from_list_of_files,
-    download_eumetsat_data,
 )
-from satip.utils import format_dt_str
 
 
 class TestDownload():

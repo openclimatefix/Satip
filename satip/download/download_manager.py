@@ -72,7 +72,7 @@ class DownloadManager:
             self.download_manager = EUMETSATDownloadManager(user_key, user_secret,
                                                             data_dir, log_directory)
         elif self.provider == "GOES":
-            from satip.goes_download_manager import GOESDownloadManager
+            from satip.download.goes_download_manager import GOESDownloadManager
             self.download_manager = GOESDownloadManager(data_dir, log_directory)
         else:
             raise ValueError("Invalid provider. Supported providers are 'EUMETSAT' and 'GOES'.")

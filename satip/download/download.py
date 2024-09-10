@@ -28,32 +28,12 @@ import structlog
 import yaml
 
 from satip import eumetsat
+from satip.constants import NATIVE_FILESIZE_MB, CLOUD_FILESIZE_MB, RSS_ID, CLOUD_ID, SEVIRI_ID, SEVIRI_IODC_ID
 from satip.eumetsat import EUMETSATDownloadManager
 from satip.utils import format_dt_str
 
 log = structlog.stdlib.get_logger()
 
-SAT_VARIABLE_NAMES = (
-    "HRV",
-    "IR_016",
-    "IR_039",
-    "IR_087",
-    "IR_097",
-    "IR_108",
-    "IR_120",
-    "IR_134",
-    "VIS006",
-    "VIS008",
-    "WV_062",
-    "WV_073",
-)
-
-NATIVE_FILESIZE_MB = 102.210123
-CLOUD_FILESIZE_MB = 3.445185
-RSS_ID = "EO:EUM:DAT:MSG:MSG15-RSS"
-CLOUD_ID = "EO:EUM:DAT:MSG:RSS-CLM"
-SEVIRI_ID = "EO:EUM:DAT:MSG:HRSEVIRI"
-SEVIRI_IODC_ID = "EO:EUM:DAT:MSG:HRSEVIRI-IODC"
 
 def download_eumetsat_data(
     download_directory,
