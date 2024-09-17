@@ -16,8 +16,8 @@ from typing import Optional
 
 import click
 import pandas as pd
-import structlog
 import sentry_sdk
+import structlog
 
 import satip
 from satip import utils
