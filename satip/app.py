@@ -25,7 +25,7 @@ from satip.constants import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
 from satip.eumetsat import EUMETSATDownloadManager
 
 sentry_sdk.set_tag("app_name", "SATIP")
-sentry_sdk.set_tag("version", version)
+sentry_sdk.set_tag("version", satip.__version__)
 
 log = structlog.stdlib.get_logger()
 
