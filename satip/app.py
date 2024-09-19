@@ -17,23 +17,20 @@ from typing import Optional
 import click
 import pandas as pd
 import sentry_sdk
-import structlog
 
 import satip
 from satip import utils
 from satip.constants import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
 from satip.eumetsat import EUMETSATDownloadManager
 
-sentry_sdk.set_tag("app_name", "satellite_consumer")
-sentry_sdk.set_tag("version", satip.__version__)
-
-log = structlog.stdlib.get_logger()
-
+#sentry
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     environment=os.getenv("ENVIRONMENT", "local"),
     traces_sample_rate=1
 )
+sentry_sdk.set_tag("app_name", "satellite_consumer")
+sentry_sdk.set_tag("version", satip.__version__)
 
 @click.command()
 @click.option(
