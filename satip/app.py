@@ -17,12 +17,13 @@ from typing import Optional
 import click
 import pandas as pd
 import sentry_sdk
-
+import structlog
 import satip
 from satip import utils
 from satip.constants import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
 from satip.eumetsat import EUMETSATDownloadManager
 
+log = structlog.stdlib.get_logger()
 #sentry
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
