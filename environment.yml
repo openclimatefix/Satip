@@ -9,6 +9,7 @@ dependencies:
   - rioxarray
   - fsspec
   - satpy
+  - sentry
   - pip:
     - aiobotocore==2.12.1
     - aiohttp==3.9.3
@@ -42,3 +43,4 @@ dependencies:
     - urllib3==1.26.18
     - wrapt==1.16.0
     - yarl==1.9.4
+    - sentry==2.1.1
