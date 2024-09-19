@@ -18,6 +18,7 @@ import click
 import pandas as pd
 import sentry_sdk
 import structlog
+
 import satip
 from satip import utils
 from satip.constants import RSS_ID, SEVIRI_ID, SEVIRI_IODC_ID
