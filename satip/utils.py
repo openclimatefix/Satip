@@ -896,9 +896,12 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         file_time = get_datetime_from_filename(date)
 
         if file_time < history_time:
-            log.debug("Moving file out of {LATEST_DIR_NAME} folder")
+            log.debug(f"Moving file out of {LATEST_DIR_NAME} folder")
             # Move HRV and non-HRV to new place
-            filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
+            try:
+                filesystem.move(date, f"{save_dir}/{date.split('/')[-1]}")
+            except Exception as _:
+                log.warn(f'Could not move file {date}')
 
 
 def check_both_final_files_exists(
