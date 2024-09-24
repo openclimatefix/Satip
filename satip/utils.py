@@ -487,7 +487,7 @@ def get_nonhrv_dataset_from_scene(
         gc.collect()
         return
 
-    filename = f"hrv_{now_time}.zarr.zip"
+    filename = f"{now_time}.zarr.zip"
     if use_hr_serviri:
         filename = f"15_{filename}"
     if use_iodc:
