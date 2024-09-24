@@ -858,6 +858,9 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
     filesystem = fsspec.open(save_dir).fs
 
+    # remove timezone from history_time
+    history_time = history_time.tz_localize(None)
+
     # Now to move into latest
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
 
