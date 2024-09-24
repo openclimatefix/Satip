@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def get_datetime_from_filename(filename: str) -> pd.Timestamp:
+def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Timestamp:
     """Extract time from filename
 
     For example:
@@ -14,6 +14,10 @@ def get_datetime_from_filename(filename: str) -> pd.Timestamp:
 
     filename = filename.replace("iodc_", "")
     filename = filename.replace("15_", "")
+
+    if strip_hrv:
+        filename = filename.replace("hrv_", "")
+
     filename = filename.split(".zarr.zip")[0]
     date = filename.split("/")[-1]
 
@@ -21,5 +25,6 @@ def get_datetime_from_filename(filename: str) -> pd.Timestamp:
         date,
         format="%Y%m%d%H%M",
         errors="ignore",
+        utc=True
     )
     return file_time
