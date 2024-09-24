@@ -21,6 +21,5 @@ def get_datetime_from_filename(filename: str) -> pd.Timestamp:
         date,
         format="%Y%m%d%H%M",
         errors="ignore",
-        utc=True,
     )
     return file_time
