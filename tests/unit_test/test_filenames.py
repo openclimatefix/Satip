@@ -15,4 +15,3 @@ def test_get_time_from_filename():
 
     datetime = get_datetime_from_filename("folder/15_hrv_202408261815.zarr.zip")
     assert datetime == "hrv_202408261815"
-
