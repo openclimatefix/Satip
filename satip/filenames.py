@@ -14,7 +14,6 @@ def get_datetime_from_filename(filename: str) -> pd.Timestamp:
 
     filename = filename.replace("iodc_", "")
     filename = filename.replace("15_", "")
-    filename = filename.replace("hrv_", "")
     filename = filename.split(".zarr.zip")[0]
     date = filename.split("/")[-1]
 
