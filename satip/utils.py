@@ -790,7 +790,8 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     finished_files = finished_files_not_latest + finished_files_latest
     log.debug(f"Found {len(finished_files)} already downloaded")
 
-    datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx)).round("5 min") for idx in ids]
+    datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx), tz='UTC').round("5 min")
+                 for idx in ids]
     if not datetimes:  # Empty list
         log.debug("No datetimes to download")
         return []
@@ -858,9 +859,6 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
 
     filesystem = fsspec.open(save_dir).fs
 
-    # remove timezone from history_time
-    history_time = history_time.tz_localize(None)
-
     # Now to move into latest
     finished_files = filesystem.glob(f"{save_dir}/*.zarr.zip")
 
@@ -873,7 +871,8 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if "latest.zarr" in date or "tmp" in date:
             continue
 
-        file_time = get_datetime_from_filename(date)
+        file_time = get_datetime_from_filename(date, strip_hrv=True)
+
 
         if file_time > history_time:
             log.debug(f"Moving file into {LATEST_DIR_NAME} folder")
@@ -896,7 +895,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if "latest.zarr" in date or "latest_15.zarr" in date or "tmp" in date:
             continue
 
-        file_time = get_datetime_from_filename(date)
+        file_time = get_datetime_from_filename(date, strip_hrv=True)
 
         if file_time < history_time:
             log.debug(f"Moving file out of {LATEST_DIR_NAME} folder")
