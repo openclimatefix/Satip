@@ -790,7 +790,8 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
     finished_files = finished_files_not_latest + finished_files_latest
     log.debug(f"Found {len(finished_files)} already downloaded")
 
-    datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx), tz='UTC').round("5 min") for idx in ids]
+    datetimes = [pd.Timestamp(eumetsat_filename_to_datetime(idx), tz='UTC').round("5 min")
+                 for idx in ids]
     if not datetimes:  # Empty list
         log.debug("No datetimes to download")
         return []
