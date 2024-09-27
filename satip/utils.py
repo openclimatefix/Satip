@@ -1098,8 +1098,12 @@ def move_files(dataset_id: str, data_dir_from, data_dir_to):
             # get file name
             file_name = file.split('/')[-1]
 
-            # copy file
-            fs_to.put(file, data_dir_to + '/' + file_name)
+            if hasattr(fs_to,'local_file'):
+                # copy file from remote to local
+                fs_from.get(file, data_dir_to + '/' + file_name)
+            else:
+                # copy file from local to remote
+                fs_to.put(file, data_dir_to + '/' + file_name)
     else:
         log.error(f'No files found for dataset_id {dataset_id} in {data_dir_from}')
 
