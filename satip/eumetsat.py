@@ -358,6 +358,7 @@ class EUMETSATDownloadManager:
         for dataset_id in dataset_ids:
             log.debug(f"Downloading: {dataset_id}", parent="DownloadManager")
 
+            # get raw files from s3, if there
             files = utils.move_files(dataset_id=dataset_id,
                                           data_dir_from=self.native_file_dir,
                                           data_dir_to=self.data_dir)
@@ -384,6 +385,7 @@ class EUMETSATDownloadManager:
                         parent="DownloadManager",
                 )
 
+                # save raw files to s3
                 utils.move_files(dataset_id=dataset_id,
                                         data_dir_from=self.data_dir,
                                         data_dir_to=self.native_file_dir)
