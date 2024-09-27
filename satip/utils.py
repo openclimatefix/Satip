@@ -1069,3 +1069,28 @@ def get_memory() -> str:
     Gets memory of process as a string
     """
     return f"{psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+
+
+def move_files(dataset_id: str, data_dir_from, data_dir_to):
+    """ Move files for dataset_id
+
+    Args:
+        dataset_id: The dataset_id to move files for
+        data_dir_from: The directory to move files from
+        data_dir_to: The directory to move files to
+
+    Returns:
+        files: List of files moved
+    """
+
+    data_store_filename_remote = f"{data_dir_from}/{dataset_id}*"
+    # get list of all files that match data_store_filename_remote
+    fs = fsspec.open(data_store_filename_remote).fs
+    files = fs.glob(data_store_filename_remote)
+    if len(files) > 0:
+        # download the files to data_dir in
+        log.info(f'Copying files ({len(files)}) from native file store ({data_dir_from}) '
+                 f'to data directory ({data_dir_to})')
+        fs.cp(files, data_dir_to)
+
+    return files
