@@ -370,7 +370,8 @@ class EUMETSATDownloadManager:
                 try:
                     self.download_single_dataset(dataset_link)
                 except HTTPError:
-                    log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
+                    log.debug("The EUMETSAT access token has been refreshed",
+                              parent="DownloadManager")
                     self.request_access_token()
                     dataset_link = dataset_id_to_link(
                         product_id, dataset_id, access_token=self.access_token
