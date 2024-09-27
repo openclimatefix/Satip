@@ -335,6 +335,7 @@ class EUMETSATDownloadManager:
         datasets = identify_available_datasets(start_date, end_date, product_id=product_id)
         self.download_datasets(datasets, product_id=product_id)
 
+
     def download_datasets(self, datasets, product_id="EO:EUM:DAT:MSG:MSG15-RSS"):
         """Downloads a product-id- and date-range-specific dataset from the EUMETSAT API
 
@@ -356,25 +357,38 @@ class EUMETSATDownloadManager:
 
         for dataset_id in dataset_ids:
             log.debug(f"Downloading: {dataset_id}", parent="DownloadManager")
-            dataset_link = dataset_id_to_link(
-                product_id, dataset_id, access_token=self.access_token
-            )
-            # Download the raw data
-            try:
-                self.download_single_dataset(dataset_link)
-            except HTTPError:
-                log.debug("The EUMETSAT access token has been refreshed", parent="DownloadManager")
-                self.request_access_token()
+
+            # get raw files from s3, if there
+            files = utils.move_files(dataset_id=dataset_id,
+                                          data_dir_from=self.native_file_dir,
+                                          data_dir_to=self.data_dir)
+            if len(files) == 0:
+
                 dataset_link = dataset_id_to_link(
                     product_id, dataset_id, access_token=self.access_token
                 )
-                self.download_single_dataset(dataset_link)
-            except Exception as e:
-                log.error(
-                    f"Error downloading dataset with id {dataset_id}: {e}",
-                    exc_info=True,
-                    parent="DownloadManager",
+                # Download the raw data
+                try:
+                    self.download_single_dataset(dataset_link)
+                except HTTPError:
+                    log.debug("The EUMETSAT access token has been refreshed",
+                              parent="DownloadManager")
+                    self.request_access_token()
+                    dataset_link = dataset_id_to_link(
+                        product_id, dataset_id, access_token=self.access_token
+                    )
+                    self.download_single_dataset(dataset_link)
+                except Exception as e:
+                    log.error(
+                        f"Error downloading dataset with id {dataset_id}: {e}",
+                        exc_info=True,
+                        parent="DownloadManager",
                 )
+
+                # save raw files to s3
+                utils.move_files(dataset_id=dataset_id,
+                                        data_dir_from=self.data_dir,
+                                        data_dir_to=self.native_file_dir)
 
     def download_tailored_date_range(
         self,
