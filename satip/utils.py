@@ -1083,17 +1083,23 @@ def move_files(dataset_id: str, data_dir_from, data_dir_to):
         files: List of files moved
     """
 
-    data_store_filename_remote = f"{data_dir_from}/{dataset_id}*"
+    data_store_filename_from = f"{data_dir_from}/{dataset_id}*"
 
     # get list of all files that match data_store_filename_remote
-    fs = fsspec.open(data_dir_from).fs
-    files = fs.glob(data_store_filename_remote)
+    fs_from = fsspec.open(data_dir_from).fs
+    fs_to = fsspec.open(data_dir_to).fs
+    files = fs_from.glob(data_store_filename_from)
 
     if len(files) > 0:
         # download the files to data_dir in
         log.info(f'Copying files ({len(files)}) from native file store ({data_dir_from}) '
                  f'to data directory ({data_dir_to})')
-        fs.cp(files, data_dir_to)
+        for file in files:
+            # get file name
+            file_name = file.split('/')[-1]
+
+            # copy file
+            fs_to.put(file, data_dir_to + '/' + file_name)
     else:
         log.error(f'No files found for dataset_id {dataset_id} in {data_dir_from}')
 
