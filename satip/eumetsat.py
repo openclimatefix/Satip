@@ -641,26 +641,30 @@ class EUMETSATDownloadManager:
             # allow them time to finish.
             customisation: eumdac.Customization | None = None
             log.debug("Attempting to create DataTailor customisation")
-            start: datatime.datetime = datetime.datetime.now()
+            start: datetime.datetime = datetime.datetime.now()
             attempt: int = 1
             # 5 minute timeout
             while (datetime.datetime.now() - start).seconds < 300:
                 running_customisations: list[eumdac.Customisation] = [
-                    c for c in datatailor.customisations if c.status in ['RUNNING', 'QUEUED', 'INACTIVE']
+                    c for c in datatailor.customisations
+                    if c.status in ['RUNNING', 'QUEUED', 'INACTIVE']
                 ]
                 inactive_customisations: list[eumdac.Customisation] = [
-                    c for c in running_customisations if c.status == 'INACTIVE'
+                    c for c in running_customisations
+                    if c.status == 'INACTIVE'
                 ]
                 log.debug(
-                    f"Attempt {attempt}: Found {len(running_customisations)} running customisations, "
-                    f"of which {len(inactive_customisations)} are inactive.",
+                    f"Attempt {attempt}: Found {len(running_customisations)} "
+                    f"running customisations, of which "
+                    f"{len(inactive_customisations)} are inactive.",
                 )
 
                 # Try to kill any inactive customisations
                 killed: int = 0
                 if len(inactive_customisations) > 0:
                     log.debug(
-                        f"Attempt {attempt}: Clearing {len(inactive_customisations)} inactive customisations...",
+                        f"Attempt {attempt}: Clearing {len(inactive_customisations)} "
+                        f"inactive customisations...",
                         parent="DownloadManager",
                     )
                     try:
@@ -685,7 +689,8 @@ class EUMETSATDownloadManager:
                         log.debug(f"Attempt {attempt}: Error creating customisation: {e}")
                 else:
                     log.debug(
-                        f"Attempt {attempt}: Too many running customisations, trying again in 10 seconds",
+                        f"Attempt {attempt}: Too many running customisations. "
+                        f"Trying again in 10 seconds",
                         parent="DownloadManager",
                     )
                     time.sleep(10)
