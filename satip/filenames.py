@@ -27,7 +27,7 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
             format="%Y%m%d%H%M",
             utc=True
         )
-    except Exception as e:
+    except Exception:
         # Replicating deprecated "errors=ignore" behaviour
         # Probably want to actually do something about this
         file_time = date
