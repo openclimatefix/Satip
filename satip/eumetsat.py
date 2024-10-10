@@ -636,29 +636,68 @@ class EUMETSATDownloadManager:
 
             datatailor = eumdac.DataTailor(eumdac.AccessToken((self.user_key, self.user_secret)))
 
-            # sometimes the customisation fails first time, so we try twice
-            # This is from Data Tailor only allowing 3 customizations at once
-            # So this should then continue until it is created successfully
-            created_customization = False
-            # 5 minute timeout here
-            start = datetime.datetime.now()
-            while not created_customization and (datetime.datetime.now() - start).seconds < 600:
-                try:
-                    num_running_customizations = 0
-                    for customisation in datatailor.customisations:
-                        if customisation.status in ['INACTIVE']: # Clear stuck ones
+            # Attempt to create customisation. This is attempted for 5 minutes,
+            # as other running customisations can block the creation, hence we
+            # allow them time to finish.
+            customisation: eumdac.Customization | None = None
+            log.debug("Attempting to create DataTailor customisation")
+            start: datetime.datetime = datetime.datetime.now()
+            attempt: int = 1
+            # 5 minute timeout
+            while (datetime.datetime.now() - start).seconds < 300:
+                running_customisations: list[eumdac.Customisation] = [
+                    c for c in datatailor.customisations
+                    if c.status in ['RUNNING', 'QUEUED', 'INACTIVE']
+                ]
+                inactive_customisations: list[eumdac.Customisation] = [
+                    c for c in running_customisations
+                    if c.status == 'INACTIVE'
+                ]
+                log.debug(
+                    f"Attempt {attempt}: Found {len(running_customisations)} "
+                    f"running customisations, of which "
+                    f"{len(inactive_customisations)} are inactive.",
+                )
+
+                # Try to kill any inactive customisations
+                killed: int = 0
+                if len(inactive_customisations) > 0:
+                    log.debug(
+                        f"Attempt {attempt}: Clearing {len(inactive_customisations)} "
+                        f"inactive customisations...",
+                        parent="DownloadManager",
+                    )
+                    try:
+                        for i, customisation in enumerate(inactive_customisations):
                             customisation.kill()
                             customisation.delete()
-                        if customisation.status in ['RUNNING','QUEUED', 'INACTIVE']:
-                            num_running_customizations += 1
-                    if num_running_customizations < 3:
+                            killed += 1
+                    except Exception as e:
+                        log.debug(
+                            f"Attempt {attempt}: Error clearing inactive customisation "
+                            f"{i} of {len(inactive_customisations)}: {e}",
+                            parent="DownloadManager",
+                        )
+
+                # If that left enough space for a new customisation, try to make it
+                if len(running_customisations) - killed < 3:
+                    try:
                         customisation = datatailor.new_customisation(dataset_id, chain=chain)
-                        created_customization = True
-                except Exception:
-                    log.debug("Customization not made successfully, so "
-                              "trying again after less than 3 customizations")
-                    time.sleep(3)
-                    continue
+                        log.debug(f"Attempt {attempt}: Created customisation {customisation}")
+                        break
+                    except Exception as e:
+                        log.debug(f"Attempt {attempt}: Error creating customisation: {e}")
+                else:
+                    log.debug(
+                        f"Attempt {attempt}: Too many running customisations. "
+                        f"Trying again in 10 seconds",
+                        parent="DownloadManager",
+                    )
+                    time.sleep(10)
+
+            if customisation is None:
+                log.error("Failed to create customisation, exiting", parent="DownloadManager")
+                return
 
             sleep_time = 5  # seconds
             log.debug(f"Customisation: {customisation}", parent="DownloadManager")
