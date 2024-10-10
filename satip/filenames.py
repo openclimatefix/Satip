@@ -21,10 +21,15 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
     filename = filename.split(".zarr.zip")[0]
     date = filename.split("/")[-1]
 
-    file_time = pd.to_datetime(
-        date,
-        format="%Y%m%d%H%M",
-        errors="ignore",
-        utc=True
-    )
+    try:
+        file_time = pd.to_datetime(
+            date,
+            format="%Y%m%d%H%M",
+            utc=True
+        )
+    except Exception:
+        # Replicating deprecated "errors=ignore" behaviour
+        # Probably want to actually do something about this
+        file_time = date
+
     return file_time
