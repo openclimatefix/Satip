@@ -534,7 +534,7 @@ class EUMETSATDownloadManager:
         """
 
         SEVIRI = "HRSEVIRI"
-        SEVIRI_HRV = "HRSEVIRI_HRV"
+        #SEVIRI_HRV = "HRSEVIRI_HRV"
         RSS_ID = "HRSEVIRI_RSS"
         CLM_ID = "MSGCLMK"
 
@@ -688,7 +688,8 @@ class EUMETSATDownloadManager:
                         log.debug(f"Attempt {attempt}: Created customisation {customisation}")
                         break
                     except Exception as e:
-                        log.debug(f"Attempt {attempt}: Error creating customisation: {e},  {dataset_id=}, {chain=}")
+                        log.debug(f"Attempt {attempt}: Error creating customisation: {e},  "
+                                  f"{dataset_id=}, {chain=}")
                 else:
                     log.debug(
                         f"Attempt {attempt}: Too many running customisations. "
