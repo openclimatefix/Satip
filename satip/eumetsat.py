@@ -534,7 +534,7 @@ class EUMETSATDownloadManager:
         """
 
         SEVIRI = "HRSEVIRI"
-        #SEVIRI_HRV = "HRSEVIRI_HRV"
+        SEVIRI_HRV = "HRSEVIRI_HRV"
         RSS_ID = "HRSEVIRI_RSS"
         CLM_ID = "MSGCLMK"
 
@@ -549,19 +549,19 @@ class EUMETSATDownloadManager:
         else:
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
-        # if tailor_id == SEVIRI_HRV:  # Also do HRV
-        #     credentials = (self.user_key, self.user_secret)
-        #     token = eumdac.AccessToken(credentials)
-        #     datastore = eumdac.DataStore(token)
-        #     product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-        #     log.debug(f"Downloading HRV data for {dataset_id=}, {product_id=}")
-        #     self.create_and_download_datatailor_data(
-        #         dataset_id=product_id,
-        #         tailor_id=SEVIRI_HRV,
-        #         roi=roi,
-        #         file_format=file_format,
-        #         projection=projection,
-        #     )
+        if tailor_id == SEVIRI_HRV:  # Also do HRV
+            credentials = (self.user_key, self.user_secret)
+            token = eumdac.AccessToken(credentials)
+            datastore = eumdac.DataStore(token)
+            product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
+            log.debug(f"Downloading HRV data for {dataset_id=}, {product_id=}")
+            self.create_and_download_datatailor_data(
+                dataset_id=product_id,
+                tailor_id=SEVIRI_HRV,
+                roi=roi,
+                file_format=file_format,
+                projection=projection,
+            )
 
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
