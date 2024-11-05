@@ -970,6 +970,8 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
     filesystem = fsspec.open(save_dir).fs
     latest_dir = get_latest_subdir_path(save_dir)
 
+    log.info("Collating HRV files")
+
     files = list(filesystem.glob(f"{latest_dir}/hrv_2*.zarr.zip"))
     if use_hr_serviri:
         files = list(filesystem.glob(f"{latest_dir}/15_hrv_2*.zarr.zip"))
@@ -977,51 +979,53 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
         log.debug("Collating IODC files")
         files = list(filesystem.glob(f"{latest_dir}/iodc_2*.zarr.zip"))
 
-    if not files:  # Empty set of files, don't do anything
-        return
-    # Add prefix to beginning of each URL
-    filename = f"{latest_dir}/hrv_latest.zarr.zip"
-    if use_hr_serviri:
-        filename = f"{latest_dir}/15_hrv_latest.zarr.zip"
-    if use_iodc:
-        filename = f"{latest_dir}/iodc_latest.zarr.zip"
-    filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
+    # Make sure we don't have empty set of files, don't do anything
+    if files:
+        # Add prefix to beginning of each URL
+        filename = f"{latest_dir}/hrv_latest.zarr.zip"
+        if use_hr_serviri:
+            filename = f"{latest_dir}/15_hrv_latest.zarr.zip"
+        if use_iodc:
+            filename = f"{latest_dir}/iodc_latest.zarr.zip"
+        filename_temp = f"{latest_dir}/hrv_tmp_{secrets.token_hex(6)}.zarr.zip"
 
-    log.debug(f"Collating HRV files {filename}")
-    if "s3" in save_dir:
-        files = add_backend_to_filenames(files, backend="s3")  # Added backend prefix for hrv files
-    log.debug(files)
-    dataset = (
-        xr.open_mfdataset(
-            files,
-            concat_dim="time",
-            combine="nested",
-            engine="zarr",
-            consolidated=True,
-            chunks="auto",
-            mode="r",
+        log.debug(f"Collating HRV files {filename}")
+        if "s3" in save_dir:
+            files = add_backend_to_filenames(files, backend="s3")  # Added backend prefix for hrv files
+        log.debug(files)
+        dataset = (
+            xr.open_mfdataset(
+                files,
+                concat_dim="time",
+                combine="nested",
+                engine="zarr",
+                consolidated=True,
+                chunks="auto",
+                mode="r",
+            )
+            .sortby("time")
+            .drop_duplicates("time")
         )
-        .sortby("time")
-        .drop_duplicates("time")
-    )
-    log.debug(dataset.time.values)
-    save_to_zarr_to_backend(dataset, filename_temp)
-    new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
-    log.debug(f"{filename_temp}  {new_times}")
+        log.debug(dataset.time.values)
+        save_to_zarr_to_backend(dataset, filename_temp)
+        new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
+        log.debug(f"{filename_temp}  {new_times}")
 
-    # rename
-    log.debug("Renaming")
-    filesystem = fsspec.open(filename_temp).fs
-    try:
-        filesystem.rm(filename)
-    except Exception as e:
-        log.warn(f"Error removing {filename}: {e}", exc_info=True)
-    filesystem.mv(filename_temp, filename)
-    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
-    log.debug(f"{filename} {new_times}")
+        # rename
+        log.debug("Renaming")
+        filesystem = fsspec.open(filename_temp).fs
+        try:
+            filesystem.rm(filename)
+        except Exception as e:
+            log.warn(f"Error removing {filename}: {e}", exc_info=True)
+        filesystem.mv(filename_temp, filename)
+        new_times = xr.open_dataset(f"zip::{filename}", engine="zarr").time
+        log.debug(f"{filename} {new_times}")
 
     if use_iodc:
         return
+
+    log.info("Collating non-HRV files")
     filename = f"{latest_dir}/latest{'_15' if use_hr_serviri else ''}.zarr.zip"
     filename_temp = f"{latest_dir}/tmp_{secrets.token_hex(6)}.zarr.zip"
     log.debug(f"Collating non-HRV files {filename}")
