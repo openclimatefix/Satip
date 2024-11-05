@@ -1039,34 +1039,35 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
         # backend prefix for nonhrv
 
     log.debug(nonhrv_files)
-    o_dataset = (
-        xr.open_mfdataset(
-            nonhrv_files,
-            concat_dim="time",
-            combine="nested",
-            engine="zarr",
-            consolidated=True,
-            chunks="auto",
-            mode="r",
+    if len(nonhrv_files) > 0:
+        o_dataset = (
+            xr.open_mfdataset(
+                nonhrv_files,
+                concat_dim="time",
+                combine="nested",
+                engine="zarr",
+                consolidated=True,
+                chunks="auto",
+                mode="r",
+            )
+            .sortby("time")
+            .drop_duplicates("time")
         )
-        .sortby("time")
-        .drop_duplicates("time")
-    )
-    log.debug(o_dataset.time.values)
-    save_to_zarr_to_backend(o_dataset, filename_temp)
-    new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
-    log.debug(f"{filename_temp} {new_times}")
+        log.debug(o_dataset.time.values)
+        save_to_zarr_to_backend(o_dataset, filename_temp)
+        new_times = xr.open_dataset(f"zip::{filename_temp}", engine="zarr").time
+        log.debug(f"{filename_temp} {new_times}")
 
-    log.debug("Renaming")
-    filesystem = fsspec.open(filename_temp).fs
-    try:
-        filesystem.rm(filename)
-    except Exception as e:
-        log.warn(f"Error removing {filename}: {e}", exc_info=True)
-    filesystem.mv(filename_temp, filename)
+        log.debug("Renaming")
+        filesystem = fsspec.open(filename_temp).fs
+        try:
+            filesystem.rm(filename)
+        except Exception as e:
+            log.warn(f"Error removing {filename}: {e}", exc_info=True)
+        filesystem.mv(filename_temp, filename)
 
-    new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
-    log.debug(f"{filename} {new_times}")
+        new_times = xr.open_dataset(f"zip::{filename}", engine="zarr", cache=False).time
+        log.debug(f"{filename} {new_times}")
 
 
 def get_memory() -> str:
