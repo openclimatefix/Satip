@@ -992,7 +992,7 @@ def collate_files_into_latest(save_dir: str, use_hr_serviri: bool = False, use_i
         log.debug(f"Collating HRV files {filename}")
         if "s3" in save_dir:
             # Added backend prefix for hrv files
-            files = add_backend_to_filenames(files, backend="s3")  
+            files = add_backend_to_filenames(files, backend="s3")
         log.debug(files)
         dataset = (
             xr.open_mfdataset(
