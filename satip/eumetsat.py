@@ -543,29 +543,31 @@ class EUMETSATDownloadManager:
         elif product_id == "EO:EUM:DAT:MSG:MSG15":
             tailor_id = SEVIRI
         elif product_id == "EO:EUM:DAT:MSG:HRSEVIRI":
-            tailor_id = SEVIRI
+            tailor_id = SEVIRI_HRV
         elif product_id == "EO:EUM:DAT:MSG:RSS-CLM":
             tailor_id = CLM_ID
         else:
             raise ValueError(f"Product ID {product_id} not recognized, ending now")
 
-        if tailor_id == SEVIRI:  # Also do HRV
-            credentials = (self.user_key, self.user_secret)
-            token = eumdac.AccessToken(credentials)
-            datastore = eumdac.DataStore(token)
-            product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
-            self.create_and_download_datatailor_data(
-                dataset_id=product_id,
-                tailor_id=SEVIRI_HRV,
-                roi=roi,
-                file_format=file_format,
-                projection=projection,
-            )
+        # if tailor_id == SEVIRI_HRV:  # Also do HRV
+        #     credentials = (self.user_key, self.user_secret)
+        #     token = eumdac.AccessToken(credentials)
+        #     datastore = eumdac.DataStore(token)
+        #     product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
+        #     log.debug(f"Downloading HRV data for {dataset_id=}, {product_id=}")
+        #     self.create_and_download_datatailor_data(
+        #         dataset_id=product_id,
+        #         tailor_id=SEVIRI_HRV,
+        #         roi=roi,
+        #         file_format=file_format,
+        #         projection=projection,
+        #     )
 
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
-        product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
+        product_id = datastore.get_product("EO:EUM:DAT:MSG:MSG15", dataset_id)
+        log.debug(f"Downloading data for {dataset_id=}, {product_id=}")
         self.create_and_download_datatailor_data(
             dataset_id=product_id,
             tailor_id=tailor_id,
@@ -686,7 +688,7 @@ class EUMETSATDownloadManager:
                         log.debug(f"Attempt {attempt}: Created customisation {customisation}")
                         break
                     except Exception as e:
-                        log.debug(f"Attempt {attempt}: Error creating customisation: {e}")
+                        log.debug(f"Attempt {attempt}: Error creating customisation: {e},  {dataset_id=}, {chain=}")
                 else:
                     log.debug(
                         f"Attempt {attempt}: Too many running customisations. "
