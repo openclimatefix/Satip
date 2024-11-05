@@ -543,7 +543,7 @@ class EUMETSATDownloadManager:
         elif product_id == "EO:EUM:DAT:MSG:MSG15":
             tailor_id = SEVIRI
         elif product_id == "EO:EUM:DAT:MSG:HRSEVIRI":
-            tailor_id = SEVIRI_HRV
+            tailor_id = SEVIRI
         elif product_id == "EO:EUM:DAT:MSG:RSS-CLM":
             tailor_id = CLM_ID
         else:
@@ -566,7 +566,7 @@ class EUMETSATDownloadManager:
         credentials = (self.user_key, self.user_secret)
         token = eumdac.AccessToken(credentials)
         datastore = eumdac.DataStore(token)
-        product_id = datastore.get_product("EO:EUM:DAT:MSG:MSG15", dataset_id)
+        product_id = datastore.get_product("EO:EUM:DAT:MSG:HRSEVIRI", dataset_id)
         log.debug(f"Downloading data for {dataset_id=}, {product_id=}")
         self.create_and_download_datatailor_data(
             dataset_id=product_id,
