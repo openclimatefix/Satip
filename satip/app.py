@@ -247,7 +247,7 @@ def run(
                 # If there is less than this, we move over to the 15 minute data
                 # note we need history data to be larger than this.
                 n_datasets_needed = int(pd.to_timedelta(history) / pd.Timedelta("5 min") * 0.75)
-                if (len(datasets) < 18) or use_hr_serviri:
+                if (len(datasets) < n_datasets_needed) or use_hr_serviri:
                     log.warn(
                         f"No RSS Imagery available or using backup ({use_hr_serviri=}), "
                         f"falling back to 15-minutely data",
