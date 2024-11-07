@@ -245,7 +245,7 @@ def run(
                 # Check if any RSS imagery is available, if not, fall back to 15 minutely data
                 # We check if there are less than 12 datasets, which is 1 hour of 5 minute data.
                 # If there is less than this, we move over to the 15 minute data
-                if (len(datasets) < 12) or use_hr_serviri:
+                if (len(datasets) < 7) or use_hr_serviri:
                     log.warn(
                         f"No RSS Imagery available or using backup ({use_hr_serviri=}), "
                         f"falling back to 15-minutely data",
