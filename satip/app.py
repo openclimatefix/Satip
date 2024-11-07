@@ -243,9 +243,10 @@ def run(
                 )
 
                 # Check if any RSS imagery is available, if not, fall back to 15 minutely data
-                # We check if there are less than 18 datasets,
-                # which is 1 hour and 30 minutes of 5 minute data.
+                # We want to check if there is at least 75% of the history data available
                 # If there is less than this, we move over to the 15 minute data
+                # note we need history data to be larger than this.
+                n_datasets_needed = int(pd.to_timedelta(history) / pd.Timedelta("5 min") * 0.75)
                 if (len(datasets) < 18) or use_hr_serviri:
                     log.warn(
                         f"No RSS Imagery available or using backup ({use_hr_serviri=}), "
