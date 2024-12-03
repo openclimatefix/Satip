@@ -13,7 +13,6 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
     """
 
     filename = filename.replace("iodc_", "")
-    filename = filename.replace("15_", "")
 
     if strip_hrv:
         filename = filename.replace("hrv_", "")
