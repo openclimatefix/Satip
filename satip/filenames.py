@@ -2,7 +2,9 @@
 import pandas as pd
 
 
-def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Timestamp:
+def get_datetime_from_filename(
+    filename: str, strip_hrv: bool = False, strip_15: bool = False
+) -> pd.Timestamp:
     """Extract time from filename
 
     For example:
@@ -14,6 +16,9 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
 
     filename = filename.replace("iodc_", "")
 
+    if strip_15:
+        filename = filename.replace("15_", "")
+
     if strip_hrv:
         filename = filename.replace("hrv_", "")
 
@@ -21,11 +26,7 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
     date = filename.split("/")[-1]
 
     try:
-        file_time = pd.to_datetime(
-            date,
-            format="%Y%m%d%H%M",
-            utc=True
-        )
+        file_time = pd.to_datetime(date, format="%Y%m%d%H%M", utc=True)
     except Exception:
         # Replicating deprecated "errors=ignore" behaviour
         # Probably want to actually do something about this
