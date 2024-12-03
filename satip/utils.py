@@ -871,7 +871,7 @@ def move_older_files_to_different_location(save_dir: str, history_time: pd.Times
         if "latest.zarr" in date or "tmp" in date:
             continue
 
-        file_time = get_datetime_from_filename(date, strip_hrv=True)
+        file_time = get_datetime_from_filename(date, strip_hrv=True, strip_15=True)
 
 
         if file_time > history_time:

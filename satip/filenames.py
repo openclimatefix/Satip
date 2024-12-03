@@ -2,7 +2,7 @@
 import pandas as pd
 
 
-def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Timestamp:
+def get_datetime_from_filename(filename: str, strip_hrv: bool = False, strip_15: bool = False) -> pd.Timestamp:
     """Extract time from filename
 
     For example:
@@ -13,6 +13,9 @@ def get_datetime_from_filename(filename: str, strip_hrv: bool = False) -> pd.Tim
     """
 
     filename = filename.replace("iodc_", "")
+
+    if strip_15:
+        filename = filename.replace("15_", "")
 
     if strip_hrv:
         filename = filename.replace("hrv_", "")
