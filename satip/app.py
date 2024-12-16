@@ -65,7 +65,7 @@ sentry_sdk.set_tag("version", satip.__version__)
 )
 @click.option(
     "--history",
-    default="60 minutes",
+    default="120 minutes",
     envvar="HISTORY",
     help="How much history to save",
     type=click.STRING,
@@ -158,7 +158,7 @@ def run(
     api_secret,
     save_dir = './',
     save_dir_native = "./raw",
-    history="60 minutes",
+    history="120 minutes",
     use_rescaler: bool = False,
     start_time: str = pd.Timestamp.utcnow().isoformat(timespec="minutes").split("+")[0],
     cleanup: bool = False,
