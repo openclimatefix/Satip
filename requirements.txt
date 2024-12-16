@@ -24,4 +24,3 @@ xarray==2024.2.0
 zarr==2.17.0
 zipp==3.17.0
 sentry-sdk
-
