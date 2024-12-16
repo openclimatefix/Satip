@@ -1,6 +1,6 @@
 # Satip
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://badge.fury.io/py/satip.svg)](https://badge.fury.io/py/satip)
@@ -121,6 +121,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/suleman1412"><img src="https://avatars.githubusercontent.com/u/37236131?v=4?s=100" width="100px;" alt="Suleman Karigar"/><br /><sub><b>Suleman Karigar</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=suleman1412" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://richasharma.co.in/"><img src="https://avatars.githubusercontent.com/u/41283476?v=4?s=100" width="100px;" alt="Richa"/><br /><sub><b>Richa</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/commits?author=14Richa" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="http://phinate.github.io"><img src="https://avatars.githubusercontent.com/u/49782545?v=4?s=100" width="100px;" alt="Nathan Simpson"/><br /><sub><b>Nathan Simpson</b></sub></a><br /><a href="https://github.com/openclimatefix/Satip/issues?q=author%3Aphinate" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/peach280"><img src="https://avatars.githubusercontent.com/u/187241561?v=4?s=100" width="100px;" alt="peach280"/><br /><sub><b>peach280</b></sub></a><br /><a href="#maintenance-peach280" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
 </table>

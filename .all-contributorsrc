@@ -121,6 +121,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "peach280",
+      "name": "peach280",
+      "avatar_url": "https://avatars.githubusercontent.com/u/187241561?v=4",
+      "profile": "https://github.com/peach280",
+      "contributions": [
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
