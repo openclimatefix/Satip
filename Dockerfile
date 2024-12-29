@@ -1,6 +1,6 @@
 # Build: sudo docker build -t <project_name> .
 # Run: sudo docker run -v $(pwd):/workspace/project --gpus all -it --rm <project_name>
-docs/requirements.txt
+
 
 FROM ubuntu:latest
 
