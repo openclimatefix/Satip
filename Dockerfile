@@ -1,6 +1,6 @@
 # Build: sudo docker build -t <project_name> .
 # Run: sudo docker run -v $(pwd):/workspace/project --gpus all -it --rm <project_name>
-
+docs/requirements.txt
 
 FROM ubuntu:latest
 
@@ -48,4 +48,4 @@ RUN source activate ${CONDA_ENV_NAME} && pip install -e .
 SHELL ["conda", "run", "-n", "satip", "/bin/bash", "-c"]
 
 # Example commnad that can be used, need to set API_KEY, API_SECRET and SAVE_DIR
-CMD ["conda", "run", "--no-capture-output", "-n", "satip", "python", "-u","satip/app.py"]
+CMD ["conda", "run", "--no-capture-output", "-n", "satip", "python", "-u","near_now/notebooks/satip/app.py"]
