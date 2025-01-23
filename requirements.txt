@@ -5,7 +5,7 @@ click-plugins==1.1.1
 dask==2024.2.1
 eumdac==2.2.1
 freezegun==1.4.0
-fsspec==2024.2.0
+fsspec[s3]==2024.2.0
 matplotlib==3.8.3
 numcodecs==0.12.1
 numpy==1.26.4
