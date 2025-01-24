@@ -412,31 +412,31 @@ def get_dataset_from_scene(
 
 def crop(scene: satpy.scene, bounds: list[float]) -> satpy.scene:
     """Crop the satpy scene to given lon-lat box
-    
+
     Args:
         scene: The satpy scene object
         bounds: The bounding box: [min_lon, min_lat, max_lon, max_lat]
     """
-    
+
     # Get the lons and lats of the first channel - these are 2D arrays
     lons, lats = scene[list(scene.keys())[0]].attrs["area"].get_lonlats()
-    
+
     # Make mask of the lasts and lons
     lon_mask = (lon_min < lons) & (lons < lon_max)
     lat_mask = (lat_min < lats) & (lats < lat_max)
     mask = lon_mask & lat_mask
-    
+
     # Whether any of the columns need this row: 1D array
     mask_i = mask.any(axis=1)
     # Whether any of the rows need this column: 1D array
     mask_j = mask.any(axis=0)
-    
+
     # Find the min and max index where the mask is True along each dimension
     i0 = mask_i.argmax()
     i1 = len(mask_i) - mask_i[::-1].argmax()
     j0 = mask_j.argmax()
     j1 = len(mask_j) - mask_j[::-1].argmax()
-    
+
     # return and slice the scene
     return scene.slice(((slice(i0, i1), slice(j0, j1))))
 
