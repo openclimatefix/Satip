@@ -422,6 +422,7 @@ def crop(scene: Scene, bounds: list[float]) -> Scene:
     lons, lats = scene[list(scene.keys())[0]].attrs["area"].get_lonlats()
 
     # Make mask of the lasts and lons
+    min_lon, min_lat, max_lon, max_lat = bounds
     lon_mask = (lon_min < lons) & (lons < lon_max)
     lat_mask = (lat_min < lats) & (lats < lat_max)
     mask = lon_mask & lat_mask
