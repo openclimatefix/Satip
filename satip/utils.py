@@ -423,8 +423,8 @@ def crop(scene: Scene, bounds: list[float]) -> Scene:
 
     # Make mask of the lasts and lons
     min_lon, min_lat, max_lon, max_lat = bounds
-    lon_mask = (lon_min < lons) & (lons < lon_max)
-    lat_mask = (lat_min < lats) & (lats < lat_max)
+    lon_mask = (min_lon < lons) & (lons < max_lon)
+    lat_mask = (min_lat < lats) & (lats < max_lat)
     mask = lon_mask & lat_mask
 
     # Whether any of the columns need this row: 1D array
