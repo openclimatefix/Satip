@@ -410,11 +410,11 @@ def get_dataset_from_scene(
     gc.collect()
     log.debug("Saved HRV to NetCDF", memory=get_memory())
 
-def crop(scene: satpy.scene, bounds: list[float]) -> satpy.scene:
+def crop(scene: Scene, bounds: list[float]) -> Scene:
     """Crop the satpy scene to given lon-lat box
 
     Args:
-        scene: The satpy scene object
+        scene: The satpy Scene object
         bounds: The bounding box: [min_lon, min_lat, max_lon, max_lat]
     """
 
