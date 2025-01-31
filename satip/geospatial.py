@@ -30,7 +30,7 @@ WGS84_CRS = f"EPSG:{WGS84}"
 
 # Geographic bounds for various regions of interest, in order of min_lon, min_lat, max_lon, max_lat
 # (see https://satpy.readthedocs.io/en/stable/_modules/satpy/scene.html)
-GEOGRAPHIC_BOUNDS = {"UK": (-17, 44, 11, 71), "RSS": (-64, 16, 83, 69), "India": (60, 6, 97, 37)}
+GEOGRAPHIC_BOUNDS = {"UK": (-17, 44, 11, 73), "RSS": (-64, 16, 83, 69), "India": (60, 6, 97, 37)}
 
 
 class Transformers:
