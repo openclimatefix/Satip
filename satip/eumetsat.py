@@ -725,7 +725,7 @@ class EUMETSATDownloadManager:
 
                 if "DONE" == status:
                     break
-                elif "ERROR" in status or "KILLED" in status:
+                elif "ERROR" in status or "KILLED" in status or "FAILED" in status:
                     log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
 
