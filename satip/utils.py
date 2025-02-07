@@ -770,7 +770,7 @@ def save_to_zarr_to_backend(dataset: xr.Dataset, filename: str):
     with tempfile.TemporaryDirectory() as dir:
         # save locally
         path = f"{dir}/temp.zarr.zip"
-        encoding = {"data": {"dtype": "int16"}}
+        encoding = {"data": {"dtype": "float32"}}
 
         # make sure variable is string
         dataset = dataset.assign_coords({"variable": dataset.coords["variable"].astype(str)})
