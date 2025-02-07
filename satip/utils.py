@@ -335,7 +335,7 @@ def do_v15_rescaling(
     dataarray -= mins
     dataarray /= new_max
     dataarray *= upper_bound
-    dataarray = dataarray.round().clip(min=0, max=upper_bound).astype(np.int16)
+    dataarray = dataarray.clip(min=0, max=upper_bound).astype(np.float32)
     return dataarray
 
 
