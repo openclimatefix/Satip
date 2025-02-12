@@ -645,6 +645,11 @@ class EUMETSATDownloadManager:
             log.debug("Attempting to create DataTailor customisation")
             start: datetime.datetime = datetime.datetime.now()
             attempt: int = 1
+
+            # see all customisations status
+            all_status =  [(c.status, c._id) for c in datatailor.customisations]
+            log.info(all_status)
+
             # 5 minute timeout
             while (datetime.datetime.now() - start).seconds < 300:
                 running_customisations: list[eumdac.Customisation] = [
