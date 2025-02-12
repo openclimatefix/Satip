@@ -725,7 +725,12 @@ class EUMETSATDownloadManager:
 
                 if "DONE" == status:
                     break
-                elif "ERROR" in status or "KILLED" in status or "FAILED" in status:
+                elif "FAILED" in status:
+                    log.info("FAILED, exiting", parent="DownloadManager")
+                    raise Exception(f"Data Tailor failed to create customisation "
+                                    f"{customisation._id}")
+
+                elif "ERROR" in status or "KILLED" in status:
                     log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
 
