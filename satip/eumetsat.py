@@ -645,6 +645,11 @@ class EUMETSATDownloadManager:
             log.debug("Attempting to create DataTailor customisation")
             start: datetime.datetime = datetime.datetime.now()
             attempt: int = 1
+
+            # see all customisations status
+            all_status =  [(c.status, c._id) for c in datatailor.customisations]
+            log.info(all_status)
+
             # 5 minute timeout
             while (datetime.datetime.now() - start).seconds < 300:
                 running_customisations: list[eumdac.Customisation] = [
@@ -653,7 +658,7 @@ class EUMETSATDownloadManager:
                 ]
                 inactive_customisations: list[eumdac.Customisation] = [
                     c for c in running_customisations
-                    if c.status == 'INACTIVE'
+                    if c.status == ['INACTIVE', 'FAILED']
                 ]
                 log.debug(
                     f"Attempt {attempt}: Found {len(running_customisations)} "
@@ -725,7 +730,12 @@ class EUMETSATDownloadManager:
 
                 if "DONE" == status:
                     break
-                elif "ERROR" in status or "KILLED" in status or "FAILED" in status:
+                elif "FAILED" in status:
+                    log.info("FAILED, exiting. Should the whole app fail here? ",
+                             parent="DownloadManager")
+                    break
+
+                elif "ERROR" in status or "KILLED" in status:
                     log.info("UNSUCCESS, exiting", parent="DownloadManager")
                     break
 
