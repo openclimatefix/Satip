@@ -648,7 +648,7 @@ class EUMETSATDownloadManager:
 
             # see all customisations status
             all_status =  [(c.status, c._id) for c in datatailor.customisations]
-            log.info(all_status)
+            log.info(f"{all_status=}")
 
             # 5 minute timeout
             while (datetime.datetime.now() - start).seconds < 300:
@@ -694,7 +694,7 @@ class EUMETSATDownloadManager:
                 if len(failed_customisations) > 0:
                     log.debug(
                         f"Attempt {attempt}: Clearing {len(failed_customisations)} "
-                        f"inactive customisations...",
+                        f"failed customisations...",
                         parent="DownloadManager",
                     )
                     try:
