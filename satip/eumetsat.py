@@ -648,7 +648,7 @@ class EUMETSATDownloadManager:
 
             # see all customisations status
             all_status =  [(c.status, c._id) for c in datatailor.customisations]
-            log.info(all_status)
+            log.info(f"{all_status=}")
 
             # 5 minute timeout
             while (datetime.datetime.now() - start).seconds < 300:
@@ -658,12 +658,17 @@ class EUMETSATDownloadManager:
                 ]
                 inactive_customisations: list[eumdac.Customisation] = [
                     c for c in running_customisations
-                    if c.status in ['INACTIVE', 'FAILED']
+                    if c.status in ['INACTIVE']
+                ]
+                failed_customisations: list[eumdac.Customisation] = [
+                    c for c in running_customisations
+                    if c.status in ['FAILED']
                 ]
                 log.debug(
                     f"Attempt {attempt}: Found {len(running_customisations)} "
                     f"running customisations, of which "
-                    f"{len(inactive_customisations)} are inactive.",
+                    f"{len(inactive_customisations)} are inactive and"
+                    f"{len(failed_customisations)} are failed "
                 )
 
                 # Try to kill any inactive customisations
@@ -682,6 +687,23 @@ class EUMETSATDownloadManager:
                     except Exception as e:
                         log.debug(
                             f"Attempt {attempt}: Error clearing inactive customisation "
+                            f"{i} of {len(inactive_customisations)}: {e}",
+                            parent="DownloadManager",
+                        )
+
+                if len(failed_customisations) > 0:
+                    log.debug(
+                        f"Attempt {attempt}: Clearing {len(failed_customisations)} "
+                        f"failed customisations...",
+                        parent="DownloadManager",
+                    )
+                    try:
+                        for i, customisation in enumerate(failed_customisations):
+                            customisation.delete()
+                            killed += 1
+                    except Exception as e:
+                        log.debug(
+                            f"Attempt {attempt}: Error clearing failed customisation "
                             f"{i} of {len(inactive_customisations)}: {e}",
                             parent="DownloadManager",
                         )
