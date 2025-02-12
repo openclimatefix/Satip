@@ -653,7 +653,7 @@ class EUMETSATDownloadManager:
                 ]
                 inactive_customisations: list[eumdac.Customisation] = [
                     c for c in running_customisations
-                    if c.status == 'INACTIVE'
+                    if c.status == ['INACTIVE', 'FAILED']
                 ]
                 log.debug(
                     f"Attempt {attempt}: Found {len(running_customisations)} "
