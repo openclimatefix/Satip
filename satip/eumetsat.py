@@ -654,7 +654,7 @@ class EUMETSATDownloadManager:
             while (datetime.datetime.now() - start).seconds < 300:
                 running_customisations: list[eumdac.Customisation] = [
                     c for c in datatailor.customisations
-                    if c.status in ['RUNNING', 'QUEUED', 'INACTIVE']
+                    if c.status in ['RUNNING', 'QUEUED', 'INACTIVE', "FAILED"]
                 ]
                 inactive_customisations: list[eumdac.Customisation] = [
                     c for c in running_customisations
