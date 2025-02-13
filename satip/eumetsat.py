@@ -438,6 +438,7 @@ class EUMETSATDownloadManager:
             attempts: Number of attempts to make (1 attempt + retries)
         """
         for attempt in range(attempts):
+            log.info(f"Attempt {attempt + 1} of {attempts}", parent="DownloadManager")
             try:
                 self._download_single_tailored_dataset(
                     dataset_id,
@@ -511,6 +512,7 @@ class EUMETSATDownloadManager:
                         f"Failed to download dataset after retrying: {e}",
                         parent="DownloadManager"
                     )
+                    raise e
 
     def _download_single_tailored_dataset(
         self,
@@ -667,7 +669,7 @@ class EUMETSATDownloadManager:
                 log.debug(
                     f"Attempt {attempt}: Found {len(running_customisations)} "
                     f"running customisations, of which "
-                    f"{len(inactive_customisations)} are inactive and"
+                    f"{len(inactive_customisations)} are inactive and "
                     f"{len(failed_customisations)} are failed "
                 )
 
