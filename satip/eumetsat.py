@@ -459,7 +459,7 @@ class EUMETSATDownloadManager:
                 else:
                     # Final attempt failed, raise exception
                     raise Exception(f"Tried {attempts} times to get tailored dataset, "
-                                    f"but failed 3 times. ") from e
+                                    "but failed 3 times. ") from e
 
     def download_tailored_datasets(
         self,
