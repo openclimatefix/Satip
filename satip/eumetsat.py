@@ -425,7 +425,7 @@ class EUMETSATDownloadManager:
         roi,
         file_format,
         projection,
-        attempts=2,
+        attempts=3,
     ):
         """Attempts to download a dataset, retrying once if an exception occurs
 
