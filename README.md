@@ -126,10 +126,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tbody>
 </table>
 
-## Notice
-We would like to inform you that this repository will soon be archived. Please feel free to continue using the project, but be aware that no new features or bug fixes will be provided in the future.
 
-We appreciate your support and contributions!
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
