@@ -132,3 +132,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+## Notice
+
+We would like to inform you that this repository will soon be archived. Please feel free to continue using the project, but be aware that no new features or bug fixes will be provided in the future.
+
+We appreciate your support and contributions!
