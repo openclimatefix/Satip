@@ -190,7 +190,7 @@ class GOESDownloadManager:
 
                 if os.path.exists(output_path):
                     log.debug(
-                        f"File {filename} already exists, skipping", 
+                        f"File {filename} already exists, skipping",
                         parent="GOESDownloadManager"
                     )
                     downloaded_files.append(output_path)
@@ -200,7 +200,7 @@ class GOESDownloadManager:
                 native_path = os.path.join(self.native_file_dir, filename)
                 if os.path.exists(native_path):
                     log.debug(
-                        f"Copying file from {native_path} to {output_path}", 
+                        f"Copying file from {native_path} to {output_path}",
                         parent="GOESDownloadManager"
                     )
                     shutil.copy(native_path, output_path)
@@ -217,8 +217,8 @@ class GOESDownloadManager:
                     downloaded_files.append(output_path)
                 except Exception as e:
                     log.error(
-                        f"Error downloading file: {e}", 
-                        exc_info=True, 
+                        f"Error downloading file: {e}",
+                        exc_info=True,
                         parent="GOESDownloadManager"
                     )
 
@@ -316,8 +316,8 @@ class GOESDownloadManager:
 
             except Exception as e:
                 log.error(
-                    f"Error converting {file_path} to Zarr: {e}", 
-                    exc_info=True, 
+                    f"Error converting {file_path} to Zarr: {e}",
+                    exc_info=True,
                     parent="GOESDownloadManager"
                 )
 

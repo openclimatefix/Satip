@@ -210,7 +210,7 @@ class HimawariDownloadManager:
 
                 if os.path.exists(output_path):
                     log.debug(
-                        f"File {filename} already exists, skipping", 
+                        f"File {filename} already exists, skipping",
                         parent="HimawariDownloadManager"
                     )
                     downloaded_files.append(output_path)
@@ -220,7 +220,7 @@ class HimawariDownloadManager:
                 native_path = os.path.join(self.native_file_dir, filename)
                 if os.path.exists(native_path):
                     log.debug(
-                        f"Copying file from {native_path} to {output_path}", 
+                        f"Copying file from {native_path} to {output_path}",
                         parent="HimawariDownloadManager"
                     )
                     shutil.copy(native_path, output_path)
@@ -237,8 +237,8 @@ class HimawariDownloadManager:
                     downloaded_files.append(output_path)
                 except Exception as e:
                     log.error(
-                        f"Error downloading file: {e}", 
-                        exc_info=True, 
+                        f"Error downloading file: {e}",
+                        exc_info=True,
                         parent="HimawariDownloadManager"
                     )
 
@@ -333,8 +333,8 @@ class HimawariDownloadManager:
 
             except Exception as e:
                 log.error(
-                    f"Error converting {file_path} to Zarr: {e}", 
-                    exc_info=True, 
+                    f"Error converting {file_path} to Zarr: {e}",
+                    exc_info=True,
                     parent="HimawariDownloadManager"
                 )
 
@@ -369,7 +369,7 @@ class HimawariDownloadManager:
             return ds
         except Exception as e:
             log.error(
-                f"Error opening Kerchunk dataset for {date_str}: {e}", 
+                f"Error opening Kerchunk dataset for {date_str}: {e}",
                 exc_info=True
             )
             raise
