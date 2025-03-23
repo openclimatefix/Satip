@@ -209,14 +209,20 @@ class HimawariDownloadManager:
                 output_path = os.path.join(self.data_dir, filename)
 
                 if os.path.exists(output_path):
-                    log.debug(f"File {filename} already exists, skipping", parent="HimawariDownloadManager")
+                    log.debug(
+                        f"File {filename} already exists, skipping", 
+                        parent="HimawariDownloadManager"
+                    )
                     downloaded_files.append(output_path)
                     continue
 
                 # Check if the file exists in the native file directory
                 native_path = os.path.join(self.native_file_dir, filename)
                 if os.path.exists(native_path):
-                    log.debug(f"Copying file from {native_path} to {output_path}", parent="HimawariDownloadManager")
+                    log.debug(
+                        f"Copying file from {native_path} to {output_path}", 
+                        parent="HimawariDownloadManager"
+                    )
                     shutil.copy(native_path, output_path)
                     downloaded_files.append(output_path)
                     continue
@@ -230,7 +236,11 @@ class HimawariDownloadManager:
                     future.result()
                     downloaded_files.append(output_path)
                 except Exception as e:
-                    log.error(f"Error downloading file: {e}", exc_info=True, parent="HimawariDownloadManager")
+                    log.error(
+                        f"Error downloading file: {e}", 
+                        exc_info=True, 
+                        parent="HimawariDownloadManager"
+                    )
 
         return downloaded_files
 
@@ -261,8 +271,10 @@ class HimawariDownloadManager:
             channels=channels,
         )
 
-        log.info(f"Found {len(datasets)} datasets for Himawari {product} from {start_date} to {end_date}",
-                parent="HimawariDownloadManager")
+        log.info(
+            f"Found {len(datasets)} datasets for Himawari {product} from {start_date} to {end_date}",
+            parent="HimawariDownloadManager"
+        )
 
         # Download the datasets
         return self.download_datasets(datasets)
@@ -320,7 +332,11 @@ class HimawariDownloadManager:
                 log.info(f"Converted {file_path} to {zarr_path}", parent="HimawariDownloadManager")
 
             except Exception as e:
-                log.error(f"Error converting {file_path} to Zarr: {e}", exc_info=True, parent="HimawariDownloadManager")
+                log.error(
+                    f"Error converting {file_path} to Zarr: {e}", 
+                    exc_info=True, 
+                    parent="HimawariDownloadManager"
+                )
 
         return zarr_files
 
@@ -352,5 +368,8 @@ class HimawariDownloadManager:
             ds = xr.open_dataset(mapper.get_mapper(), engine="zarr")
             return ds
         except Exception as e:
-            log.error(f"Error opening Kerchunk dataset for {date_str}: {e}", exc_info=True)
+            log.error(
+                f"Error opening Kerchunk dataset for {date_str}: {e}", 
+                exc_info=True
+            )
             raise

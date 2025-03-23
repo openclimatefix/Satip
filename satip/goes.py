@@ -189,14 +189,20 @@ class GOESDownloadManager:
                 output_path = os.path.join(self.data_dir, filename)
 
                 if os.path.exists(output_path):
-                    log.debug(f"File {filename} already exists, skipping", parent="GOESDownloadManager")
+                    log.debug(
+                        f"File {filename} already exists, skipping", 
+                        parent="GOESDownloadManager"
+                    )
                     downloaded_files.append(output_path)
                     continue
 
                 # Check if the file exists in the native file directory
                 native_path = os.path.join(self.native_file_dir, filename)
                 if os.path.exists(native_path):
-                    log.debug(f"Copying file from {native_path} to {output_path}", parent="GOESDownloadManager")
+                    log.debug(
+                        f"Copying file from {native_path} to {output_path}", 
+                        parent="GOESDownloadManager"
+                    )
                     shutil.copy(native_path, output_path)
                     downloaded_files.append(output_path)
                     continue
@@ -210,7 +216,11 @@ class GOESDownloadManager:
                     future.result()
                     downloaded_files.append(output_path)
                 except Exception as e:
-                    log.error(f"Error downloading file: {e}", exc_info=True, parent="GOESDownloadManager")
+                    log.error(
+                        f"Error downloading file: {e}", 
+                        exc_info=True, 
+                        parent="GOESDownloadManager"
+                    )
 
         return downloaded_files
 
@@ -244,8 +254,10 @@ class GOESDownloadManager:
             channels=channels,
         )
 
-        log.info(f"Found {len(datasets)} datasets for {satellite} {product} from {start_date} to {end_date}",
-                parent="GOESDownloadManager")
+        log.info(
+            f"Found {len(datasets)} datasets for {satellite} {product} from {start_date} to {end_date}",
+            parent="GOESDownloadManager"
+        )
 
         # Download the datasets
         return self.download_datasets(datasets)
@@ -303,6 +315,10 @@ class GOESDownloadManager:
                 log.info(f"Converted {file_path} to {zarr_path}", parent="GOESDownloadManager")
 
             except Exception as e:
-                log.error(f"Error converting {file_path} to Zarr: {e}", exc_info=True, parent="GOESDownloadManager")
+                log.error(
+                    f"Error converting {file_path} to Zarr: {e}", 
+                    exc_info=True, 
+                    parent="GOESDownloadManager"
+                )
 
         return zarr_files
