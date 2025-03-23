@@ -12,10 +12,8 @@ import datetime
 import os
 import re
 import shutil
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import fsspec
 import pandas as pd
@@ -24,7 +22,6 @@ import structlog
 import xarray as xr
 
 from satip import utils
-from satip.data_store import dateset_it_to_filename
 
 log = structlog.stdlib.get_logger()
 
@@ -58,7 +55,7 @@ def query_goes_data(
     # Format dates for the query
     start_date_dt = pd.to_datetime(start_date)
     end_date_dt = pd.to_datetime(end_date)
-    
+
     # Construct the STAC API query
     params = {
         "collections": ["goes-" + satellite.lower()],
@@ -68,19 +65,19 @@ def query_goes_data(
         },
         "limit": 500
     }
-    
+
     # Add channel filter if specified
     if channels:
         params["query"]["abi:band"] = {"in": channels}
-    
+
     # Make the request to the STAC API
     response = requests.post(f"{PLANETARY_COMPUTER_STAC_API}/search", json=params)
     response.raise_for_status()
-    
+
     # Extract the features from the response
     results = response.json()
     features = results.get("features", [])
-    
+
     # Handle pagination if there are more results
     while "next" in results.get("links", []):
         next_url = next(link["href"] for link in results["links"] if link["rel"] == "next")
@@ -88,7 +85,7 @@ def query_goes_data(
         response.raise_for_status()
         results = response.json()
         features.extend(results.get("features", []))
-    
+
     return features
 
 
@@ -148,10 +145,10 @@ class GOESDownloadManager:
             output_path: Path where the file will be saved
         """
         log.info(f"Downloading file from {url} to {output_path}", parent="GOESDownloadManager")
-        
+
         # Create parent directories if they don't exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        
+
         # Download the file
         with fsspec.open(url, "rb") as src:
             with open(output_path, "wb") as dst:
@@ -177,25 +174,25 @@ class GOESDownloadManager:
             return []
 
         downloaded_files = []
-        
+
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
-            
+
             for dataset in datasets:
                 # Get the download URL from the dataset metadata
                 href = dataset["assets"]["data"]["href"]
-                
+
                 # Extract the filename from the URL
                 filename = os.path.basename(href)
-                
+
                 # Check if the file already exists in the data directory
                 output_path = os.path.join(self.data_dir, filename)
-                
+
                 if os.path.exists(output_path):
                     log.debug(f"File {filename} already exists, skipping", parent="GOESDownloadManager")
                     downloaded_files.append(output_path)
                     continue
-                
+
                 # Check if the file exists in the native file directory
                 native_path = os.path.join(self.native_file_dir, filename)
                 if os.path.exists(native_path):
@@ -203,10 +200,10 @@ class GOESDownloadManager:
                     shutil.copy(native_path, output_path)
                     downloaded_files.append(output_path)
                     continue
-                
+
                 # Submit the download task to the executor
                 futures.append(executor.submit(self.download_single_file, href, output_path))
-                
+
             # Wait for all downloads to complete
             for future in as_completed(futures):
                 try:
@@ -214,7 +211,7 @@ class GOESDownloadManager:
                     downloaded_files.append(output_path)
                 except Exception as e:
                     log.error(f"Error downloading file: {e}", exc_info=True, parent="GOESDownloadManager")
-        
+
         return downloaded_files
 
     def download_date_range(
@@ -246,10 +243,10 @@ class GOESDownloadManager:
             end_date=end_date,
             channels=channels,
         )
-        
-        log.info(f"Found {len(datasets)} datasets for {satellite} {product} from {start_date} to {end_date}", 
+
+        log.info(f"Found {len(datasets)} datasets for {satellite} {product} from {start_date} to {end_date}",
                 parent="GOESDownloadManager")
-        
+
         # Download the datasets
         return self.download_datasets(datasets)
 
@@ -283,29 +280,29 @@ class GOESDownloadManager:
             List of paths to created Zarr files
         """
         zarr_files = []
-        
+
         for file_path in files:
             try:
                 # Open the NetCDF file
                 ds = self.open_goes_dataset(file_path)
-                
+
                 # Extract the datetime from the filename
                 dt = goes_filename_to_datetime(os.path.basename(file_path))
-                
+
                 # Create a Zarr filename based on the datetime
                 zarr_filename = f"goes_{dt.strftime('%Y%m%d%H%M')}.zarr.zip"
                 zarr_path = os.path.join(output_dir, zarr_filename)
-                
+
                 # TODO: Implement rescaling similar to EUMETSAT data
-                
+
                 # Save to Zarr format
                 utils.save_to_zarr_to_backend(ds, zarr_path)
-                
+
                 zarr_files.append(zarr_path)
-                
+
                 log.info(f"Converted {file_path} to {zarr_path}", parent="GOESDownloadManager")
-                
+
             except Exception as e:
                 log.error(f"Error converting {file_path} to Zarr: {e}", exc_info=True, parent="GOESDownloadManager")
-        
+
         return zarr_files
