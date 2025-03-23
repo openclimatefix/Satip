@@ -272,7 +272,8 @@ class HimawariDownloadManager:
         )
 
         log.info(
-            f"Found {len(datasets)} datasets for Himawari {product} from {start_date} to {end_date}",
+            f"Found {len(datasets)} datasets for Himawari {product} "
+            f"from {start_date} to {end_date}",
             parent="HimawariDownloadManager"
         )
 

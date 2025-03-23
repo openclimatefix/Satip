@@ -255,7 +255,8 @@ class GOESDownloadManager:
         )
 
         log.info(
-            f"Found {len(datasets)} datasets for {satellite} {product} from {start_date} to {end_date}",
+            f"Found {len(datasets)} datasets for {satellite} {product} "
+            f"from {start_date} to {end_date}",
             parent="GOESDownloadManager"
         )
 
