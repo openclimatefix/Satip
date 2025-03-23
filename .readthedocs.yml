@@ -1,5 +1,6 @@
 version: 2
-mkdocs: {} # tell readthedocs to use mkdocs
+mkdocs:
+  configuration: mkdocs.yml  # Specify the path to the MkDocs configuration file
 python:
   install:
     - method: pip
