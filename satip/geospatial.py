@@ -6,8 +6,8 @@ https://epsg.io/27700.
 
   Typical usage example:
 
-  from satip.geospatial import lat_lon_to_osb
-  lat_lon_to_osb(numeric_list_of_latitudes, numeric_list_of_longitudes)
+  from satip.geospatial import lat_lon_to_osgb
+  lat_lon_to_osgb(numeric_list_of_latitudes, numeric_list_of_longitudes)
 """
 
 from numbers import Number
