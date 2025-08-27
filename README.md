@@ -1,6 +1,6 @@
 # Satip
 
-⚠️ Note this repo will soon be deprecated in favour of [satellite-consumer](https://github.com/openclimatefix/satellite-consumer)
+⚠️ Note this repo is deprecated in favour of [satellite-consumer](https://github.com/openclimatefix/satellite-consumer)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
