@@ -863,7 +863,7 @@ def filter_dataset_ids_on_current_files(datasets: list, save_dir: str) -> list:
 
 def get_latest_subdir_path(save_dir: str, mkdir=False) -> str:
     """
-    gets the latest dir path based on a give save_dir,
+    Gets the latest dir path based on a give save_dir,
 
     Args:
         save_dir: Directory where data is being saved
